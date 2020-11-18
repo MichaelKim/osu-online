@@ -1,5 +1,4 @@
 const path = require('path');
-const webpack = require('webpack');
 const TerserPlugin = require('terser-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
@@ -34,12 +33,15 @@ const config = {
       }
     ]
   },
+  resolve: {
+    extensions: ['.ts', '.js']
+  },
   plugins: [
     new HtmlWebpackPlugin({
       template: path.resolve('./src/index.html')
     }),
     new CopyWebpackPlugin({
-      patterns: [{ from: 'src/assets', to: 'assets' }]
+      patterns: [{ from: 'public' }]
     })
   ],
   stats: {
@@ -71,8 +73,8 @@ module.exports = async (env, argv) => {
       host: 'localhost',
       port: '8080',
       hot: true,
-      overlay: true,
-      writeToDisk: true
+      overlay: true
+      // writeToDisk: true
     };
   }
 

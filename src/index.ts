@@ -11,21 +11,54 @@ const app = new PIXI.Application({
   view: document.getElementsByTagName('canvas')[0]
 });
 
-function loadTextures(urls: Record<string, string>) {
-  return PIXI.Loader.shared.add(
-    Object.entries(urls).map(([name, url]) => ({
-      name,
-      url
-    }))
-  );
+const notes = [
+  { x: 100, y: 200, t: 2000 },
+  { x: 300, y: 200, t: 4000 },
+  { x: 500, y: 200, t: 6000 },
+  { x: 700, y: 200, t: 8000 },
+  { x: 900, y: 200, t: 10000 }
+];
+
+const CS = 3;
+// TODO: update radius on resize
+const r = (app.screen.width / 16) * (1.7 - CS * 0.14);
+const approachR = 2.5; // Estimate initial approach circle size
+const AR = 5;
+const fadeIn = 1800 - AR * 120; // When the note starts fading in
+const full = 600 - AR * 40; // When the note is fully visible
+const OD = 5;
+const window50 = 199.5 - OD * 10;
+const window100 = 139.5 - OD * 8;
+const window300 = 79.5 - OD * 6;
+
+type Resources<T> = Record<keyof T, PIXI.LoaderResource>;
+
+function loadTextures<T extends Record<string, string>>(
+  urls: T
+): Promise<Resources<T>> {
+  return new Promise<Resources<T>>(resolve => {
+    PIXI.Loader.shared
+      .add(
+        Object.entries(urls).map(([name, url]) => ({
+          name,
+          url
+        }))
+      )
+      // TODO: Partial?
+      .load((loader, resources: Resources<T>) => resolve(resources));
+  });
 }
 
-initLock(app);
-loadTextures({
+const assets = {
   cursor: 'assets/cursor.png',
   circle: 'assets/hitcircle.png',
-  overlay: 'assets/hitcircleoverlay.png'
-}).load((loader, resources) => {
+  overlay: 'assets/hitcircleoverlay.png',
+  approach: 'assets/approachcircle.png'
+};
+
+initLock(app);
+
+loadTextures(assets).then(resources => {
   initStart().then(() => {
     const container = new PIXI.Container();
 
@@ -63,7 +96,7 @@ loadTextures({
   });
 });
 
-function loadHitCircle(resources) {
+function loadHitCircle(resources: Resources<typeof assets>) {
   const circle = new PIXI.Sprite(resources.circle.texture);
   const overlay = new PIXI.Sprite(resources.overlay.texture);
   circle.anchor.set(0.5);
@@ -83,26 +116,7 @@ function loadHitCircle(resources) {
   return texture;
 }
 
-const notes = [
-  { x: 100, y: 200, t: 2000 },
-  { x: 300, y: 200, t: 4000 },
-  { x: 500, y: 200, t: 6000 },
-  { x: 700, y: 200, t: 8000 },
-  { x: 900, y: 200, t: 10000 }
-];
-
-const CS = 3;
-// TODO: update radius on resize
-const r = (app.screen.width / 16) * (1.7 - CS * 0.14);
-const AR = 5;
-const fadeIn = 1800 - AR * 120; // When the note starts fading in
-const full = 600 - AR * 40; // When the note is fully visible
-const OD = 5;
-const window50 = 199.5 - OD * 10;
-const window100 = 139.5 - OD * 8;
-const window300 = 79.5 - OD * 6;
-
-function init(resources) {
+function init(resources: Resources<typeof assets>) {
   app.view.style.display = 'block';
   app.stage.interactive = true;
 
@@ -129,6 +143,18 @@ function init(resources) {
   });
   app.stage.addChild(...circles);
 
+  resources.approach.texture.defaultAnchor.set(0.5);
+  const approaches = notes.map(n => {
+    const sprite = new PIXI.Sprite(resources.approach.texture);
+    sprite.position.set(n.x, n.y);
+    sprite.width = r * 2 * approachR;
+    sprite.height = r * 2 * approachR;
+    sprite.visible = false;
+    sprite.alpha = 0;
+    return sprite;
+  });
+  app.stage.addChild(...approaches);
+
   const cursor = new PIXI.Sprite(resources.cursor.texture);
   cursor.position.set(app.screen.width / 2, app.screen.height / 2);
   cursor.anchor.set(0.5);
@@ -148,12 +174,14 @@ function init(resources) {
     if (right < notes.length && time > notes[right].t - fadeIn) {
       // New note to show
       circles[right].visible = true;
+      approaches[right].visible = true;
       right++;
     }
 
     // Check for missed notes
     if (left < right && time > notes[left].t + window50) {
       circles[left].visible = false;
+      approaches[left].visible = false;
       left++;
       console.log('miss');
     }
@@ -166,11 +194,28 @@ function init(resources) {
         0,
         1
       );
+      approaches[i].alpha = clamp(
+        lerp(time, notes[i].t - fadeIn, notes[i].t - full, 0, 1),
+        0,
+        1
+      );
+
+      // Update approach circle sizes
+      const size =
+        r *
+        2 *
+        clamp(
+          lerp(time, notes[i].t - fadeIn, notes[i].t, approachR, 1),
+          1,
+          approachR
+        );
+      approaches[i].width = size;
+      approaches[i].height = size;
     }
   });
   ticker.start();
 
-  app.stage.on('pointerdown', () => {
+  app.view.addEventListener('mousedown', () => {
     if (left >= right) return;
 
     const dx = cursor.x - circles[left].x;
@@ -178,7 +223,9 @@ function init(resources) {
     if (dx * dx + dy * dy < r * r) {
       const dt = Math.abs(time - notes[left].t);
       circles[left].visible = false;
+      approaches[left].visible = false;
       left++;
+
       if (dt <= window300) console.log('300');
       else if (dt <= window100) console.log('100');
       else console.log('50');

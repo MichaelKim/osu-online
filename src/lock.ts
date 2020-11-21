@@ -1,7 +1,8 @@
 // Locks pointer and enables fullscreen
 export function lockPointer(app: PIXI.Application) {
-  app.view.requestFullscreen();
-  app.view.requestPointerLock();
+  document.documentElement.requestFullscreen().then(() => {
+    app.view.requestPointerLock();
+  });
 }
 
 // Display out of focus error

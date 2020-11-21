@@ -6,9 +6,10 @@ export default function initStart(): Promise<void> {
     const osuCircle = document.getElementById('osu-circle');
     startBtn.addEventListener('click', () => {
       osuCircle.style.opacity = '0';
-      setTimeout(() => (osuCircle.style.display = 'none'), 0.3);
-
-      resolve();
+      setTimeout(() => {
+        osuCircle.style.display = 'none';
+        resolve();
+      }, 0.3);
     });
   });
 }

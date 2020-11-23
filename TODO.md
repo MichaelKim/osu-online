@@ -1,0 +1,1 @@
+- restrict playfield to 4:3

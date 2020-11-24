@@ -1,18 +1,18 @@
 // Locks pointer and enables fullscreen
-export function lockPointer(app: PIXI.Application) {
+export function lockPointer(view: HTMLCanvasElement) {
   document.documentElement.requestFullscreen().then(() => {
-    app.view.requestPointerLock();
+    view.requestPointerLock();
   });
 }
 
 // Display out of focus error
-export default function initLock(app: PIXI.Application) {
+export default function initLock(view: HTMLCanvasElement) {
   const pointerLockWarning = document.getElementById('lock');
 
-  pointerLockWarning.addEventListener('click', () => lockPointer(app));
+  pointerLockWarning.addEventListener('click', () => lockPointer(view));
 
   document.addEventListener('pointerlockchange', () => {
-    const locked = document.pointerLockElement === app.view;
+    const locked = document.pointerLockElement === view;
     console.log('Pointer lock:', locked);
     if (locked) {
       pointerLockWarning.style.display = 'none';

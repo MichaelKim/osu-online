@@ -11,7 +11,7 @@ type SkinData = Partial<{
 type Resources = Record<keyof SkinData, PIXI.LoaderResource>;
 
 function loadHitCircle(
-  app: PIXI.Application,
+  renderer: PIXI.Renderer,
   circleTexture: PIXI.Texture,
   overlayTexture: PIXI.Texture
 ) {
@@ -28,8 +28,8 @@ function loadHitCircle(
   const texture = PIXI.RenderTexture.create({ width, height });
   texture.defaultAnchor.set(0.5);
 
-  app.renderer.render(circle, texture);
-  app.renderer.render(overlay, texture, false);
+  renderer.render(circle, texture);
+  renderer.render(overlay, texture, false);
 
   return texture;
 }
@@ -41,7 +41,7 @@ export class Skin {
   circle: PIXI.Texture;
   approach: PIXI.Texture;
 
-  load(app: PIXI.Application, data: SkinData) {
+  load(renderer: PIXI.Renderer, data: SkinData) {
     return new Promise<void>(resolve => {
       PIXI.Loader.shared
         .add(
@@ -55,7 +55,7 @@ export class Skin {
           this.cursor = resources.cursor.texture;
           this.approach = resources.approach.texture;
           this.circle = loadHitCircle(
-            app,
+            renderer,
             resources.circle.texture,
             resources.overlay.texture
           );

@@ -1,6 +1,6 @@
-import BeatmapDifficulty from './difficulty';
-import HitCircle, { Stats } from './hitcircle';
-import { Skin } from './skin';
+import BeatmapDifficulty from './BeatmapDifficulty';
+import HitCircle, { Stats } from './HitCircle';
+import { Skin } from './Skin';
 
 export default class Beatmap {
   difficulties: BeatmapDifficulty[];

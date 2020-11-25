@@ -2,9 +2,9 @@ import * as PIXI from 'pixi.js';
 import initLock, { lockPointer } from './lock';
 import initStart from './start';
 import { clamp } from './util';
-import { Skin } from './skin';
-import Beatmap from './beatmap';
-import HitCircle from './hitcircle';
+import { Skin } from './Skin';
+import Beatmap from './Beatmap';
+import HitCircle from './HitCircle';
 
 const renderer = new PIXI.Renderer({
   width: window.innerWidth,

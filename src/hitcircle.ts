@@ -1,6 +1,6 @@
 import * as PIXI from 'pixi.js';
 import { clamp, lerp } from './util';
-import { Skin } from './skin';
+import { Skin } from './Skin';
 import { arToMS, odToMS, csToSize } from './timing';
 
 const APPROACH_R = 2.5;

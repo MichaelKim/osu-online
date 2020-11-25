@@ -1,5 +1,5 @@
-import HitCircle, { Stats } from './hitcircle';
-import { Skin } from './skin';
+import HitCircle, { Stats } from './HitCircle';
+import { Skin } from './Skin';
 import { arToMS, odToMS } from './timing';
 
 export default class BeatmapDifficulty {

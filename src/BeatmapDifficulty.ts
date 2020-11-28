@@ -1,10 +1,21 @@
-import HitCircle, { Stats } from './HitCircle';
+import HitCircle from './HitCircle';
 import { Skin } from './Skin';
 import { arToMS, odToMS } from './timing';
 
 export default class BeatmapDifficulty {
-  notes: HitCircle[];
-  stats: Stats;
+  filepath: string; // Path to .osu file
+
+  // general
+  version: number = 14;
+  audioFilename: string;
+  audioLeadIn: number = 0;
+
+  // difficulty
+  cs: number;
+  od: number;
+  ar: number;
+
+  notes: HitCircle[] = [];
 
   // Computed
   fadeTime: number; // Starts to fade in
@@ -18,19 +29,104 @@ export default class BeatmapDifficulty {
   left: number;
   right: number;
 
-  constructor(notes: HitCircle[], stats: Stats) {
-    this.notes = notes;
-    this.stats = stats;
-
-    [this.fadeTime, this.fullTime] = arToMS(this.stats.ar);
-    this.hitWindows = odToMS(this.stats.od);
+  constructor(filepath: string) {
+    this.filepath = filepath;
   }
 
-  load(skin: Skin) {
+  async readFile() {
+    const res = await fetch(this.filepath);
+    const text = await res.text();
+    return text.split('\n').map(l => l.trim());
+  }
+
+  async parseFile() {
+    const file = await this.readFile();
+
+    let i = 0;
+
+    function readKeyValue() {
+      const line = file[i++];
+      const split = line.indexOf(':');
+      const key = line.slice(0, split).trim();
+      const value = line.slice(split + 1).trim();
+      return [key, value];
+    }
+
+    while (i < file.length) {
+      switch (file[i++]) {
+        case '[General]':
+          while (i < file.length && file[i][0] !== '[') {
+            const [key, value] = readKeyValue();
+            switch (key) {
+              case 'AudioFilename':
+                this.audioFilename = value;
+                break;
+              case 'AudioLeadIn':
+                this.audioLeadIn = parseInt(value);
+                break;
+            }
+          }
+          break;
+        case '[Difficulty]':
+          while (i < file.length && file[i][0] !== '[') {
+            const [key, value] = readKeyValue();
+            switch (key) {
+              case 'CircleSize':
+                this.cs = parseInt(value);
+                break;
+              case 'OverallDifficulty':
+                this.od = parseInt(value);
+                break;
+              case 'ApproachRate':
+                this.ar = parseInt(value);
+                break;
+            }
+          }
+          break;
+        case '[HitObjects]':
+          while (i < file.length && file[i][0] !== '[') {
+            i++;
+          }
+          break;
+      }
+    }
+  }
+
+  async parseHitObjects() {
+    const file = await this.readFile();
+    let i = file.indexOf('[HitObjects]') + 1;
+
+    while (i < file.length && file[i][0] !== '[') {
+      const tokens = file[i].split(',');
+      const x = parseInt(tokens[0]);
+      const y = parseInt(tokens[1]);
+      const time = parseInt(tokens[2]);
+
+      this.notes.push(new HitCircle(x, y, time));
+
+      i++;
+    }
+  }
+
+  async load() {
+    await this.parseFile();
+
+    [this.fadeTime, this.fullTime] = arToMS(this.ar);
+    this.hitWindows = odToMS(this.od);
+  }
+
+  async play(skin: Skin) {
     this.left = 0;
     this.right = 0;
 
-    this.notes.forEach(n => n.load(skin, this.stats));
+    await this.parseHitObjects();
+    this.notes.forEach(n =>
+      n.load(skin, {
+        ar: this.ar,
+        cs: this.cs,
+        od: this.od
+      })
+    );
   }
 
   update(time: number) {

@@ -5,6 +5,7 @@ import { clamp } from './util';
 import { Skin } from './Skin';
 import Beatmap from './Beatmap';
 import HitCircle from './HitCircle';
+import BeatmapDifficulty from './BeatmapDifficulty';
 
 const renderer = new PIXI.Renderer({
   width: window.innerWidth,
@@ -78,7 +79,7 @@ function loadCursor(texture: PIXI.Texture) {
   return cursor;
 }
 
-function init() {
+async function init() {
   renderer.view.style.display = 'block';
   stage.interactive = true;
   window.addEventListener('resize', () => {
@@ -88,28 +89,14 @@ function init() {
 
   loadTest();
 
-  const notes = [
-    { x: 100, y: 200, t: 2000 },
-    { x: 300, y: 200, t: 4000 },
-    { x: 500, y: 200, t: 6000 },
-    { x: 700, y: 200, t: 8000 },
-    { x: 900, y: 200, t: 10000 }
-  ].map(n => new HitCircle(n.x, n.y, n.t));
+  const beatmap = new BeatmapDifficulty(
+    'beatmaps/LeaF - Wizdomiot (Asahina Momoko) [Hard].osu'
+  );
 
-  const beatmap = new Beatmap([
-    {
-      notes,
-      stats: {
-        ar: 5,
-        od: 5,
-        cs: 5
-      }
-    }
-  ]);
+  await beatmap.load();
+  await beatmap.play(skin);
 
-  beatmap.load(skin, 0);
-
-  notes.forEach(n => {
+  beatmap.notes.forEach(n => {
     stage.addChild(n.circleSprite, n.approachSprite);
   });
 

@@ -1,6 +1,8 @@
+import * as PIXI from 'pixi.js';
 import HitCircle from './HitCircle';
 import { Skin } from './Skin';
 import { arToMS, odToMS } from './timing';
+import * as AudioLoader from './AudioLoader';
 
 export default class BeatmapDifficulty {
   filepath: string; // Path to .osu file
@@ -92,6 +94,13 @@ export default class BeatmapDifficulty {
     }
   }
 
+  async load() {
+    await this.parseFile();
+
+    [this.fadeTime, this.fullTime] = arToMS(this.ar);
+    this.hitWindows = odToMS(this.od);
+  }
+
   async parseHitObjects() {
     const file = await this.readFile();
     let i = file.indexOf('[HitObjects]') + 1;
@@ -108,11 +117,12 @@ export default class BeatmapDifficulty {
     }
   }
 
-  async load() {
-    await this.parseFile();
+  async loadMusic() {
+    if (this.audioFilename == null) console.error('Missing audio filename');
 
-    [this.fadeTime, this.fullTime] = arToMS(this.ar);
-    this.hitWindows = odToMS(this.od);
+    // TODO: extract audio playback
+    const res = await AudioLoader.load('beatmaps/' + this.audioFilename);
+    await res.data.play();
   }
 
   async play(skin: Skin) {
@@ -120,6 +130,7 @@ export default class BeatmapDifficulty {
     this.right = 0;
 
     await this.parseHitObjects();
+    await this.loadMusic();
     this.notes.forEach(n =>
       n.load(skin, {
         ar: this.ar,

@@ -2,6 +2,8 @@ import * as PIXI from 'pixi.js';
 import { lockPointer } from './lock';
 import BeatmapDifficulty from './BeatmapDifficulty';
 
+// TODO: rename to application
+// extract gameplay from pixi-related logic
 export default class Game {
   renderer: PIXI.Renderer;
   stage: PIXI.Container; // Base stage

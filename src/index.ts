@@ -1,27 +1,19 @@
 import * as PIXI from 'pixi.js';
-import initLock, { lockPointer } from './lock';
+import initLock from './lock';
 import initStart from './start';
 import { clamp } from './util';
 import { Skin } from './Skin';
-import Beatmap from './Beatmap';
-import HitCircle from './HitCircle';
 import BeatmapDifficulty from './BeatmapDifficulty';
+import Game from './Game';
 
-const renderer = new PIXI.Renderer({
-  width: window.innerWidth,
-  height: window.innerHeight,
-  resolution: window.devicePixelRatio || 1,
-  autoDensity: true,
-  view: document.getElementsByTagName('canvas')[0]
-});
-const stage = new PIXI.Container();
+const game = new Game(document.getElementsByTagName('canvas')[0]);
 
 const skin = new Skin();
 
-initLock(renderer.view);
+initLock(game.renderer.view);
 initStart()
   .then(() =>
-    skin.load(renderer, {
+    skin.load(game.renderer, {
       cursor: 'assets/cursor.png',
       circle: 'assets/hitcircle.png',
       overlay: 'assets/hitcircleoverlay.png',
@@ -33,7 +25,7 @@ initStart()
 function loadTest() {
   const container = new PIXI.Container();
 
-  stage.addChild(container);
+  game.stage.addChildAt(container, 0);
 
   // Create a 5x5 grid of bunnies
   for (let i = 0; i < 25; i++) {
@@ -45,8 +37,8 @@ function loadTest() {
   }
 
   // Move container to the center
-  container.x = renderer.screen.width / 2;
-  container.y = renderer.screen.height / 2;
+  container.x = game.renderer.screen.width / 2;
+  container.y = game.renderer.screen.height / 2;
 
   // Center bunny sprite in local container coordinates
   container.pivot.x = container.width / 2;
@@ -69,25 +61,24 @@ function loadTest() {
 
 function loadCursor(texture: PIXI.Texture) {
   const cursor = new PIXI.Sprite(texture);
-  cursor.position.set(renderer.screen.width / 2, renderer.screen.height / 2);
-  stage.addChild(cursor);
-  stage.on('mousemove', (e: PIXI.InteractionEvent) => {
+  cursor.position.set(
+    game.renderer.screen.width / 2,
+    game.renderer.screen.height / 2
+  );
+  game.cursorStage.addChild(cursor);
+  game.stage.on('mousemove', (e: PIXI.InteractionEvent) => {
     const { movementX, movementY } = e.data.originalEvent as MouseEvent;
-    cursor.x = clamp(cursor.x + movementX, 0, renderer.screen.width);
-    cursor.y = clamp(cursor.y + movementY, 0, renderer.screen.height);
+    cursor.x = clamp(cursor.x + movementX, 0, game.renderer.screen.width);
+    cursor.y = clamp(cursor.y + movementY, 0, game.renderer.screen.height);
   });
   return cursor;
 }
 
 async function init() {
-  renderer.view.style.display = 'block';
-  stage.interactive = true;
-  window.addEventListener('resize', () => {
-    renderer.resize(window.innerWidth, window.innerHeight);
-  });
-  lockPointer(renderer.view);
-
   loadTest();
+  game.init();
+
+  const cursor = loadCursor(skin.cursor);
 
   const beatmap = new BeatmapDifficulty(
     'beatmaps/LeaF - Wizdomiot (Asahina Momoko) [Hard].osu'
@@ -97,29 +88,19 @@ async function init() {
   await beatmap.play(skin);
 
   beatmap.notes.forEach(n => {
-    stage.addChild(n.circleSprite, n.approachSprite);
+    game.notesStage.addChild(n.circleSprite, n.approachSprite);
   });
+  game.play(beatmap);
 
-  const cursor = loadCursor(skin.cursor);
-  const ticker = new PIXI.Ticker();
-  let time = 0;
-  ticker.add(() => {
-    renderer.render(stage);
-
-    time += ticker.deltaMS;
-    beatmap.update(time);
-  }, PIXI.UPDATE_PRIORITY.LOW);
-  ticker.start();
-
-  stage.on('mousedown', () => {
-    beatmap.click(time, cursor.x, cursor.y);
+  game.stage.on('mousedown', () => {
+    beatmap.click(game.time, cursor.x, cursor.y);
   });
 
   window.addEventListener(
     'keydown',
     e => {
       if (e.key === 'z' || e.key === 'x') {
-        beatmap.click(time, cursor.x, cursor.y);
+        beatmap.click(game.time, cursor.x, cursor.y);
       }
     },
     false

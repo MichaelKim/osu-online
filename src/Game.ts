@@ -27,7 +27,6 @@ export default class Game {
     });
 
     this.stage = new PIXI.Container();
-    this.stage.interactive = true;
 
     this.cursorStage = new PIXI.Container();
     this.notesStage = new PIXI.Container();
@@ -60,7 +59,7 @@ export default class Game {
 
   play(beatmap: BeatmapDifficulty) {
     this.time = 0;
-    // beatmap.play();
+    beatmap.play();
     this.ticker.add(() => {
       this.time += this.ticker.deltaMS;
       beatmap.update(this.time);

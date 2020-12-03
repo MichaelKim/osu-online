@@ -66,7 +66,6 @@ function loadCursor(texture: PIXI.Texture) {
     game.renderer.screen.height / 2
   );
   game.cursorStage.addChild(cursor);
-  // game.stage.on('mousemove', (e: PIXI.InteractionEvent) => {
   window.addEventListener('mousemove', e => {
     const { movementX, movementY } = e;
     cursor.x = clamp(cursor.x + movementX, 0, game.renderer.screen.width);
@@ -93,7 +92,6 @@ async function init() {
   });
   game.play(beatmap);
 
-  // game.stage.on('mousedown', () => {
   window.addEventListener('mousedown', () => {
     const local = game.notesStage.toLocal(cursor.position, null, null, true);
     beatmap.click(game.time, local);
@@ -102,7 +100,7 @@ async function init() {
   window.addEventListener(
     'keydown',
     e => {
-      if (e.key === 'z' || e.key === 'x') {
+      if (e.key === '1' || e.key === '2') {
         const local = game.notesStage.toLocal(
           cursor.position,
           null,

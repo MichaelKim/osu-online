@@ -49,9 +49,7 @@ export function odToMS(od: number) {
   };
 }
 
-// Circle Size (diameter)
-// TODO: based on playfield width
+// Circle Size (diameter in osu!pixels)
 export function csToSize(cs: number) {
-  // const r = (app.screen.width / 16) * (1.7 - CS * 0.14);
-  return 180;
+  return 2 * (54.4 - cs * 4.48);
 }

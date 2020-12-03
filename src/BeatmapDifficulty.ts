@@ -30,6 +30,7 @@ export default class BeatmapDifficulty {
 
   left: number;
   right: number;
+  music: HTMLAudioElement;
 
   constructor(filepath: string) {
     this.filepath = filepath;
@@ -94,7 +95,7 @@ export default class BeatmapDifficulty {
     }
   }
 
-  async load() {
+  async preload() {
     await this.parseFile();
 
     [this.fadeTime, this.fullTime] = arToMS(this.ar);
@@ -122,10 +123,11 @@ export default class BeatmapDifficulty {
 
     // TODO: extract audio playback
     const res = await AudioLoader.load('beatmaps/' + this.audioFilename);
-    await res.data.play();
+    this.music = res.data;
   }
 
-  async play(skin: Skin) {
+  async load(skin: Skin) {
+    // TODO: extract gameplay logic
     this.left = 0;
     this.right = 0;
 
@@ -138,6 +140,10 @@ export default class BeatmapDifficulty {
         od: this.od
       })
     );
+  }
+
+  play() {
+    this.music.play();
   }
 
   update(time: number) {

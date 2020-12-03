@@ -66,8 +66,9 @@ function loadCursor(texture: PIXI.Texture) {
     game.renderer.screen.height / 2
   );
   game.cursorStage.addChild(cursor);
-  game.stage.on('mousemove', (e: PIXI.InteractionEvent) => {
-    const { movementX, movementY } = e.data.originalEvent as MouseEvent;
+  // game.stage.on('mousemove', (e: PIXI.InteractionEvent) => {
+  window.addEventListener('mousemove', e => {
+    const { movementX, movementY } = e;
     cursor.x = clamp(cursor.x + movementX, 0, game.renderer.screen.width);
     cursor.y = clamp(cursor.y + movementY, 0, game.renderer.screen.height);
   });
@@ -84,8 +85,8 @@ async function init() {
     'beatmaps/LeaF - Wizdomiot (Asahina Momoko) [Hard].osu'
   );
 
-  await beatmap.load();
-  await beatmap.play(skin);
+  await beatmap.preload();
+  await beatmap.load(skin);
 
   beatmap.notes.forEach(n => {
     game.notesStage.addChild(n.circleSprite, n.approachSprite);

@@ -93,15 +93,23 @@ async function init() {
   });
   game.play(beatmap);
 
-  game.stage.on('mousedown', () => {
-    beatmap.click(game.time, cursor.x, cursor.y);
+  // game.stage.on('mousedown', () => {
+  window.addEventListener('mousedown', () => {
+    const local = game.notesStage.toLocal(cursor.position, null, null, true);
+    beatmap.click(game.time, local);
   });
 
   window.addEventListener(
     'keydown',
     e => {
       if (e.key === 'z' || e.key === 'x') {
-        beatmap.click(game.time, cursor.x, cursor.y);
+        const local = game.notesStage.toLocal(
+          cursor.position,
+          null,
+          null,
+          true
+        );
+        beatmap.click(game.time, local);
       }
     },
     false

@@ -86,9 +86,9 @@ export default class HitCircle {
     this.approachSprite.height = size;
   }
 
-  click(x: number, y: number) {
-    const dx = x - this.x;
-    const dy = y - this.y;
+  click(position: PIXI.Point) {
+    const dx = position.x - this.x;
+    const dy = position.y - this.y;
     const r = this.size / 2;
     return dx * dx + dy * dy < r * r;
   }

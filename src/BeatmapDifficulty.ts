@@ -172,11 +172,11 @@ export default class BeatmapDifficulty {
     }
   }
 
-  click(time: number, x: number, y: number) {
+  click(time: number, position: PIXI.Point) {
     // Ignore if no notes are currently visible
     if (this.left >= this.right) return false;
 
-    if (this.notes[this.left].click(x, y)) {
+    if (this.notes[this.left].click(position)) {
       const dt = Math.abs(time - this.notes[this.left].t);
       this.notes[this.left].setVisible(false);
       this.left++;

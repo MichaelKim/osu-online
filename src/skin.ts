@@ -45,17 +45,55 @@ function loadHitCircle(
   return texture;
 }
 
-export class Skin {
-  cursor: PIXI.Texture;
+function parseKeyValue(line: string) {
+  const split = line.indexOf(':');
+  const key = line.slice(0, split).trim();
+  const value = line.slice(split + 1).trim();
+  return [key, value];
+}
 
+export class Skin {
+  filepath: string;
+  // Fonts
+  hitCircleOverlap: number = -2;
+
+  // Textures
+  cursor: PIXI.Texture;
   // Hit circle
   circle: PIXI.Texture;
   approach: PIXI.Texture;
-
   // Numbers
   numbers: Tuple<PIXI.Texture, 10>;
 
-  load(renderer: PIXI.Renderer) {
+  constructor(filepath: string) {
+    this.filepath = filepath;
+  }
+
+  async parseFile() {
+    const res = await fetch(this.filepath);
+    const text = await res.text();
+
+    const file = text.split('\n').map(l => l.trim());
+    let i = 0;
+    while (i < file.length) {
+      switch (file[i++]) {
+        case '[Fonts]': {
+          while (i < file.length && file[i][0] !== '[') {
+            const [key, value] = parseKeyValue(file[i++]);
+            switch (key) {
+              case 'HitCircleOverlap': {
+                this.hitCircleOverlap = parseInt(value);
+                break;
+              }
+            }
+          }
+          break;
+        }
+      }
+    }
+  }
+
+  loadTextures(renderer: PIXI.Renderer) {
     return new Promise<void>(resolve => {
       PIXI.Loader.shared
         .add(
@@ -94,5 +132,9 @@ export class Skin {
           resolve();
         });
     });
+  }
+
+  async load(renderer: PIXI.Renderer) {
+    await Promise.all([this.loadTextures(renderer), this.parseFile()]);
   }
 }

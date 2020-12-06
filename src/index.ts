@@ -8,7 +8,7 @@ import Game from './Game';
 
 const game = new Game(document.getElementsByTagName('canvas')[0]);
 
-const skin = new Skin();
+const skin = new Skin('assets/skin.ini');
 
 initLock(game.renderer.view);
 initStart()

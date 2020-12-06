@@ -77,7 +77,7 @@ export default class HitCircle {
     const length = Math.floor(Math.log10(this.comboNumber) + 1);
     // HitCircleOverlap: 150 (skin.ini)
     // Downscale numbers by 0.8x
-    const width = (skin.numbers[0].width - 150) * 0.8;
+    const width = (skin.numbers[0].width - skin.hitCircleOverlap) * 0.8;
     let digitX = this.x + ((length - 1) * width) / 2;
     let n = this.comboNumber;
     while (n > 0) {

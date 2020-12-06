@@ -73,15 +73,16 @@ export default class HitCircle {
     this.approachSprite.visible = false;
     this.approachSprite.alpha = 0;
 
-    // Downscale numbers by 0.8x
     this.numberSprites = [];
     const length = Math.floor(Math.log10(this.comboNumber) + 1);
-    const width = skin.numbers[0].width * 0.8;
+    // HitCircleOverlap: 150 (skin.ini)
+    // Downscale numbers by 0.8x
+    const width = (skin.numbers[0].width - 150) * 0.8;
     let digitX = this.x + ((length - 1) * width) / 2;
     let n = this.comboNumber;
     while (n > 0) {
       const sprite = new PIXI.Sprite(skin.numbers[n % 10]);
-      sprite.width = width;
+      sprite.scale.set(0.8);
       sprite.position.set(digitX, this.y);
       sprite.visible = false;
       sprite.alpha = 0;

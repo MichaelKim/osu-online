@@ -12,14 +12,7 @@ const skin = new Skin();
 
 initLock(game.renderer.view);
 initStart()
-  .then(() =>
-    skin.load(game.renderer, {
-      cursor: 'assets/cursor.png',
-      circle: 'assets/hitcircle.png',
-      overlay: 'assets/hitcircleoverlay.png',
-      approach: 'assets/approachcircle.png'
-    })
-  )
+  .then(() => skin.load(game.renderer))
   .then(init);
 
 function loadTest() {
@@ -88,7 +81,7 @@ async function init() {
   await beatmap.load(skin);
 
   beatmap.notes.forEach(n => {
-    game.notesStage.addChild(n.circleSprite, n.approachSprite);
+    n.addToStage(game.notesStage);
   });
   game.play(beatmap);
 

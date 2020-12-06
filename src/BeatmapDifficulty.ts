@@ -103,16 +103,33 @@ export default class BeatmapDifficulty {
   }
 
   async parseHitObjects() {
+    let comboNumber = 1;
+    let comboIndex = 0;
+
     const file = await this.readFile();
-    let i = file.indexOf('[HitObjects]') + 1;
 
-    while (i < file.length && file[i][0] !== '[') {
+    for (
+      let i = file.indexOf('[HitObjects]') + 1;
+      i < file.length && file[i][0] !== '[';
+      i++
+    ) {
       const tokens = file[i].split(',');
-      const x = parseInt(tokens[0]);
-      const y = parseInt(tokens[1]);
-      const time = parseInt(tokens[2]);
+      if (tokens.length < 4) {
+        console.error(`Line ${i} missing tokens`);
+        continue;
+      }
 
-      this.notes.push(new HitCircle(x, y, time));
+      const type = parseInt(tokens[3]);
+      if (type & (1 << 2)) {
+        // New combo
+        comboNumber = 1;
+
+        const skip = ((type & (1 << 4)) | (1 << 5) | (1 << 6)) >> 4;
+        comboIndex += skip;
+      } else {
+        comboNumber++;
+      }
+      this.notes.push(new HitCircle(tokens, comboNumber, comboIndex));
 
       i++;
     }

@@ -14,3 +14,9 @@ export function lerp(
 ) {
   return ((val - l1) * (r2 - l2)) / (r1 - l1) + l2;
 }
+
+export type Tuple<
+  T,
+  N extends number,
+  R extends T[] = []
+> = R['length'] extends N ? R : Tuple<T, N, [T, ...R]>;

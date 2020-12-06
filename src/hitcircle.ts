@@ -11,10 +11,20 @@ export interface Stats {
   cs: number;
 }
 
+enum HitSound {
+  NORMAL = 1 << 0,
+  WHISTLE = 1 << 1,
+  FINISH = 1 << 2,
+  CLAP = 1 << 3
+}
+
 export default class HitCircle {
   x: number;
   y: number;
   t: number;
+  hitSound: HitSound;
+  comboIndex: number; // Combo color index
+  comboNumber: number;
 
   // Computed
   fadeTime: number; // Starts to fade in
@@ -29,11 +39,17 @@ export default class HitCircle {
   // Sprites
   circleSprite: PIXI.Sprite;
   approachSprite: PIXI.Sprite;
+  numberSprites: PIXI.Sprite[];
 
-  constructor(x: number, y: number, t: number) {
-    this.x = x;
-    this.y = y;
-    this.t = t;
+  constructor(tokens: string[], comboNumber: number, comboIndex: number) {
+    this.x = parseInt(tokens[0]);
+    this.y = parseInt(tokens[1]);
+    this.t = parseInt(tokens[2]);
+    this.hitSound = parseInt(tokens[4]);
+    this.comboNumber = comboNumber;
+    this.comboIndex = comboIndex;
+
+    const type = parseInt(tokens[3]);
   }
 
   load(skin: Skin, stats: Stats) {
@@ -56,11 +72,38 @@ export default class HitCircle {
     this.approachSprite.height = this.size * APPROACH_R;
     this.approachSprite.visible = false;
     this.approachSprite.alpha = 0;
+
+    // Downscale numbers by 0.8x
+    this.numberSprites = [];
+    const length = Math.floor(Math.log10(this.comboNumber) + 1);
+    const width = skin.numbers[0].width * 0.8;
+    let digitX = this.x + ((length - 1) * width) / 2;
+    let n = this.comboNumber;
+    while (n > 0) {
+      const sprite = new PIXI.Sprite(skin.numbers[n % 10]);
+      sprite.width = width;
+      sprite.position.set(digitX, this.y);
+      sprite.visible = false;
+      sprite.alpha = 0;
+      this.numberSprites.push(sprite);
+
+      digitX -= width;
+      n = Math.floor(n / 10);
+    }
+  }
+
+  addToStage(stage: PIXI.Container) {
+    stage.addChild(
+      this.circleSprite,
+      ...this.numberSprites,
+      this.approachSprite
+    );
   }
 
   setVisible(visible: boolean) {
     this.circleSprite.visible = visible;
     this.approachSprite.visible = visible;
+    this.numberSprites.forEach(s => (s.visible = visible));
   }
 
   update(time: number) {
@@ -73,6 +116,7 @@ export default class HitCircle {
 
     this.circleSprite.alpha = alpha;
     this.approachSprite.alpha = alpha;
+    this.numberSprites.forEach(s => (s.alpha = alpha));
 
     // Update approach circle sizes
     const size =

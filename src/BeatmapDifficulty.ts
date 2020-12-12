@@ -75,13 +75,13 @@ export default class BeatmapDifficulty {
             const [key, value] = readKeyValue();
             switch (key) {
               case 'CircleSize':
-                this.cs = parseInt(value);
+                this.cs = parseFloat(value);
                 break;
               case 'OverallDifficulty':
-                this.od = parseInt(value);
+                this.od = parseFloat(value);
                 break;
               case 'ApproachRate':
-                this.ar = parseInt(value);
+                this.ar = parseFloat(value);
                 break;
             }
           }

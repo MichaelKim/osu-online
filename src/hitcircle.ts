@@ -42,8 +42,8 @@ export default class HitCircle {
   numberSprites: PIXI.Sprite[];
 
   constructor(tokens: string[], comboNumber: number, comboIndex: number) {
-    this.x = parseInt(tokens[0]);
-    this.y = parseInt(tokens[1]);
+    this.x = parseFloat(tokens[0]);
+    this.y = parseFloat(tokens[1]);
     this.t = parseInt(tokens[2]);
     this.hitSound = parseInt(tokens[4]);
     this.comboNumber = comboNumber;

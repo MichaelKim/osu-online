@@ -2,38 +2,23 @@ import * as PIXI from 'pixi.js';
 import { clamp, lerp } from './util';
 import { Skin } from './Skin';
 import { arToMS, odToMS, csToSize } from './timing';
+import { HitSound, Stats } from './HitObjects';
 
 const APPROACH_R = 2.5;
 
-export interface Stats {
-  ar: number;
-  od: number;
-  cs: number;
-}
-
-enum HitSound {
-  NORMAL = 1 << 0,
-  WHISTLE = 1 << 1,
-  FINISH = 1 << 2,
-  CLAP = 1 << 3
-}
-
 export default class HitCircle {
+  // Metadata
   x: number;
   y: number;
   t: number;
   hitSound: HitSound;
+
   comboIndex: number; // Combo color index
   comboNumber: number;
 
   // Computed
   fadeTime: number; // Starts to fade in
   fullTime: number; // Fully opaque
-  hitWindows: {
-    300: number;
-    100: number;
-    50: number;
-  };
   size: number; // Diameter of hit circle
 
   // Sprites
@@ -42,20 +27,19 @@ export default class HitCircle {
   numberSprites: PIXI.Sprite[];
 
   constructor(tokens: string[], comboNumber: number, comboIndex: number) {
+    // x,y,time,type,hitSound,objectParams,hitSample
     this.x = parseFloat(tokens[0]);
     this.y = parseFloat(tokens[1]);
     this.t = parseInt(tokens[2]);
     this.hitSound = parseInt(tokens[4]);
+
     this.comboNumber = comboNumber;
     this.comboIndex = comboIndex;
-
-    const type = parseInt(tokens[3]);
   }
 
   load(skin: Skin, stats: Stats) {
     // Compute timing windows
     [this.fadeTime, this.fullTime] = arToMS(stats.ar);
-    this.hitWindows = odToMS(stats.od);
     this.size = csToSize(stats.cs);
 
     // Load skin textures

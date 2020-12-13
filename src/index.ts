@@ -68,7 +68,7 @@ function loadCursor(texture: PIXI.Texture) {
 }
 
 async function init() {
-  loadTest();
+  // loadTest();
   game.init();
 
   const cursor = loadCursor(skin.cursor);
@@ -80,15 +80,17 @@ async function init() {
   await beatmap.preload();
   await beatmap.load(skin);
 
-  beatmap.notes.forEach(n => {
-    n.addToStage(game.notesStage);
-  });
+  for (let i = beatmap.notes.length - 1; i >= 0; i--) {
+    beatmap.notes[i].addToStage(game.notesStage);
+  }
   game.play(beatmap);
 
   window.addEventListener('mousedown', () => {
     const local = game.notesStage.toLocal(cursor.position, null, null, true);
     beatmap.click(game.time, local);
   });
+
+  window.addEventListener('mouseup', () => {});
 
   window.addEventListener(
     'keydown',

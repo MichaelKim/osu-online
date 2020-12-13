@@ -5,16 +5,9 @@ import { arToMS, odToMS } from './timing';
 import * as AudioLoader from './AudioLoader';
 import { Slider } from './Slider';
 import TimingPoint from './TimingPoint';
+import { ObjectTypes } from './HitObjects';
 
 type HitObjects = HitCircle | Slider;
-
-enum ObjectTypes {
-  HIT_CIRCLE = 1 << 0,
-  SLIDER = 1 << 1,
-  NEW_COMBO = 1 << 2,
-  SPINNER = 1 << 3,
-  COMBO_SKIP = (1 << 4) | (1 << 5) | (1 << 6)
-}
 
 export default class BeatmapDifficulty {
   filepath: string; // Path to .osu file

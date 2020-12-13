@@ -1,13 +1,16 @@
 import * as PIXI from 'pixi.js';
 import getCurve from './Bezier';
-import { getNumberSprites, Stats } from './HitObjects';
+import {
+  APPROACH_R,
+  FOLLOW_R,
+  getNumberSprites,
+  initSprite,
+  Stats
+} from './HitObjects';
 import { HitSound } from './HitObjects';
 import { Skin } from './Skin';
 import { arToMS, csToSize } from './timing';
-import { clamp, lerp } from './util';
-
-const FOLLOW_R = 2.4;
-const APPROACH_R = 2.5;
+import { clerp, clerp01 } from './util';
 
 enum CurveTypes {
   BEZIER = 'B',
@@ -87,27 +90,24 @@ export class Slider {
     // Calculate curve points
     this.curve = getCurve(this.points, this.length);
 
-    this.circleSprite = new PIXI.Sprite(skin.circle);
-    this.circleSprite.position.copyFrom(this.points[0]);
-    this.circleSprite.width = this.size;
-    this.circleSprite.height = this.size;
-    this.circleSprite.visible = false;
-    this.circleSprite.alpha = 0;
-
-    this.approachSprite = new PIXI.Sprite(skin.approach);
-    this.approachSprite.position.copyFrom(this.points[0]);
-    this.approachSprite.width = this.size * APPROACH_R;
-    this.approachSprite.height = this.size * APPROACH_R;
-    this.approachSprite.visible = false;
-    this.approachSprite.alpha = 0;
-
-    this.followSprite = new PIXI.Sprite(skin.sliderFollowCircle);
-    this.followSprite.position.copyFrom(this.points[0]);
-    this.followSprite.width = this.size * FOLLOW_R;
-    this.followSprite.height = this.size * FOLLOW_R;
-    this.followSprite.visible = false;
-    this.followSprite.alpha = 0;
-
+    this.circleSprite = initSprite(
+      skin.circle,
+      this.points[0].x,
+      this.points[0].y,
+      this.size
+    );
+    this.approachSprite = initSprite(
+      skin.approach,
+      this.points[0].x,
+      this.points[0].y,
+      this.size * APPROACH_R
+    );
+    this.followSprite = initSprite(
+      skin.sliderFollowCircle,
+      this.points[0].x,
+      this.points[0].y,
+      this.size * FOLLOW_R
+    );
     this.numberSprites = getNumberSprites(
       skin,
       this.comboNumber,
@@ -231,7 +231,7 @@ export class Slider {
       });
 
       this.approachSprite.alpha = alpha;
-      this.circleSprite.position.copyFrom(position);
+      this.approachSprite.position.copyFrom(position);
 
       // Fade in follow circle
       this.followSprite.alpha = clerp01(time - this.t, 0, 150);
@@ -260,20 +260,4 @@ export class Slider {
     const r = this.size / 2;
     return dx * dx + dy * dy < r * r;
   }
-}
-
-// Clamp + lerp to [0, 1]
-function clerp01(val: number, left: number, right: number) {
-  return clamp(lerp(val, left, right, 0, 1), 0, 1);
-}
-
-// Clamp + lerp
-function clerp(val: number, l1: number, r1: number, l2: number, r2: number) {
-  const l = lerp(val, l1, r1, l2, r2);
-
-  if (l2 < r2) {
-    return clamp(l, l2, r2);
-  }
-
-  return clamp(l, r2, l2);
 }

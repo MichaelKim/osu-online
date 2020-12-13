@@ -1,10 +1,14 @@
 import * as PIXI from 'pixi.js';
-import { clamp, lerp } from './util';
+import { clerp, clerp01 } from './util';
 import { Skin } from './Skin';
 import { arToMS, csToSize } from './timing';
-import { getNumberSprites, HitSound, Stats } from './HitObjects';
-
-const APPROACH_R = 2.5;
+import {
+  APPROACH_R,
+  getNumberSprites,
+  HitSound,
+  initSprite,
+  Stats
+} from './HitObjects';
 
 export default class HitCircle {
   // Metadata
@@ -43,20 +47,13 @@ export default class HitCircle {
     this.size = csToSize(stats.cs);
 
     // Load skin textures
-    this.circleSprite = new PIXI.Sprite(skin.circle);
-    this.circleSprite.position.set(this.x, this.y);
-    this.circleSprite.width = this.size;
-    this.circleSprite.height = this.size;
-    this.circleSprite.visible = false;
-    this.circleSprite.alpha = 0;
-
-    this.approachSprite = new PIXI.Sprite(skin.approach);
-    this.approachSprite.position.set(this.x, this.y);
-    this.approachSprite.width = this.size * APPROACH_R;
-    this.approachSprite.height = this.size * APPROACH_R;
-    this.approachSprite.visible = false;
-    this.approachSprite.alpha = 0;
-
+    this.circleSprite = initSprite(skin.circle, this.x, this.y, this.size);
+    this.approachSprite = initSprite(
+      skin.approach,
+      this.x,
+      this.y,
+      this.size * APPROACH_R
+    );
     this.numberSprites = getNumberSprites(
       skin,
       this.comboNumber,
@@ -80,27 +77,38 @@ export default class HitCircle {
   }
 
   update(time: number) {
-    // TODO: don't update for fully opaque notes
-    const alpha = clamp(
-      lerp(time, this.t - this.fadeTime, this.t - this.fullTime, 0, 1),
-      0,
-      1
-    );
+    // Not visible yet
+    if (time < this.t - this.fadeTime) {
+      return;
+    }
+
+    // Fade in
+    if (time < this.t) {
+      // TODO: don't update for fully opaque notes
+      const alpha = clerp01(
+        time,
+        this.t - this.fadeTime,
+        this.t - this.fullTime
+      );
+
+      // Hit circle
+      this.circleSprite.alpha = alpha;
+      this.approachSprite.alpha = alpha;
+      this.numberSprites.forEach(s => (s.alpha = alpha));
+
+      // Update approach circle sizes
+      const size =
+        this.size * clerp(time, this.t - this.fadeTime, this.t, APPROACH_R, 1);
+      this.approachSprite.scale.set(size / this.approachSprite.texture.width);
+      return;
+    }
+
+    // Fade out everything
+    const alpha = 1 - clerp01(time - this.t, 0, 100);
 
     this.circleSprite.alpha = alpha;
-    this.approachSprite.alpha = alpha;
     this.numberSprites.forEach(s => (s.alpha = alpha));
-
-    // Update approach circle sizes
-    const size =
-      this.size *
-      clamp(
-        lerp(time, this.t - this.fadeTime, this.t, APPROACH_R, 1),
-        1,
-        APPROACH_R
-      );
-    this.approachSprite.width = size;
-    this.approachSprite.height = size;
+    this.approachSprite.alpha = alpha;
   }
 
   click(position: PIXI.Point) {

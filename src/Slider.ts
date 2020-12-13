@@ -7,6 +7,7 @@ import { arToMS, csToSize } from './timing';
 import { clamp, lerp } from './util';
 
 const FOLLOW_R = 2.4;
+const APPROACH_R = 2.5;
 
 enum CurveTypes {
   BEZIER = 'B',
@@ -20,7 +21,7 @@ export class Slider {
   points: PIXI.Point[];
   t: number;
   hitSound: HitSound;
-  type: CurveTypes;
+  sliderType: CurveTypes;
   slides: number;
   length: number;
 
@@ -37,8 +38,11 @@ export class Slider {
   graphics: PIXI.Graphics;
   curve: PIXI.Point[];
   circleSprite: PIXI.Sprite;
-  followSprite: PIXI.Sprite;
+  approachSprite: PIXI.Sprite;
   numberSprites: PIXI.Sprite[];
+  followSprite: PIXI.Sprite;
+
+  active: boolean = false; // Is the slider being followed?
 
   constructor(tokens: string[], comboNumber: number, comboIndex: number) {
     // x,y,time,type,hitSound,curveType|curvePoints,slides,length,edgeSounds,edgeSets,hitSample
@@ -48,7 +52,7 @@ export class Slider {
     this.hitSound = parseInt(tokens[4]);
 
     const [curveType, ...curveTokens] = tokens[5].split('|');
-    this.type = curveType as CurveTypes;
+    this.sliderType = curveType as CurveTypes;
     const otherPoints = curveTokens.map(t => {
       const [x, y] = t.split(':');
       return {
@@ -84,14 +88,21 @@ export class Slider {
     this.curve = getCurve(this.points, this.length);
 
     this.circleSprite = new PIXI.Sprite(skin.circle);
-    this.circleSprite.position.set(this.points[0].x, this.points[0].y);
+    this.circleSprite.position.copyFrom(this.points[0]);
     this.circleSprite.width = this.size;
     this.circleSprite.height = this.size;
     this.circleSprite.visible = false;
     this.circleSprite.alpha = 0;
 
+    this.approachSprite = new PIXI.Sprite(skin.approach);
+    this.approachSprite.position.copyFrom(this.points[0]);
+    this.approachSprite.width = this.size * APPROACH_R;
+    this.approachSprite.height = this.size * APPROACH_R;
+    this.approachSprite.visible = false;
+    this.approachSprite.alpha = 0;
+
     this.followSprite = new PIXI.Sprite(skin.sliderFollowCircle);
-    this.followSprite.position.set(this.points[0].x, this.points[0].y);
+    this.followSprite.position.copyFrom(this.points[0]);
     this.followSprite.width = this.size * FOLLOW_R;
     this.followSprite.height = this.size * FOLLOW_R;
     this.followSprite.visible = false;
@@ -110,54 +121,50 @@ export class Slider {
       this.graphics,
       this.circleSprite,
       this.followSprite,
-      ...this.numberSprites
+      ...this.numberSprites,
+      this.approachSprite
     );
   }
 
   setVisible(visible: boolean) {
     this.graphics.visible = visible;
     this.circleSprite.visible = visible;
+    this.approachSprite.visible = visible;
     this.followSprite.visible = visible;
     this.numberSprites.forEach(s => (s.visible = visible));
   }
 
-  update(time: number) {
-    let start = 0,
-      end = 1;
+  calcIndices(time: number) {
+    const outTime = this.t + this.sliderTime * (this.slides - 1);
+    const endTime = this.t + this.sliderTime * this.slides;
+
+    // Slide in: [t - fade, t] -> [0, 1]
     if (time < this.t) {
-      // Slide in: [t - fade, t] -> [0, 1]
-      end = clamp(lerp(time, this.t - this.fadeTime, this.t, 0, 1), 0, 1);
-    } else if (time < this.t + this.sliderTime * (this.slides - 1)) {
-      // Full slider
-    } else if (time < this.t + this.sliderTime * this.slides) {
-      // [t + sliderTime * (slides - 1), t + sliderTime * slides] -> [0, 1]
-      if (this.slides % 2)
-        start = clamp(
-          lerp(
-            time,
-            this.t + this.sliderTime * (this.slides - 1),
-            this.t + this.sliderTime * this.slides,
-            0,
-            1
-          ),
-          0,
-          1
-        );
-      else
-        end = clamp(
-          lerp(
-            time,
-            this.t + this.sliderTime * (this.slides - 1),
-            this.t + this.sliderTime * this.slides,
-            1,
-            0
-          ),
-          0,
-          1
-        );
-    } else {
-      end = 0;
+      return [0, clerp01(time, this.t - this.fadeTime, this.t)];
     }
+
+    // Full slider
+    if (time < outTime) {
+      return [0, 1];
+    }
+
+    // Slide out: [t + sliderTime * (slides - 1), t + sliderTime * slides] -> [0, 1]
+    if (time < endTime) {
+      // Odd number of slides: start moves in
+      if (this.slides % 2) {
+        return [clerp01(time, outTime, endTime), 1];
+      }
+
+      // Even slides: end moves in
+      return [0, 1 - clerp01(time, outTime, endTime)];
+    }
+
+    // Slider finished
+    return [0, 0];
+  }
+
+  updateSlider(time: number) {
+    const [start, end] = this.calcIndices(time);
 
     // TODO: change to curve pointAt
     const startIndex = Math.floor(this.curve.length * start);
@@ -169,35 +176,82 @@ export class Slider {
     for (let i = startIndex + 1; i < endIndex; i++) {
       this.graphics.lineTo(this.curve[i].x, this.curve[i].y);
     }
+  }
 
-    const alpha = clamp(
-      lerp(time, this.t - this.fadeTime, this.t - this.fullTime, 0, 1),
-      0,
-      1
-    );
-    this.circleSprite.alpha = alpha;
-    this.numberSprites.forEach(s => (s.alpha = alpha));
-
-    // Calculate slider ball position
-    if (time > this.t && time < this.t + this.sliderTime * this.slides) {
-      const slide = (time - this.t) / this.sliderTime;
-      const forwards = Math.floor(slide) % 2;
-      const delta = forwards ? 1 - (slide % 1) : slide % 1;
-
-      const curveIndex = Math.floor(this.curve.length * delta);
-      this.circleSprite.position.set(
-        this.curve[curveIndex].x,
-        this.curve[curveIndex].y
-      );
-      this.followSprite.alpha = 1;
-      this.followSprite.position.set(
-        this.curve[curveIndex].x,
-        this.curve[curveIndex].y
-      );
-      this.numberSprites.forEach(s =>
-        s.position.set(this.curve[curveIndex].x, this.curve[curveIndex].y)
-      );
+  update(time: number) {
+    // Not visible yet
+    if (time < this.t - this.fadeTime) {
+      return;
     }
+
+    this.updateSlider(time);
+
+    // Fade in
+    if (time < this.t) {
+      const alpha = clerp01(
+        time,
+        this.t - this.fadeTime,
+        this.t - this.fullTime
+      );
+
+      // Hit circle
+      this.circleSprite.alpha = alpha;
+      this.approachSprite.alpha = alpha;
+      this.numberSprites.forEach(s => (s.alpha = alpha));
+
+      // Update approach circle sizes
+      const size =
+        this.size * clerp(time, this.t - this.fadeTime, this.t, APPROACH_R, 1);
+      this.approachSprite.scale.set(size / this.approachSprite.texture.width);
+      return;
+    }
+
+    const endTime = this.t + this.sliderTime * this.slides;
+
+    // Slider active
+    if (time < endTime) {
+      // Update slider ball
+      const slide = (time - this.t) / this.sliderTime;
+      const forwards = Math.floor(slide) % 2; // Sliding direction
+      const delta = forwards ? 1 - (slide % 1) : slide % 1;
+      // TODO: use pointAt
+      const curveIndex = Math.floor(this.curve.length * delta);
+      const position = this.curve[curveIndex];
+
+      const alpha =
+        1 - clerp01(time - this.t, 0, this.fadeTime - this.fullTime);
+
+      // Fade out hit circle, combo number, approach circle
+      this.circleSprite.alpha = alpha;
+      this.circleSprite.position.copyFrom(position);
+
+      this.numberSprites.forEach(s => {
+        s.alpha = alpha;
+        s.position.copyFrom(position);
+      });
+
+      this.approachSprite.alpha = alpha;
+      this.circleSprite.position.copyFrom(position);
+
+      // Fade in follow circle
+      this.followSprite.alpha = clerp01(time - this.t, 0, 150);
+      this.followSprite.position.copyFrom(position);
+      // Expand follow circle
+      const size = this.size * clerp(time - this.t, 0, 150, 1, FOLLOW_R);
+      this.followSprite.scale.set(size / this.followSprite.texture.width);
+
+      return;
+    }
+
+    // Fade out everything
+    const alpha = 1 - clerp01(time - endTime, 0, 100);
+
+    this.graphics.alpha = alpha;
+    this.circleSprite.alpha = alpha;
+    this.followSprite.alpha = alpha;
+    this.numberSprites.forEach(s => (s.alpha = alpha));
+    this.approachSprite.alpha = alpha;
+    this.followSprite.alpha = alpha;
   }
 
   click(position: PIXI.Point) {
@@ -206,4 +260,20 @@ export class Slider {
     const r = this.size / 2;
     return dx * dx + dy * dy < r * r;
   }
+}
+
+// Clamp + lerp to [0, 1]
+function clerp01(val: number, left: number, right: number) {
+  return clamp(lerp(val, left, right, 0, 1), 0, 1);
+}
+
+// Clamp + lerp
+function clerp(val: number, l1: number, r1: number, l2: number, r2: number) {
+  const l = lerp(val, l1, r1, l2, r2);
+
+  if (l2 < r2) {
+    return clamp(l, l2, r2);
+  }
+
+  return clamp(l, r2, l2);
 }

@@ -16,7 +16,9 @@ const assets = {
   default6: 'assets/default-6.png',
   default7: 'assets/default-7.png',
   default8: 'assets/default-8.png',
-  default9: 'assets/default-9.png'
+  default9: 'assets/default-9.png',
+  sliderb: 'assets/sliderb.png',
+  sliderFollowCircle: 'assets/sliderfollowcircle.png'
 };
 
 type Resources = Record<keyof typeof assets, PIXI.LoaderResource>;

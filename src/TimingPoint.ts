@@ -1,3 +1,5 @@
+import { clamp } from './util';
+
 enum SampleSet {
   DEFAULT = 0,
   NORMAL = 1,
@@ -13,7 +15,7 @@ enum Effects {
 export default class TimingPoint {
   time: number;
   beatLength: number;
-  velocity: number; // negative inverse slider velocity multiplier, as a percentage
+  mult: number; // inverse slider velocity multiplier
   meter: number;
   sampleSet: SampleSet;
   sampleIndex: number;
@@ -39,9 +41,11 @@ export default class TimingPoint {
     const beatLength = parseFloat(tokens[1]);
     if (beatLength > 0) {
       this.beatLength = beatLength;
+      this.mult = 1;
       this.inherited = false;
     } else {
-      this.velocity = beatLength;
+      this.beatLength = beatLength; // TODO: remove
+      this.mult = clamp(-beatLength, 10, 1000) / 100;
       this.inherited = true;
     }
   }

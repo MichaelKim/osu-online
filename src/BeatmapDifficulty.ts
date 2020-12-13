@@ -3,6 +3,18 @@ import HitCircle from './HitCircle';
 import { Skin } from './Skin';
 import { arToMS, odToMS } from './timing';
 import * as AudioLoader from './AudioLoader';
+import { Slider } from './Slider';
+import TimingPoint from './TimingPoint';
+
+type HitObjects = HitCircle | Slider;
+
+enum ObjectTypes {
+  HIT_CIRCLE = 1 << 0,
+  SLIDER = 1 << 1,
+  NEW_COMBO = 1 << 2,
+  SPINNER = 1 << 3,
+  COMBO_SKIP = (1 << 4) | (1 << 5) | (1 << 6)
+}
 
 export default class BeatmapDifficulty {
   filepath: string; // Path to .osu file
@@ -16,8 +28,10 @@ export default class BeatmapDifficulty {
   cs: number;
   od: number;
   ar: number;
+  sliderMultiplier: number;
 
-  notes: HitCircle[] = [];
+  timingPoints: TimingPoint[] = [];
+  notes: HitObjects[] = [];
 
   // Computed
   fadeTime: number; // Starts to fade in
@@ -83,10 +97,20 @@ export default class BeatmapDifficulty {
               case 'ApproachRate':
                 this.ar = parseFloat(value);
                 break;
+              case 'SliderMultiplier':
+                this.sliderMultiplier = parseFloat(value);
+                break;
             }
           }
           break;
+        case '[TimingPoints]':
+          while (i < file.length && file[i][0] !== '[') {
+            const tokens = file[i++].split(',');
+            this.timingPoints.push(new TimingPoint(tokens));
+          }
+          break;
         case '[HitObjects]':
+          // Parse hit objects later
           while (i < file.length && file[i][0] !== '[') {
             i++;
           }
@@ -106,6 +130,15 @@ export default class BeatmapDifficulty {
     let comboNumber = 1;
     let comboIndex = 0;
 
+    let timingIndex = 1;
+    let baseBeatLength = 1,
+      beatLength = 1;
+    if (this.timingPoints[0].inherited) {
+      beatLength = baseBeatLength * this.timingPoints[0].mult;
+    } else {
+      baseBeatLength = beatLength = this.timingPoints[0].beatLength;
+    }
+
     const file = await this.readFile();
 
     for (
@@ -120,18 +153,42 @@ export default class BeatmapDifficulty {
       }
 
       const type = parseInt(tokens[3]);
-      if (type & (1 << 2)) {
+
+      // Calculate combo number
+      if (type & ObjectTypes.NEW_COMBO) {
         // New combo
         comboNumber = 1;
 
-        const skip = ((type & (1 << 4)) | (1 << 5) | (1 << 6)) >> 4;
+        const skip = (type & ObjectTypes.COMBO_SKIP) >> 4;
         comboIndex += skip;
       } else {
         comboNumber++;
       }
-      this.notes.push(new HitCircle(tokens, comboNumber, comboIndex));
 
-      i++;
+      if (type & ObjectTypes.HIT_CIRCLE) {
+        this.notes.push(new HitCircle(tokens, comboNumber, comboIndex));
+      } else if (type & ObjectTypes.SLIDER) {
+        const slider = new Slider(tokens, comboNumber, comboIndex);
+
+        // Calculate beat length
+        while (
+          timingIndex < this.timingPoints.length &&
+          this.timingPoints[timingIndex].time < slider.t
+        ) {
+          timingIndex++;
+        }
+        if (this.timingPoints[timingIndex].inherited) {
+          beatLength = baseBeatLength * this.timingPoints[timingIndex].mult;
+        } else {
+          baseBeatLength = beatLength = this.timingPoints[timingIndex]
+            .beatLength;
+        }
+
+        slider.sliderTime =
+          (beatLength * (slider.length / this.sliderMultiplier)) / 100;
+
+        this.notes.push(slider);
+      }
     }
   }
 
@@ -150,13 +207,13 @@ export default class BeatmapDifficulty {
 
     await this.parseHitObjects();
     await this.loadMusic();
-    this.notes.forEach(n =>
-      n.load(skin, {
-        ar: this.ar,
-        cs: this.cs,
-        od: this.od
-      })
-    );
+    const stats = {
+      ar: this.ar,
+      cs: this.cs,
+      od: this.od,
+      sliderMultiplier: this.sliderMultiplier
+    };
+    this.notes.forEach(n => n.load(skin, stats));
   }
 
   play() {
@@ -174,10 +231,7 @@ export default class BeatmapDifficulty {
     }
 
     // Check for missed notes
-    if (
-      this.left < this.right &&
-      time > this.notes[this.left].t + this.hitWindows[50]
-    ) {
+    if (this.left < this.right && time > this.notes[this.left].t + 1000) {
       this.notes[this.left].setVisible(false);
       this.left++;
       console.log('miss');

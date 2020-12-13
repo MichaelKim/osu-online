@@ -1,10 +1,12 @@
 import * as PIXI from 'pixi.js';
 import getCurve from './Bezier';
-import { Stats } from './HitObjects';
+import { getNumberSprites, Stats } from './HitObjects';
 import { HitSound } from './HitObjects';
 import { Skin } from './Skin';
 import { arToMS, csToSize } from './timing';
 import { clamp, lerp } from './util';
+
+const FOLLOW_R = 2.4;
 
 enum CurveTypes {
   BEZIER = 'B',
@@ -35,6 +37,8 @@ export class Slider {
   graphics: PIXI.Graphics;
   curve: PIXI.Point[];
   circleSprite: PIXI.Sprite;
+  followSprite: PIXI.Sprite;
+  numberSprites: PIXI.Sprite[];
 
   constructor(tokens: string[], comboNumber: number, comboIndex: number) {
     // x,y,time,type,hitSound,curveType|curvePoints,slides,length,edgeSounds,edgeSets,hitSample
@@ -85,15 +89,36 @@ export class Slider {
     this.circleSprite.height = this.size;
     this.circleSprite.visible = false;
     this.circleSprite.alpha = 0;
+
+    this.followSprite = new PIXI.Sprite(skin.sliderFollowCircle);
+    this.followSprite.position.set(this.points[0].x, this.points[0].y);
+    this.followSprite.width = this.size * FOLLOW_R;
+    this.followSprite.height = this.size * FOLLOW_R;
+    this.followSprite.visible = false;
+    this.followSprite.alpha = 0;
+
+    this.numberSprites = getNumberSprites(
+      skin,
+      this.comboNumber,
+      this.points[0].x,
+      this.points[0].y
+    );
   }
 
   addToStage(stage: PIXI.Container) {
-    stage.addChild(this.circleSprite, this.graphics);
+    stage.addChild(
+      this.graphics,
+      this.circleSprite,
+      this.followSprite,
+      ...this.numberSprites
+    );
   }
 
   setVisible(visible: boolean) {
-    this.circleSprite.visible = visible;
     this.graphics.visible = visible;
+    this.circleSprite.visible = visible;
+    this.followSprite.visible = visible;
+    this.numberSprites.forEach(s => (s.visible = visible));
   }
 
   update(time: number) {
@@ -151,6 +176,7 @@ export class Slider {
       1
     );
     this.circleSprite.alpha = alpha;
+    this.numberSprites.forEach(s => (s.alpha = alpha));
 
     // Calculate slider ball position
     if (time > this.t && time < this.t + this.sliderTime * this.slides) {
@@ -162,6 +188,14 @@ export class Slider {
       this.circleSprite.position.set(
         this.curve[curveIndex].x,
         this.curve[curveIndex].y
+      );
+      this.followSprite.alpha = 1;
+      this.followSprite.position.set(
+        this.curve[curveIndex].x,
+        this.curve[curveIndex].y
+      );
+      this.numberSprites.forEach(s =>
+        s.position.set(this.curve[curveIndex].x, this.curve[curveIndex].y)
       );
     }
   }

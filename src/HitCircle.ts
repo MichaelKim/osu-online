@@ -1,8 +1,8 @@
 import * as PIXI from 'pixi.js';
 import { clamp, lerp } from './util';
 import { Skin } from './Skin';
-import { arToMS, odToMS, csToSize } from './timing';
-import { HitSound, Stats } from './HitObjects';
+import { arToMS, csToSize } from './timing';
+import { getNumberSprites, HitSound, Stats } from './HitObjects';
 
 const APPROACH_R = 2.5;
 
@@ -57,24 +57,12 @@ export default class HitCircle {
     this.approachSprite.visible = false;
     this.approachSprite.alpha = 0;
 
-    this.numberSprites = [];
-    const length = Math.floor(Math.log10(this.comboNumber) + 1);
-    // HitCircleOverlap: 150 (skin.ini)
-    // Downscale numbers by 0.8x
-    const width = (skin.numbers[0].width - skin.hitCircleOverlap) * 0.8;
-    let digitX = this.x + ((length - 1) * width) / 2;
-    let n = this.comboNumber;
-    while (n > 0) {
-      const sprite = new PIXI.Sprite(skin.numbers[n % 10]);
-      sprite.scale.set(0.8);
-      sprite.position.set(digitX, this.y);
-      sprite.visible = false;
-      sprite.alpha = 0;
-      this.numberSprites.push(sprite);
-
-      digitX -= width;
-      n = Math.floor(n / 10);
-    }
+    this.numberSprites = getNumberSprites(
+      skin,
+      this.comboNumber,
+      this.x,
+      this.y
+    );
   }
 
   addToStage(stage: PIXI.Container) {

@@ -67,6 +67,10 @@ export class Skin {
   // Numbers
   numbers: Tuple<PIXI.Texture, 10>;
 
+  // Slider
+  sliderb: PIXI.Texture;
+  sliderFollowCircle: PIXI.Texture;
+
   constructor(filepath: string) {
     this.filepath = filepath;
   }
@@ -125,11 +129,15 @@ export class Skin {
             resources.default8.texture,
             resources.default9.texture
           ];
+          this.sliderb = resources.sliderb.texture;
+          this.sliderFollowCircle = resources.sliderFollowCircle.texture;
 
           // Center textures
           this.cursor.defaultAnchor.set(0.5);
           this.approach.defaultAnchor.set(0.5);
           this.numbers.forEach(n => n.defaultAnchor.set(0.5));
+          this.sliderb.defaultAnchor.set(0.5);
+          this.sliderFollowCircle.defaultAnchor.set(0.5);
 
           resolve();
         });

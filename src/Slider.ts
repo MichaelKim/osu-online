@@ -137,9 +137,6 @@ export class Slider {
     // TODO: change to curve pointAt
     const startIndex = Math.floor(this.curve.length * start);
     const endIndex = Math.floor(this.curve.length * end);
-    if (this.t === 2675) {
-      console.log(start, end);
-    }
 
     this.graphics.clear();
     this.graphics.lineStyle(5, 0xffffff);
@@ -153,12 +150,20 @@ export class Slider {
       0,
       1
     );
-
-    this.circleSprite.position.set(
-      this.curve[startIndex].x,
-      this.curve[startIndex].y
-    );
     this.circleSprite.alpha = alpha;
+
+    // Calculate slider ball position
+    if (time > this.t && time < this.t + this.sliderTime * this.slides) {
+      const slide = (time - this.t) / this.sliderTime;
+      const forwards = Math.floor(slide) % 2;
+      const delta = forwards ? 1 - (slide % 1) : slide % 1;
+
+      const curveIndex = Math.floor(this.curve.length * delta);
+      this.circleSprite.position.set(
+        this.curve[curveIndex].x,
+        this.curve[curveIndex].y
+      );
+    }
   }
 
   click(position: PIXI.Point) {

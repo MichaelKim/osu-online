@@ -1,1 +1,8 @@
-- restrict playfield to 4:3
+- hit sounds
+- sliders
+  - reverse arrow
+  - draw body
+  - slider ticks
+- spinners
+- trails
+- stacking

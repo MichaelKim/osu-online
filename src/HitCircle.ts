@@ -58,7 +58,8 @@ export default class HitCircle {
       skin,
       this.comboNumber,
       this.x,
-      this.y
+      this.y,
+      this.size
     );
   }
 

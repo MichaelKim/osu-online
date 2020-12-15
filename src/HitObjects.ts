@@ -43,17 +43,19 @@ export function getNumberSprites(
   skin: Skin,
   number: number,
   x: number,
-  y: number
+  y: number,
+  circleSize: number
 ) {
   const sprites: PIXI.Sprite[] = [];
   const length = Math.floor(Math.log10(number) + 1);
 
-  // Downscale numbers by 0.8x
-  const width = (skin.numbers[0].width - skin.hitCircleOverlap) * 0.8;
+  // TODO: assuming each digit has the same size
+  const scale = circleSize / 160;
+  const width = (skin.numbers[0].width - skin.hitCircleOverlap) * scale;
   let digitX = x + ((length - 1) * width) / 2;
   while (number > 0) {
     const sprite = new PIXI.Sprite(skin.numbers[number % 10]);
-    sprite.scale.set(0.8);
+    sprite.scale.set(scale);
     sprite.position.set(digitX, y);
     sprite.visible = false;
     sprite.alpha = 0;
@@ -62,14 +64,6 @@ export function getNumberSprites(
     digitX -= width;
     number = Math.floor(number / 10);
   }
-
-  // TODO: do rendertextures automatically scale?
-  // const texture = PIXI.RenderTexture.create({
-  //   width: width * sprites.length,
-  //   height: sprites[0].height
-  // });
-  // texture.defaultAnchor.set(0.5);
-  // sprites.forEach(s => renderer.render(s, texture, false));
 
   return sprites;
 }

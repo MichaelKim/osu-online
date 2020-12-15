@@ -158,6 +158,8 @@ export default class BeatmapDifficulty {
         comboNumber++;
       }
 
+      // TODO: handle stacking
+
       if (type & ObjectTypes.HIT_CIRCLE) {
         this.notes.push(new HitCircle(tokens, comboNumber, comboIndex));
       } else if (type & ObjectTypes.SLIDER) {

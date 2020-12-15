@@ -112,7 +112,8 @@ export class Slider {
       skin,
       this.comboNumber,
       this.points[0].x,
-      this.points[0].y
+      this.points[0].y,
+      this.size
     );
   }
 

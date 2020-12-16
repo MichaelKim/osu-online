@@ -6,3 +6,4 @@
 - spinners
 - trails
 - stacking
+- hit object colors

@@ -2,7 +2,7 @@ import * as PIXI from 'pixi.js';
 
 // Static class that handles audio loading
 
-interface AudioResource extends PIXI.LoaderResource {
+export interface AudioResource extends PIXI.LoaderResource {
   data: HTMLAudioElement;
 }
 

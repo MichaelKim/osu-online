@@ -2,9 +2,11 @@ import * as PIXI from 'pixi.js';
 import getCurve from './Bezier';
 import {
   APPROACH_R,
+  FADE_OUT_MS,
   FOLLOW_R,
   getNumberSprites,
   initSprite,
+  ObjectTypes,
   Stats
 } from './HitObjects';
 import { HitSound } from './HitObjects';
@@ -20,7 +22,11 @@ enum CurveTypes {
 }
 
 export class Slider {
+  type = ObjectTypes.SLIDER;
+
   // Metadata
+  x: number; // Position of the hit circle (initially at points[0])
+  y: number;
   points: PIXI.Point[];
   t: number;
   hitSound: HitSound;
@@ -45,12 +51,13 @@ export class Slider {
   numberSprites: PIXI.Sprite[];
   followSprite: PIXI.Sprite;
 
-  active: boolean = false; // Is the slider being followed?
+  finished = 0;
+  active = false; // Is the slider being followed?
 
   constructor(tokens: string[], comboNumber: number, comboIndex: number) {
     // x,y,time,type,hitSound,curveType|curvePoints,slides,length,edgeSounds,edgeSets,hitSample
-    const x = parseFloat(tokens[0]);
-    const y = parseFloat(tokens[1]);
+    this.x = parseFloat(tokens[0]);
+    this.y = parseFloat(tokens[1]);
     this.t = parseInt(tokens[2]);
     this.hitSound = parseInt(tokens[4]);
 
@@ -63,7 +70,7 @@ export class Slider {
         y: parseFloat(y)
       };
     });
-    this.points = [{ x, y }, ...otherPoints].map(
+    this.points = [{ x: this.x, y: this.y }, ...otherPoints].map(
       ({ x, y }) => new PIXI.Point(x, y)
     );
 
@@ -90,29 +97,24 @@ export class Slider {
     // Calculate curve points
     this.curve = getCurve(this.points, this.length);
 
-    this.circleSprite = initSprite(
-      skin.circle,
-      this.points[0].x,
-      this.points[0].y,
-      this.size
-    );
+    this.circleSprite = initSprite(skin.circle, this.x, this.y, this.size);
     this.approachSprite = initSprite(
       skin.approach,
-      this.points[0].x,
-      this.points[0].y,
+      this.x,
+      this.y,
       this.size * APPROACH_R
     );
     this.followSprite = initSprite(
       skin.sliderFollowCircle,
-      this.points[0].x,
-      this.points[0].y,
+      this.x,
+      this.y,
       this.size * FOLLOW_R
     );
     this.numberSprites = getNumberSprites(
       skin,
       this.comboNumber,
-      this.points[0].x,
-      this.points[0].y,
+      this.x,
+      this.y,
       this.size
     );
   }
@@ -180,9 +182,22 @@ export class Slider {
   }
 
   update(time: number) {
+    if (this.finished > 0) {
+      // Fade out everything
+      const alpha = 1 - clerp01(time - this.finished, 0, FADE_OUT_MS);
+
+      this.graphics.alpha = alpha;
+      this.circleSprite.alpha = alpha;
+      this.followSprite.alpha = alpha;
+      this.numberSprites.forEach(s => (s.alpha = alpha));
+      this.approachSprite.alpha = alpha;
+      this.followSprite.alpha = alpha;
+      return time > this.finished + FADE_OUT_MS;
+    }
+
     // Not visible yet
     if (time < this.t - this.fadeTime) {
-      return;
+      return false;
     }
 
     this.updateSlider(time);
@@ -204,61 +219,59 @@ export class Slider {
       const size =
         this.size * clerp(time, this.t - this.fadeTime, this.t, APPROACH_R, 1);
       this.approachSprite.scale.set(size / this.approachSprite.texture.width);
-      return;
+      return false;
     }
 
     const endTime = this.t + this.sliderTime * this.slides;
 
     // Slider active
-    if (time < endTime) {
-      // Update slider ball
-      const slide = (time - this.t) / this.sliderTime;
-      const forwards = Math.floor(slide) % 2; // Sliding direction
-      const delta = forwards ? 1 - (slide % 1) : slide % 1;
-      // TODO: use pointAt
-      const curveIndex = Math.floor(this.curve.length * delta);
-      const position = this.curve[curveIndex];
-
-      const alpha =
-        1 - clerp01(time - this.t, 0, this.fadeTime - this.fullTime);
-
-      // Fade out hit circle, combo number, approach circle
-      this.circleSprite.alpha = alpha;
-      this.circleSprite.position.copyFrom(position);
-
-      this.numberSprites.forEach(s => {
-        s.alpha = alpha;
-        s.position.copyFrom(position);
-      });
-
-      this.approachSprite.alpha = alpha;
-      this.approachSprite.position.copyFrom(position);
-
-      // Fade in follow circle
-      this.followSprite.alpha = clerp01(time - this.t, 0, 150);
-      this.followSprite.position.copyFrom(position);
-      // Expand follow circle
-      const size = this.size * clerp(time - this.t, 0, 150, 1, FOLLOW_R);
-      this.followSprite.scale.set(size / this.followSprite.texture.width);
-
-      return;
+    // Check if slider is finished
+    if (this.active && time > endTime) {
+      this.finished = time;
+      return false;
     }
 
-    // Fade out everything
-    const alpha = 1 - clerp01(time - endTime, 0, 100);
+    // Update slider ball
+    const slide = (time - this.t) / this.sliderTime;
+    const forwards = Math.floor(slide) % 2; // Sliding direction
+    const delta = forwards ? 1 - (slide % 1) : slide % 1;
+    // TODO: use pointAt
+    const curveIndex = Math.floor(this.curve.length * delta);
+    const position = this.curve[curveIndex];
 
-    this.graphics.alpha = alpha;
+    const alpha = 1 - clerp01(time - this.t, 0, this.fadeTime - this.fullTime);
+
+    // Fade out hit circle, combo number, approach circle
     this.circleSprite.alpha = alpha;
-    this.followSprite.alpha = alpha;
-    this.numberSprites.forEach(s => (s.alpha = alpha));
+    this.circleSprite.position.copyFrom(position);
+
+    this.numberSprites.forEach(s => {
+      s.alpha = alpha;
+      s.position.copyFrom(position);
+    });
+
     this.approachSprite.alpha = alpha;
-    this.followSprite.alpha = alpha;
+    this.approachSprite.position.copyFrom(position);
+
+    // Fade in follow circle
+    this.followSprite.alpha = clerp01(time - this.t, 0, 150);
+    this.followSprite.position.copyFrom(position);
+    // Expand follow circle
+    const size = this.size * clerp(time - this.t, 0, 150, 1, FOLLOW_R);
+    this.followSprite.scale.set(size / this.followSprite.texture.width);
+
+    this.x = position.x;
+    this.y = position.y;
+
+    return false;
   }
 
-  click(position: PIXI.Point) {
-    const dx = position.x - this.points[0].x;
-    const dy = position.y - this.points[0].y;
-    const r = this.size / 2;
+  hit(position: PIXI.Point) {
+    const dx = position.x - this.x;
+    const dy = position.y - this.y;
+    // Once active, cursor needs to stay within follow circle
+    const scale = this.active ? FOLLOW_R : 1;
+    const r = (scale * this.size) / 2;
     return dx * dx + dy * dy < r * r;
   }
 }

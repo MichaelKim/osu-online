@@ -74,7 +74,7 @@ async function init() {
   const cursor = loadCursor(skin.cursor);
 
   const beatmap = new BeatmapDifficulty(
-    'beatmaps/LeaF - Wizdomiot (Asahina Momoko) [Hard].osu'
+    'beatmaps/Jesus-P - Death Should Not Have Taken Thee! (cheesiest) [Beginner].osu'
   );
 
   await beatmap.preload();
@@ -85,12 +85,21 @@ async function init() {
   }
   game.play(beatmap);
 
+  let numMouseDown = 0;
+
   window.addEventListener('mousedown', () => {
+    numMouseDown++;
     const local = game.notesStage.toLocal(cursor.position, null, null, true);
-    beatmap.click(game.time, local);
+    beatmap.mousedown(game.time, local);
   });
 
-  window.addEventListener('mouseup', () => {});
+  window.addEventListener('mouseup', () => {
+    numMouseDown--;
+    if (numMouseDown === 0) {
+      const local = game.notesStage.toLocal(cursor.position, null, null, true);
+      beatmap.mouseup(game.time, local);
+    }
+  });
 
   window.addEventListener(
     'keydown',
@@ -102,7 +111,7 @@ async function init() {
           null,
           true
         );
-        beatmap.click(game.time, local);
+        beatmap.mousedown(game.time, local);
       }
     },
     false

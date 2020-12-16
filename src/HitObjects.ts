@@ -73,3 +73,6 @@ export const APPROACH_R = 2.5;
 
 // Follow circle size multipler
 export const FOLLOW_R = 2.4;
+
+// Duration for fading out hit objects
+export const FADE_OUT_MS = 100;

@@ -40,7 +40,6 @@ const OD10_100 = 60;
 const OD0_50 = 200;
 const OD10_50 = 100;
 
-// TODO: add miss window
 export function odToMS(od: number) {
   return {
     300: lerp(od, 0, 10, OD0_300, OD10_300),

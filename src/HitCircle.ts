@@ -4,13 +4,17 @@ import { Skin } from './Skin';
 import { arToMS, csToSize } from './timing';
 import {
   APPROACH_R,
+  FADE_OUT_MS,
   getNumberSprites,
   HitSound,
   initSprite,
+  ObjectTypes,
   Stats
 } from './HitObjects';
 
 export default class HitCircle {
+  type = ObjectTypes.HIT_CIRCLE;
+
   // Metadata
   x: number;
   y: number;
@@ -29,6 +33,8 @@ export default class HitCircle {
   circleSprite: PIXI.Sprite;
   approachSprite: PIXI.Sprite;
   numberSprites: PIXI.Sprite[];
+
+  finished = 0;
 
   constructor(tokens: string[], comboNumber: number, comboIndex: number) {
     // x,y,time,type,hitSound,objectParams,hitSample
@@ -78,9 +84,19 @@ export default class HitCircle {
   }
 
   update(time: number) {
+    if (this.finished > 0) {
+      // Either hit or missed: Fade out everything
+      const alpha = 1 - clerp01(time - this.finished, 0, FADE_OUT_MS);
+
+      this.circleSprite.alpha = alpha;
+      this.numberSprites.forEach(s => (s.alpha = alpha));
+      this.approachSprite.alpha = alpha;
+      return time > this.finished + FADE_OUT_MS;
+    }
+
     // Not visible yet
     if (time < this.t - this.fadeTime) {
-      return;
+      return false;
     }
 
     // Fade in
@@ -101,18 +117,20 @@ export default class HitCircle {
       const size =
         this.size * clerp(time, this.t - this.fadeTime, this.t, APPROACH_R, 1);
       this.approachSprite.scale.set(size / this.approachSprite.texture.width);
-      return;
+      return false;
     }
 
-    // Fade out everything
-    const alpha = 1 - clerp01(time - this.t, 0, 100);
-
-    this.circleSprite.alpha = alpha;
-    this.numberSprites.forEach(s => (s.alpha = alpha));
-    this.approachSprite.alpha = alpha;
+    // Waiting for hit
+    this.circleSprite.alpha = 1;
+    this.approachSprite.alpha = 1;
+    this.numberSprites.forEach(s => (s.alpha = 1));
+    this.approachSprite.scale.set(
+      this.size / this.approachSprite.texture.width
+    );
+    return false;
   }
 
-  click(position: PIXI.Point) {
+  hit(position: PIXI.Point) {
     const dx = position.x - this.x;
     const dy = position.y - this.y;
     const r = this.size / 2;

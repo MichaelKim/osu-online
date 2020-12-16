@@ -7,7 +7,7 @@ import { Slider } from './Slider';
 import TimingPoint from './TimingPoint';
 import { ObjectTypes } from './HitObjects';
 
-type HitObjects = HitCircle | Slider;
+type HitObject = HitCircle | Slider;
 
 export default class BeatmapDifficulty {
   filepath: string; // Path to .osu file
@@ -20,11 +20,11 @@ export default class BeatmapDifficulty {
   // difficulty
   cs: number;
   od: number;
-  ar: number;
+  ar: number = 5;
   sliderMultiplier: number;
 
   timingPoints: TimingPoint[] = [];
-  notes: HitObjects[] = [];
+  notes: HitObject[] = [];
 
   // Computed
   fadeTime: number; // Starts to fade in
@@ -120,7 +120,7 @@ export default class BeatmapDifficulty {
   }
 
   async parseHitObjects() {
-    let comboNumber = 1;
+    let comboNumber = 0;
     let comboIndex = 0;
 
     let timingIndex = 1;
@@ -226,30 +226,81 @@ export default class BeatmapDifficulty {
     }
 
     // Check for missed notes
-    if (this.left < this.right && time > this.notes[this.left].t + 1000) {
-      this.notes[this.left].setVisible(false);
-      this.left++;
-      console.log('miss');
+    if (this.left < this.right) {
+      const object = this.notes[this.left];
+      // hit object still ongoing, check timing
+      if (object.finished === 0) {
+        switch (object.type) {
+          case ObjectTypes.HIT_CIRCLE:
+            if (time > object.t + this.hitWindows[50]) {
+              // missed
+              object.finished = time;
+              console.log('circle miss');
+            }
+            break;
+          case ObjectTypes.SLIDER:
+            const slider = object as Slider;
+            if (!slider.active && time > slider.t + this.hitWindows[50]) {
+              // missed
+              object.finished = time;
+              console.log('slider miss');
+            }
+            break;
+        }
+      }
     }
 
-    // Update opacity of fading notes
-    for (let i = this.left; i < this.right; i++) {
+    // Update notes (opacity, size, position, etc.)
+    while (this.left < this.right && this.notes[this.left].update(time)) {
+      this.notes[this.left].setVisible(false);
+      this.left++;
+    }
+    for (let i = this.left + 1; i < this.right; i++) {
       this.notes[i].update(time);
     }
   }
 
-  click(time: number, position: PIXI.Point) {
+  getHitResult(time: number, object: HitObject) {
+    const dt = Math.abs(time - object.t);
+    if (dt <= this.hitWindows[300]) return 300;
+    if (dt <= this.hitWindows[100]) return 100;
+    if (dt <= this.hitWindows[50]) return 50;
+    return 0;
+  }
+
+  mousedown(time: number, position: PIXI.Point) {
     // Ignore if no notes are currently visible
-    if (this.left >= this.right) return false;
+    if (this.left >= this.right) return;
 
-    if (this.notes[this.left].click(position)) {
-      const dt = Math.abs(time - this.notes[this.left].t);
-      this.notes[this.left].setVisible(false);
-      this.left++;
+    const object = this.notes[this.left];
+    switch (object.type) {
+      case ObjectTypes.HIT_CIRCLE:
+        if (object.finished === 0 && object.hit(position)) {
+          object.finished = time;
 
-      if (dt <= this.hitWindows[300]) console.log('300');
-      else if (dt <= this.hitWindows[100]) console.log('100');
-      else console.log('50');
+          console.log('circle:', this.getHitResult(time, object));
+        }
+        break;
+      case ObjectTypes.SLIDER:
+        const slider = object as Slider;
+        if (!slider.active && slider.finished === 0 && slider.hit(position)) {
+          slider.active = true;
+
+          console.log('slider head:', this.getHitResult(time, slider));
+        }
+        break;
     }
+  }
+
+  mouseup(time: number, position: PIXI.Point) {
+    // Ignore if no notes are currently visible
+    if (this.left >= this.right) return;
+    // TODO: handle spinners
+    const object = this.notes[this.left];
+    if (object.type != ObjectTypes.SLIDER) return;
+
+    const slider = object as Slider;
+    if (!slider.active) return;
+    slider.active = false;
   }
 }

@@ -1,8 +1,13 @@
 // Locks pointer and enables fullscreen
-export function lockPointer(view: HTMLCanvasElement) {
-  document.documentElement.requestFullscreen().then(() => {
-    view.requestPointerLock();
+export async function lockPointer(view: HTMLCanvasElement) {
+  await document.documentElement.requestFullscreen();
+  // @ts-ignore: ignore mouse acceleration
+  const promise = view.requestPointerLock({
+    // TODO: apparently this only works in Chrome
+    unadjustedMovement: true
   });
+  // @ts-ignore
+  console.log(promise ? 'locked unadjusted' : 'locked normal');
 }
 
 // Display out of focus error

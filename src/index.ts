@@ -62,6 +62,8 @@ function loadCursor(texture: PIXI.Texture) {
   return cursor;
 }
 
+const cursorSensitivity = 2;
+
 async function init() {
   // loadTest();
   game.init();
@@ -69,7 +71,7 @@ async function init() {
   const cursor = loadCursor(skin.cursor);
 
   const beatmap = new BeatmapDifficulty(
-    'beatmaps/Jesus-P - Death Should Not Have Taken Thee! (cheesiest) [Beginner].osu'
+    'beatmaps/LeaF - Wizdomiot (Asahina Momoko) [Hard].osu'
   );
 
   await beatmap.preload();
@@ -99,9 +101,16 @@ async function init() {
   window.addEventListener('mousedown', handleMouseDown);
 
   window.addEventListener('mousemove', e => {
-    const { movementX, movementY } = e;
-    cursor.x = clamp(cursor.x + movementX, 0, game.renderer.screen.width);
-    cursor.y = clamp(cursor.y + movementY, 0, game.renderer.screen.height);
+    cursor.x = clamp(
+      cursor.x + e.movementX * cursorSensitivity,
+      0,
+      game.renderer.screen.width
+    );
+    cursor.y = clamp(
+      cursor.y + e.movementY * cursorSensitivity,
+      0,
+      game.renderer.screen.height
+    );
 
     const local = game.notesStage.toLocal(cursor.position, null, null, true);
     beatmap.mousemove(game.time, local);

@@ -25,6 +25,7 @@ export default class Game {
       autoDensity: true,
       view
     });
+    this.renderer.plugins.interaction.destroy();
 
     this.stage = new PIXI.Container();
 

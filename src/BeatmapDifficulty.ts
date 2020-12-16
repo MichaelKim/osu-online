@@ -292,6 +292,22 @@ export default class BeatmapDifficulty {
     }
   }
 
+  mousemove(time: number, position: PIXI.Point) {
+    // Ignore if no notes are currently visible
+    if (this.left >= this.right) return;
+    // TODO: handle spinners
+    const object = this.notes[this.left];
+    if (object.type != ObjectTypes.SLIDER) return;
+
+    const slider = object as Slider;
+    if (!slider.active || slider.finished > 0) return;
+    if (!slider.hit(position)) {
+      // Slider break
+      slider.active = false;
+      slider.finished = time;
+    }
+  }
+
   mouseup(time: number, position: PIXI.Point) {
     // Ignore if no notes are currently visible
     if (this.left >= this.right) return;
@@ -301,6 +317,9 @@ export default class BeatmapDifficulty {
 
     const slider = object as Slider;
     if (!slider.active) return;
+
+    // Active slider was let go
     slider.active = false;
+    slider.finished = time;
   }
 }

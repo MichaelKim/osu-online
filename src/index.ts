@@ -59,11 +59,6 @@ function loadCursor(texture: PIXI.Texture) {
     game.renderer.screen.height / 2
   );
   game.cursorStage.addChild(cursor);
-  window.addEventListener('mousemove', e => {
-    const { movementX, movementY } = e;
-    cursor.x = clamp(cursor.x + movementX, 0, game.renderer.screen.width);
-    cursor.y = clamp(cursor.y + movementY, 0, game.renderer.screen.height);
-  });
   return cursor;
 }
 
@@ -87,31 +82,48 @@ async function init() {
 
   let numMouseDown = 0;
 
-  window.addEventListener('mousedown', () => {
+  function handleMouseDown() {
     numMouseDown++;
     const local = game.notesStage.toLocal(cursor.position, null, null, true);
     beatmap.mousedown(game.time, local);
-  });
+  }
 
-  window.addEventListener('mouseup', () => {
+  function handleMouseUp() {
     numMouseDown--;
     if (numMouseDown === 0) {
       const local = game.notesStage.toLocal(cursor.position, null, null, true);
       beatmap.mouseup(game.time, local);
     }
+  }
+
+  window.addEventListener('mousedown', handleMouseDown);
+
+  window.addEventListener('mousemove', e => {
+    const { movementX, movementY } = e;
+    cursor.x = clamp(cursor.x + movementX, 0, game.renderer.screen.width);
+    cursor.y = clamp(cursor.y + movementY, 0, game.renderer.screen.height);
+
+    const local = game.notesStage.toLocal(cursor.position, null, null, true);
+    beatmap.mousemove(game.time, local);
   });
+
+  window.addEventListener('mouseup', handleMouseUp);
 
   window.addEventListener(
     'keydown',
     e => {
       if (e.key === '1' || e.key === '2') {
-        const local = game.notesStage.toLocal(
-          cursor.position,
-          null,
-          null,
-          true
-        );
-        beatmap.mousedown(game.time, local);
+        handleMouseDown();
+      }
+    },
+    false
+  );
+
+  window.addEventListener(
+    'keyup',
+    e => {
+      if (e.key === '1' || e.key === '2') {
+        handleMouseUp();
       }
     },
     false

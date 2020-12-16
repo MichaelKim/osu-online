@@ -186,11 +186,12 @@ export class Slider {
       // Fade out everything
       const alpha = 1 - clerp01(time - this.finished, 0, FADE_OUT_MS);
 
+      // TODO: fade these out starting from their own alphas
+      this.approachSprite.alpha = 0;
+      this.circleSprite.alpha = 0;
+      this.numberSprites.forEach(s => (s.alpha = 0));
+
       this.graphics.alpha = alpha;
-      this.circleSprite.alpha = alpha;
-      this.followSprite.alpha = alpha;
-      this.numberSprites.forEach(s => (s.alpha = alpha));
-      this.approachSprite.alpha = alpha;
       this.followSprite.alpha = alpha;
       return time > this.finished + FADE_OUT_MS;
     }

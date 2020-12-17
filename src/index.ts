@@ -121,7 +121,7 @@ async function init() {
   window.addEventListener(
     'keydown',
     e => {
-      if (e.key === '1' || e.key === '2') {
+      if (!e.repeat && (e.key === '1' || e.key === '2')) {
         handleMouseDown();
       }
     },

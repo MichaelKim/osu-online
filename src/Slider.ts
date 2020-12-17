@@ -12,6 +12,7 @@ import {
 import { HitSound } from './HitObjects';
 import { Skin } from './Skin';
 import { arToMS, csToSize } from './timing';
+import { SampleSet } from './TimingPoint';
 import { clerp, clerp01 } from './util';
 
 enum CurveTypes {
@@ -29,13 +30,15 @@ export class Slider {
   y: number;
   points: PIXI.Point[];
   t: number;
-  hitSound: HitSound;
+  hitSound = HitSound.NORMAL;
   sliderType: CurveTypes;
   slides: number;
   length: number;
 
+  // Beatmap
   comboIndex: number; // Combo color index
   comboNumber: number;
+  sampleSet: SampleSet; // Sample set override
 
   // Computed
   fadeTime: number; // Starts to fade in
@@ -59,7 +62,7 @@ export class Slider {
     this.x = parseFloat(tokens[0]);
     this.y = parseFloat(tokens[1]);
     this.t = parseInt(tokens[2]);
-    this.hitSound = parseInt(tokens[4]);
+    this.hitSound = parseInt(tokens[4]) || HitSound.NORMAL;
 
     const [curveType, ...curveTokens] = tokens[5].split('|');
     this.sliderType = curveType as CurveTypes;

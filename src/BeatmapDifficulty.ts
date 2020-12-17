@@ -4,7 +4,7 @@ import { Skin } from './Skin';
 import { arToMS, odToMS } from './timing';
 import * as AudioLoader from './AudioLoader';
 import { Slider } from './Slider';
-import TimingPoint from './TimingPoint';
+import TimingPoint, { SampleSet } from './TimingPoint';
 import { ObjectTypes } from './HitObjects';
 
 type HitObject = HitCircle | Slider;
@@ -16,6 +16,7 @@ export default class BeatmapDifficulty {
   version: number = 14;
   audioFilename: string;
   audioLeadIn: number = 0;
+  sampleSet = SampleSet.NORMAL;
 
   // difficulty
   cs: number;
@@ -35,9 +36,11 @@ export default class BeatmapDifficulty {
     50: number;
   };
 
+  // Gameplay
   left: number;
   right: number;
   music: HTMLAudioElement;
+  skin: Skin;
 
   constructor(filepath: string) {
     this.filepath = filepath;
@@ -74,6 +77,18 @@ export default class BeatmapDifficulty {
               case 'AudioLeadIn':
                 this.audioLeadIn = parseInt(value);
                 break;
+              case 'SampleSet':
+                switch (value) {
+                  case 'Normal':
+                    this.sampleSet = SampleSet.NORMAL;
+                    break;
+                  case 'Soft':
+                    this.sampleSet = SampleSet.SOFT;
+                    break;
+                  case 'Drum':
+                    this.sampleSet = SampleSet.DRUM;
+                    break;
+                }
             }
           }
           break;
@@ -158,25 +173,31 @@ export default class BeatmapDifficulty {
         comboNumber++;
       }
 
+      // Update latest point
+      const t = parseInt(tokens[2]);
+      while (
+        timingIndex < this.timingPoints.length &&
+        this.timingPoints[timingIndex].time < t
+      ) {
+        timingIndex++;
+      }
+      const timingPoint = this.timingPoints[timingIndex];
+
       // TODO: handle stacking
 
       if (type & ObjectTypes.HIT_CIRCLE) {
-        this.notes.push(new HitCircle(tokens, comboNumber, comboIndex));
+        const circle = new HitCircle(tokens, comboNumber, comboIndex);
+        circle.sampleSet = timingPoint.sampleSet || this.sampleSet;
+        this.notes.push(circle);
       } else if (type & ObjectTypes.SLIDER) {
         const slider = new Slider(tokens, comboNumber, comboIndex);
+        slider.sampleSet = timingPoint.sampleSet || this.sampleSet;
 
         // Calculate beat length
-        while (
-          timingIndex < this.timingPoints.length &&
-          this.timingPoints[timingIndex].time < slider.t
-        ) {
-          timingIndex++;
-        }
-        if (this.timingPoints[timingIndex].inherited) {
-          beatLength = baseBeatLength * this.timingPoints[timingIndex].mult;
+        if (timingPoint.inherited) {
+          beatLength = baseBeatLength * timingPoint.mult;
         } else {
-          baseBeatLength = beatLength = this.timingPoints[timingIndex]
-            .beatLength;
+          baseBeatLength = beatLength = timingPoint.beatLength;
         }
 
         slider.sliderTime =
@@ -196,6 +217,8 @@ export default class BeatmapDifficulty {
   }
 
   async load(skin: Skin) {
+    this.skin = skin;
+
     // TODO: extract gameplay logic
     this.left = 0;
     this.right = 0;
@@ -278,6 +301,8 @@ export default class BeatmapDifficulty {
         if (object.finished === 0 && object.hit(position)) {
           object.finished = time;
 
+          this.skin.playSound(object.sampleSet, object.hitSound);
+
           console.log('circle:', this.getHitResult(time, object));
         }
         break;
@@ -285,6 +310,8 @@ export default class BeatmapDifficulty {
         const slider = object as Slider;
         if (!slider.active && slider.finished === 0 && slider.hit(position)) {
           slider.active = true;
+
+          this.skin.playSound(slider.sampleSet, slider.hitSound);
 
           console.log('slider head:', this.getHitResult(time, slider));
         }

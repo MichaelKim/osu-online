@@ -11,6 +11,7 @@ import {
   ObjectTypes,
   Stats
 } from './HitObjects';
+import { SampleSet } from './TimingPoint';
 
 export default class HitCircle {
   type = ObjectTypes.HIT_CIRCLE;
@@ -19,10 +20,12 @@ export default class HitCircle {
   x: number;
   y: number;
   t: number;
-  hitSound: HitSound;
+  hitSound = HitSound.NORMAL;
 
+  // Beatmap
   comboIndex: number; // Combo color index
   comboNumber: number;
+  sampleSet: SampleSet; // Sample set override
 
   // Computed
   fadeTime: number; // Starts to fade in
@@ -41,7 +44,7 @@ export default class HitCircle {
     this.x = parseFloat(tokens[0]);
     this.y = parseFloat(tokens[1]);
     this.t = parseInt(tokens[2]);
-    this.hitSound = parseInt(tokens[4]);
+    this.hitSound = parseInt(tokens[4]) || HitSound.NORMAL;
 
     this.comboNumber = comboNumber;
     this.comboIndex = comboIndex;

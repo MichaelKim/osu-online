@@ -1,6 +1,6 @@
 import { clamp } from './util';
 
-enum SampleSet {
+export enum SampleSet {
   DEFAULT = 0,
   NORMAL = 1,
   SOFT = 2,

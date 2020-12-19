@@ -213,7 +213,7 @@ export default class BeatmapDifficulty {
           (100 * this.sliderMultiplier) /
           this.sliderTickRate /
           timingPoint.mult;
-        const numTicks = Math.ceil(slider.length / tickDist) - 1; // Ignore start and end
+        const numTicks = Math.ceil(slider.length / tickDist) - 2; // Ignore start and end
         if (numTicks > 0) {
           const tickOffset = 1 / (numTicks + 1);
           for (let i = 0, t = tickOffset; i < numTicks; i++, t += tickOffset) {

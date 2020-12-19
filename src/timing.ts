@@ -9,8 +9,9 @@ const AR10_FADE = 450;
 
 const AR0_FULL = 600;
 const AR5_FULL = 400;
-const AR10_FULL = 300;
+const AR10_FULL = 150;
 
+// Returns [fadeTime, fullTime]
 export function arToMS(ar: number) {
   if (ar <= 5)
     return [

@@ -2,14 +2,15 @@ import * as PIXI from 'pixi.js';
 import getCurve from './Bezier';
 import {
   APPROACH_R,
+  BaseHitSound,
   FADE_OUT_MS,
   FOLLOW_R,
   getNumberSprites,
   initSprite,
   ObjectTypes,
+  SliderHitSound,
   Stats
 } from './HitObjects';
-import { HitSound } from './HitObjects';
 import { Skin } from './Skin';
 import { arToMS, csToSize } from './timing';
 import { SampleSet } from './TimingPoint';
@@ -30,7 +31,7 @@ export class Slider {
   y: number;
   points: PIXI.Point[];
   t: number;
-  hitSound = HitSound.NORMAL;
+  hitSound = BaseHitSound.NORMAL;
   sliderType: CurveTypes;
   slides: number; // Total number of slides (0 repeats = 1 slide)
   length: number;
@@ -60,13 +61,15 @@ export class Slider {
   // Gameplay
   finished = 0;
   active = false; // Is the slider being followed?
+  skin: Skin;
+  ticksHit = 0; // Number of slider ticks already hit
 
   constructor(tokens: string[], comboNumber: number, comboIndex: number) {
     // x,y,time,type,hitSound,curveType|curvePoints,slides,length,edgeSounds,edgeSets,hitSample
     this.x = parseFloat(tokens[0]);
     this.y = parseFloat(tokens[1]);
     this.t = parseInt(tokens[2]);
-    this.hitSound = parseInt(tokens[4]) || HitSound.NORMAL;
+    this.hitSound = parseInt(tokens[4]) || BaseHitSound.NORMAL;
 
     const [curveType, ...curveTokens] = tokens[5].split('|');
     this.sliderType = curveType as CurveTypes;
@@ -98,6 +101,7 @@ export class Slider {
   }
 
   load(skin: Skin, stats: Stats) {
+    this.skin = skin;
     [this.fadeTime, this.fullTime] = arToMS(stats.ar);
     this.size = csToSize(stats.cs);
 
@@ -138,6 +142,9 @@ export class Slider {
       endPosition.x,
       endPosition.y
     );
+    const dx = this.points[this.points.length - 2].x - endPosition.x;
+    const dy = this.points[this.points.length - 2].y - endPosition.y;
+    this.reverseSprite.rotation = Math.atan2(dy, dx);
   }
 
   addToStage(stage: PIXI.Container) {
@@ -252,6 +259,15 @@ export class Slider {
       const size =
         this.size * clerp(time, this.t - this.fadeTime, this.t, APPROACH_R, 1);
       this.approachSprite.scale.set(size / this.approachSprite.texture.width);
+
+      // Reverse arrow
+      if (this.slides > 1) {
+        this.reverseSprite.alpha = clerp01(
+          time,
+          this.t - this.fullTime,
+          this.t - this.fullTime + 100
+        );
+      }
       return false;
     }
 
@@ -265,9 +281,9 @@ export class Slider {
     }
 
     // Update slider ball
-    const slide = (time - this.t) / this.sliderTime; // Current repeat
-    const forwards = Math.floor(slide) % 2 === 0; // Sliding direction
-    const delta = forwards ? slide % 1 : 1 - (slide % 1);
+    const progress = (time - this.t) / this.sliderTime; // Current repeat
+    const forwards = Math.floor(progress) % 2 === 0; // Sliding direction
+    const delta = forwards ? progress % 1 : 1 - (progress % 1);
     // TODO: use pointAt
     const curveIndex = Math.floor(this.curve.length * delta);
     const position = this.curve[curveIndex];
@@ -301,14 +317,26 @@ export class Slider {
     } else {
       tickEnd = delta;
     }
+    let ticksHitNew = 0;
     for (let i = 0; i < this.ticks.length; i++) {
+      // TODO: ticks are evenly spaced, so [0, end] -> [length - end, 1] is more efficient
       if (this.ticks[i] > tickStart && this.ticks[i] < tickEnd) {
         // TODO: fade in and pop out
         this.tickSprites[i].alpha = 1;
       } else {
         this.tickSprites[i].alpha = 0;
+        ticksHitNew++;
       }
     }
+
+    // Play tick hit sound
+    if (this.active) {
+      for (let i = this.ticksHit; i < ticksHitNew; i++) {
+        // Number of ticks hit increased: new ticks
+        this.skin.playSound(this.sampleSet, SliderHitSound.SLIDER_TICK);
+      }
+    }
+    this.ticksHit = ticksHitNew;
 
     this.x = position.x;
     this.y = position.y;

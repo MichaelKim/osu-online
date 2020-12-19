@@ -4,9 +4,9 @@ import { Skin } from './Skin';
 import { arToMS, csToSize } from './timing';
 import {
   APPROACH_R,
+  BaseHitSound,
   FADE_OUT_MS,
   getNumberSprites,
-  HitSound,
   initSprite,
   ObjectTypes,
   Stats
@@ -20,7 +20,7 @@ export default class HitCircle {
   x: number;
   y: number;
   t: number;
-  hitSound = HitSound.NORMAL;
+  hitSound = BaseHitSound.NORMAL;
 
   // Beatmap
   comboIndex: number; // Combo color index
@@ -44,7 +44,7 @@ export default class HitCircle {
     this.x = parseFloat(tokens[0]);
     this.y = parseFloat(tokens[1]);
     this.t = parseInt(tokens[2]);
-    this.hitSound = parseInt(tokens[4]) || HitSound.NORMAL;
+    this.hitSound = parseInt(tokens[4]) || BaseHitSound.NORMAL;
 
     this.comboNumber = comboNumber;
     this.comboIndex = comboIndex;

@@ -1,6 +1,6 @@
 import * as PIXI from 'pixi.js';
 import { AudioResource } from './AudioLoader';
-import { HitSound } from './HitObjects';
+import { BaseHitSound, HitSound, SliderHitSound } from './HitObjects';
 import { SampleSet } from './TimingPoint';
 import { Tuple } from './util';
 
@@ -79,7 +79,7 @@ class SampleSetSounds {
   hitNormal: HTMLAudioElement[];
   hitWhistle: HTMLAudioElement[];
   sliderSlide: HTMLAudioElement;
-  sliderTick: HTMLAudioElement;
+  sliderTick: HTMLAudioElement[];
   sliderWhistle: HTMLAudioElement;
 
   constructor(name: string, loader: PIXI.Loader) {
@@ -100,7 +100,7 @@ class SampleSetSounds {
         this.hitNormal = [resources[this.name + 'hitNormal'].data];
         this.hitWhistle = [resources[this.name + 'hitWhistle'].data];
         this.sliderSlide = resources[this.name + 'sliderSlide'].data;
-        this.sliderTick = resources[this.name + 'sliderTick'].data;
+        this.sliderTick = [resources[this.name + 'sliderTick'].data];
         this.sliderWhistle = resources[this.name + 'sliderWhistle'].data;
         resolve();
       });
@@ -109,17 +109,20 @@ class SampleSetSounds {
 
   play(hitSound: HitSound) {
     switch (hitSound) {
-      case HitSound.NORMAL:
+      case BaseHitSound.NORMAL:
         this.playSound(this.hitNormal);
         break;
-      case HitSound.WHISTLE:
+      case BaseHitSound.WHISTLE:
         this.playSound(this.hitWhistle);
         break;
-      case HitSound.FINISH:
+      case BaseHitSound.FINISH:
         this.playSound(this.hitFinish);
         break;
-      case HitSound.CLAP:
+      case BaseHitSound.CLAP:
         this.playSound(this.hitClap);
+        break;
+      case SliderHitSound.SLIDER_TICK:
+        this.playSound(this.sliderTick);
         break;
     }
   }

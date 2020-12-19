@@ -16,12 +16,20 @@ export interface Stats {
   sliderMultiplier: number;
 }
 
-export enum HitSound {
+export enum BaseHitSound {
   NORMAL = 1 << 0,
   WHISTLE = 1 << 1,
   FINISH = 1 << 2,
   CLAP = 1 << 3
 }
+
+export enum SliderHitSound {
+  SLIDER_SLIDE = 10,
+  SLIDER_TICK,
+  SLIDER_WHISTLE
+}
+
+export type HitSound = BaseHitSound | SliderHitSound;
 
 // Common sprite initialization
 export function initSprite(

@@ -32,7 +32,7 @@ export class Slider {
   t: number;
   hitSound = HitSound.NORMAL;
   sliderType: CurveTypes;
-  slides: number;
+  slides: number; // Total number of slides (0 repeats = 1 slide)
   length: number;
 
   // Beatmap
@@ -55,6 +55,7 @@ export class Slider {
   approachSprite: PIXI.Sprite;
   numberSprites: PIXI.Sprite[];
   followSprite: PIXI.Sprite;
+  reverseSprite: PIXI.Sprite;
 
   // Gameplay
   finished = 0;
@@ -130,12 +131,20 @@ export class Slider {
 
       return initSprite(skin.sliderScorePoint, point.x, point.y);
     });
+
+    const endPosition = this.points[this.points.length - 1];
+    this.reverseSprite = initSprite(
+      skin.reverseArrow,
+      endPosition.x,
+      endPosition.y
+    );
   }
 
   addToStage(stage: PIXI.Container) {
     stage.addChild(
       this.graphics,
       ...this.tickSprites,
+      this.reverseSprite,
       this.circleSprite,
       this.followSprite,
       ...this.numberSprites,
@@ -146,6 +155,7 @@ export class Slider {
   setVisible(visible: boolean) {
     this.graphics.visible = visible;
     this.tickSprites.forEach(s => (s.visible = visible));
+    this.reverseSprite.visible = visible;
     this.circleSprite.visible = visible;
     this.approachSprite.visible = visible;
     this.followSprite.visible = visible;
@@ -156,7 +166,8 @@ export class Slider {
     const outTime = this.t + this.sliderTime * (this.slides - 1);
     const endTime = this.t + this.sliderTime * this.slides;
 
-    // Slide in: [t - fade, t] -> [0, 1]
+    // Snake in: [t - fade, t] -> [0, 1]
+    // TODO: slider should be done snaking in long before this.t
     if (time < this.t) {
       return [0, clerp01(time, this.t - this.fadeTime, this.t)];
     }
@@ -166,7 +177,7 @@ export class Slider {
       return [0, 1];
     }
 
-    // Slide out: [t + sliderTime * (slides - 1), t + sliderTime * slides] -> [0, 1]
+    // Snake out: [t + sliderTime * (slides - 1), t + sliderTime * slides] -> [0, 1]
     if (time < endTime) {
       // Odd number of slides: start moves in
       if (this.slides % 2) {
@@ -194,6 +205,7 @@ export class Slider {
     for (let i = startIndex + 1; i < endIndex; i++) {
       this.graphics.lineTo(this.curve[i].x, this.curve[i].y);
     }
+    // TODO: slider body should fade in
   }
 
   update(time: number) {
@@ -206,6 +218,7 @@ export class Slider {
       this.circleSprite.alpha = 0;
       this.numberSprites.forEach(s => (s.alpha = 0));
       this.tickSprites.forEach(s => (s.alpha = 0));
+      this.reverseSprite.alpha = 0;
 
       this.graphics.alpha = alpha;
       this.followSprite.alpha = alpha;
@@ -249,7 +262,7 @@ export class Slider {
     }
 
     // Update slider ball
-    const slide = (time - this.t) / this.sliderTime;
+    const slide = (time - this.t) / this.sliderTime; // Current repeat
     const forwards = Math.floor(slide) % 2 === 0; // Sliding direction
     const delta = forwards ? slide % 1 : 1 - (slide % 1);
     // TODO: use pointAt

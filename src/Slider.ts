@@ -162,14 +162,15 @@ export class Slider {
     this.numberSprites.forEach(s => (s.visible = visible));
   }
 
+  // Returns [start, end]
   calcIndices(time: number) {
     const outTime = this.t + this.sliderTime * (this.slides - 1);
     const endTime = this.t + this.sliderTime * this.slides;
 
-    // Snake in: [t - fade, t] -> [0, 1]
-    // TODO: slider should be done snaking in long before this.t
-    if (time < this.t) {
-      return [0, clerp01(time, this.t - this.fadeTime, this.t)];
+    // Snake in: [t - fade, t - full] -> [0, 1]
+    // TODO: this still feels too late
+    if (time < this.t - this.fullTime) {
+      return [0, clerp01(time, this.t - this.fadeTime, this.t - this.fullTime)];
     }
 
     // Full slider
@@ -205,7 +206,6 @@ export class Slider {
     for (let i = startIndex + 1; i < endIndex; i++) {
       this.graphics.lineTo(this.curve[i].x, this.curve[i].y);
     }
-    // TODO: slider body should fade in
   }
 
   update(time: number) {
@@ -239,6 +239,9 @@ export class Slider {
         this.t - this.fadeTime,
         this.t - this.fullTime
       );
+
+      // Slider
+      this.graphics.alpha = alpha;
 
       // Hit circle
       this.circleSprite.alpha = alpha;

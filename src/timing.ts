@@ -2,13 +2,6 @@
 
 import { lerp } from './util';
 
-// Many difficulty values range are piecewise linear between three values
-
-function lerp2(val: number, min: number, mid: number, max: number) {
-  if (val <= 5) return lerp(val, 0, 5, min, mid);
-  return lerp(val, 5, 10, mid, max);
-}
-
 // Approach Rate values (in ms)
 const AR0_FADE = 1800;
 const AR5_FADE = 1200;

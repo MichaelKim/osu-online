@@ -28,11 +28,13 @@ export function initSprite(
   texture: PIXI.Texture,
   x: number,
   y: number,
-  size: number
+  size: number = 0
 ) {
   const sprite = new PIXI.Sprite(texture);
   sprite.position.set(x, y);
-  sprite.scale.set(size / texture.width);
+  if (size > 0) {
+    sprite.scale.set(size / texture.width);
+  }
   sprite.visible = false;
   sprite.alpha = 0;
   return sprite;

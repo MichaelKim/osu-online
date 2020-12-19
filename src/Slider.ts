@@ -45,15 +45,18 @@ export class Slider {
   fullTime: number; // Fully opaque
   size: number; // Diameter of hit circle
   sliderTime: number; // Without repeats
+  ticks: number[] = [];
 
   // Rendering
   graphics: PIXI.Graphics;
   curve: PIXI.Point[];
+  tickSprites: PIXI.Sprite[];
   circleSprite: PIXI.Sprite;
   approachSprite: PIXI.Sprite;
   numberSprites: PIXI.Sprite[];
   followSprite: PIXI.Sprite;
 
+  // Gameplay
   finished = 0;
   active = false; // Is the slider being followed?
 
@@ -120,11 +123,19 @@ export class Slider {
       this.y,
       this.size
     );
+
+    this.tickSprites = this.ticks.map(t => {
+      const index = Math.floor(this.curve.length * t);
+      const point = this.curve[index];
+
+      return initSprite(skin.sliderScorePoint, point.x, point.y);
+    });
   }
 
   addToStage(stage: PIXI.Container) {
     stage.addChild(
       this.graphics,
+      ...this.tickSprites,
       this.circleSprite,
       this.followSprite,
       ...this.numberSprites,
@@ -134,6 +145,7 @@ export class Slider {
 
   setVisible(visible: boolean) {
     this.graphics.visible = visible;
+    this.tickSprites.forEach(s => (s.visible = visible));
     this.circleSprite.visible = visible;
     this.approachSprite.visible = visible;
     this.followSprite.visible = visible;
@@ -193,6 +205,7 @@ export class Slider {
       this.approachSprite.alpha = 0;
       this.circleSprite.alpha = 0;
       this.numberSprites.forEach(s => (s.alpha = 0));
+      this.tickSprites.forEach(s => (s.alpha = 0));
 
       this.graphics.alpha = alpha;
       this.followSprite.alpha = alpha;
@@ -237,8 +250,8 @@ export class Slider {
 
     // Update slider ball
     const slide = (time - this.t) / this.sliderTime;
-    const forwards = Math.floor(slide) % 2; // Sliding direction
-    const delta = forwards ? 1 - (slide % 1) : slide % 1;
+    const forwards = Math.floor(slide) % 2 === 0; // Sliding direction
+    const delta = forwards ? slide % 1 : 1 - (slide % 1);
     // TODO: use pointAt
     const curveIndex = Math.floor(this.curve.length * delta);
     const position = this.curve[curveIndex];
@@ -263,6 +276,23 @@ export class Slider {
     // Expand follow circle
     const size = this.size * clerp(time - this.t, 0, 150, 1, FOLLOW_R);
     this.followSprite.scale.set(size / this.followSprite.texture.width);
+
+    // Update slider ticks
+    let tickStart = 0,
+      tickEnd = 1;
+    if (forwards) {
+      tickStart = delta;
+    } else {
+      tickEnd = delta;
+    }
+    for (let i = 0; i < this.ticks.length; i++) {
+      if (this.ticks[i] > tickStart && this.ticks[i] < tickEnd) {
+        // TODO: fade in and pop out
+        this.tickSprites[i].alpha = 1;
+      } else {
+        this.tickSprites[i].alpha = 0;
+      }
+    }
 
     this.x = position.x;
     this.y = position.y;

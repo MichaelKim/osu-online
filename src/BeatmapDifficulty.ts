@@ -22,7 +22,8 @@ export default class BeatmapDifficulty {
   cs: number;
   od: number;
   ar: number = 5;
-  sliderMultiplier: number;
+  sliderMultiplier: number = 1.4;
+  sliderTickRate: number = 1;
 
   timingPoints: TimingPoint[] = [];
   notes: HitObject[] = [];
@@ -107,6 +108,9 @@ export default class BeatmapDifficulty {
                 break;
               case 'SliderMultiplier':
                 this.sliderMultiplier = parseFloat(value);
+                break;
+              case 'SliderTickRate':
+                this.sliderTickRate = parseFloat(value);
                 break;
             }
           }
@@ -200,8 +204,22 @@ export default class BeatmapDifficulty {
           baseBeatLength = beatLength = timingPoint.beatLength;
         }
 
+        // Calculate slider duration
         slider.sliderTime =
           (beatLength * (slider.length / this.sliderMultiplier)) / 100;
+
+        // Calculate slider ticks
+        const tickDist =
+          (100 * this.sliderMultiplier) /
+          this.sliderTickRate /
+          timingPoint.mult;
+        const numTicks = Math.ceil(slider.length / tickDist) - 1; // Ignore start and end
+        if (numTicks > 0) {
+          const tickOffset = 1 / (numTicks + 1);
+          for (let i = 0, t = tickOffset; i < numTicks; i++, t += tickOffset) {
+            slider.ticks.push(t);
+          }
+        }
 
         this.notes.push(slider);
       }

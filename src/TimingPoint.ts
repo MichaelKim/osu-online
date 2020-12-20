@@ -18,7 +18,7 @@ export default class TimingPoint {
   mult: number; // inverse slider velocity multiplier
   meter: number;
   sampleSet: SampleSet;
-  sampleIndex: number;
+  sampleIndex: number; // TODO: what is this
   volume: number;
   inherited: boolean;
   kiai: boolean;

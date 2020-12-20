@@ -14,7 +14,7 @@ import {
 import { Skin } from './Skin';
 import { arToMS, csToSize } from './timing';
 import { SampleSet } from './TimingPoint';
-import { clerp, clerp01 } from './util';
+import { clerp, clerp01, Tuple } from './util';
 
 enum CurveTypes {
   BEZIER = 'B',
@@ -31,15 +31,18 @@ export class Slider {
   y: number;
   points: PIXI.Point[];
   t: number;
-  hitSound = BaseHitSound.NORMAL;
+  hitSound: BaseHitSound;
   sliderType: CurveTypes;
   slides: number; // Total number of slides (0 repeats = 1 slide)
   length: number;
+  edgeSounds: BaseHitSound[] = [];
+  edgeSets: Tuple<SampleSet, 2>[] = []; // [normal, addition]
 
   // Beatmap
   comboIndex: number; // Combo color index
   comboNumber: number;
   sampleSet: SampleSet; // Sample set override
+  additionSet: SampleSet;
 
   // Computed
   fadeTime: number; // Starts to fade in
@@ -62,9 +65,15 @@ export class Slider {
   finished = 0;
   active = false; // Is the slider being followed?
   skin: Skin;
-  ticksHit = 0; // Number of slider ticks already hit
+  ticksHit = 0; // Number of slider ticks already hit (per repeat)
+  repeatsHit = 0; // Number of repeats (incl. slider ends) hit
 
-  constructor(tokens: string[], comboNumber: number, comboIndex: number) {
+  constructor(
+    tokens: string[],
+    comboNumber: number,
+    comboIndex: number,
+    sampleSet: SampleSet
+  ) {
     // x,y,time,type,hitSound,curveType|curvePoints,slides,length,edgeSounds,edgeSets,hitSample
     this.x = parseFloat(tokens[0]);
     this.y = parseFloat(tokens[1]);
@@ -88,11 +97,29 @@ export class Slider {
     this.length = parseFloat(tokens[7]);
 
     if (tokens.length > 8) {
-      const edgeSoundTokens = tokens[8].split('|');
+      this.edgeSounds = tokens[8].split('|').map(t => parseInt(t));
     }
+
     if (tokens.length > 9) {
-      const edgeSetTokens = tokens[8].split('|');
+      const edgeSetTokens = tokens[9].split('|');
+      this.edgeSets = edgeSetTokens.map(t => {
+        const set = t.split(':');
+        return [parseInt(set[0]), parseInt(set[1])];
+      });
     }
+
+    if (this.edgeSounds.length !== this.edgeSets.length) {
+      console.warn('Mismatching edge sound lengths', tokens);
+    }
+
+    // TODO: normalSet:additionSet:index:volume:filename
+    let hitSample: Tuple<SampleSet, 2> = [0, 0];
+    if (tokens.length > 10) {
+      const sampleTokens = tokens[10].split(':');
+      hitSample = [parseInt(sampleTokens[0]), parseInt(sampleTokens[1])];
+    }
+    this.sampleSet = hitSample[0] || sampleSet;
+    this.additionSet = hitSample[1] || hitSample[0];
 
     this.comboNumber = comboNumber;
     this.comboIndex = comboIndex;
@@ -215,6 +242,14 @@ export class Slider {
     }
   }
 
+  playEdge(index: number) {
+    const hitSound = this.edgeSounds[index] || this.hitSound;
+    // [normal, addition]
+    const setIndex = hitSound === BaseHitSound.NORMAL ? 0 : 1;
+    const sampleSet = this.edgeSets[index]?.[setIndex] || this.sampleSet;
+    this.skin.playSound(sampleSet, hitSound);
+  }
+
   update(time: number) {
     if (this.finished > 0) {
       // Fade out everything
@@ -277,6 +312,10 @@ export class Slider {
     // Check if slider is finished
     if (this.active && time > endTime) {
       this.finished = time;
+
+      // Play slider end hit sound
+      this.playEdge(this.edgeSounds.length - 1);
+
       return false;
     }
 
@@ -337,6 +376,15 @@ export class Slider {
       }
     }
     this.ticksHit = ticksHitNew;
+
+    // Play slider end hit sound
+    if (this.active) {
+      const currentSlide = Math.floor(progress);
+      if (this.repeatsHit !== currentSlide) {
+        this.playEdge(currentSlide);
+        this.repeatsHit = currentSlide;
+      }
+    }
 
     this.x = position.x;
     this.y = position.y;

@@ -190,12 +190,21 @@ export default class BeatmapDifficulty {
       // TODO: handle stacking
 
       if (type & ObjectTypes.HIT_CIRCLE) {
-        const circle = new HitCircle(tokens, comboNumber, comboIndex);
-        circle.sampleSet = timingPoint.sampleSet || this.sampleSet;
+        const circle = new HitCircle(
+          tokens,
+          comboNumber,
+          comboIndex,
+          timingPoint.sampleSet || this.sampleSet
+        );
+
         this.notes.push(circle);
       } else if (type & ObjectTypes.SLIDER) {
-        const slider = new Slider(tokens, comboNumber, comboIndex);
-        slider.sampleSet = timingPoint.sampleSet || this.sampleSet;
+        const slider = new Slider(
+          tokens,
+          comboNumber,
+          comboIndex,
+          timingPoint.sampleSet || this.sampleSet
+        );
 
         // Calculate beat length
         if (timingPoint.inherited) {
@@ -329,7 +338,7 @@ export default class BeatmapDifficulty {
         if (!slider.active && slider.finished === 0 && slider.hit(position)) {
           slider.active = true;
 
-          this.skin.playSound(slider.sampleSet, slider.hitSound);
+          slider.playEdge(0);
 
           console.log('slider head:', this.getHitResult(time, slider));
         }

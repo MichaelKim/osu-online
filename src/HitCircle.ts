@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js';
-import { clerp, clerp01 } from './util';
+import { clerp, clerp01, Tuple } from './util';
 import { Skin } from './Skin';
 import { arToMS, csToSize } from './timing';
 import {
@@ -20,12 +20,13 @@ export default class HitCircle {
   x: number;
   y: number;
   t: number;
-  hitSound = BaseHitSound.NORMAL;
+  hitSound: BaseHitSound;
 
   // Beatmap
   comboIndex: number; // Combo color index
   comboNumber: number;
   sampleSet: SampleSet; // Sample set override
+  additionSet: SampleSet;
 
   // Computed
   fadeTime: number; // Starts to fade in
@@ -39,12 +40,26 @@ export default class HitCircle {
 
   finished = 0;
 
-  constructor(tokens: string[], comboNumber: number, comboIndex: number) {
+  constructor(
+    tokens: string[],
+    comboNumber: number,
+    comboIndex: number,
+    sampleSet: SampleSet
+  ) {
     // x,y,time,type,hitSound,objectParams,hitSample
     this.x = parseFloat(tokens[0]);
     this.y = parseFloat(tokens[1]);
     this.t = parseInt(tokens[2]);
     this.hitSound = parseInt(tokens[4]) || BaseHitSound.NORMAL;
+
+    // TODO: normalSet:additionSet:index:volume:filename
+    let hitSample: Tuple<SampleSet, 2> = [0, 0];
+    if (tokens.length > 6) {
+      const sampleTokens = tokens[6].split(':');
+      hitSample = [parseInt(sampleTokens[0]), parseInt(sampleTokens[1])];
+    }
+    this.sampleSet = hitSample[0] || sampleSet;
+    this.additionSet = hitSample[1] || this.sampleSet;
 
     this.comboNumber = comboNumber;
     this.comboIndex = comboIndex;

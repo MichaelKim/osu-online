@@ -7,6 +7,8 @@ import { Slider } from './Slider';
 import TimingPoint, { SampleSet } from './TimingPoint';
 import { ObjectTypes } from './HitObjects';
 
+const STACK_LENIENCE = 3;
+
 type HitObject = HitCircle | Slider;
 
 export default class BeatmapDifficulty {
@@ -17,6 +19,7 @@ export default class BeatmapDifficulty {
   audioFilename: string;
   audioLeadIn: number = 0;
   sampleSet = SampleSet.NORMAL;
+  stackLeniency: number = 0.7;
 
   // difficulty
   cs: number;
@@ -90,6 +93,9 @@ export default class BeatmapDifficulty {
                     this.sampleSet = SampleSet.DRUM;
                     break;
                 }
+              case 'StackLeniency':
+                this.stackLeniency = parseFloat(value);
+                break;
             }
           }
           break;

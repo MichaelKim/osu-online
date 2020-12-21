@@ -51,13 +51,22 @@ function createBezier(points: PIXI.Point[]): Bezier {
 }
 
 // Split slider into several curve sections
-function splitSlider(sliderPoints: PIXI.Point[]) {
+// Red control points are in sliderPoints twice
+function splitSlider(sliderPoints: PIXI.Point[], linear: boolean) {
   let beziers: Bezier[] = [];
   let points: PIXI.Point[] = [];
   let lastPoi: PIXI.Point | null = null;
 
   for (const tpoi of sliderPoints) {
-    if (lastPoi != null && tpoi.equals(lastPoi)) {
+    if (linear) {
+      // Linear: create pairwise sections
+      if (lastPoi != null) {
+        points.push(tpoi);
+        beziers.push(createBezier(points));
+        points = [];
+      }
+    } else if (lastPoi != null && tpoi.equals(lastPoi)) {
+      // Red point: create new bezier section
       if (points.length >= 2) {
         beziers.push(createBezier(points));
       }
@@ -67,7 +76,8 @@ function splitSlider(sliderPoints: PIXI.Point[]) {
     lastPoi = tpoi;
   }
 
-  if (points.length >= 2) {
+  // Remaining points
+  if (!linear && points.length >= 2) {
     beziers.push(createBezier(points));
   }
 
@@ -75,8 +85,12 @@ function splitSlider(sliderPoints: PIXI.Point[]) {
 }
 
 // Get equidistant points along slider
-export default function getCurve(sliderPoints: PIXI.Point[], length: number) {
-  const beziers = splitSlider(sliderPoints);
+export function getCurve(
+  sliderPoints: PIXI.Point[],
+  linear: boolean,
+  length: number
+) {
+  const beziers = splitSlider(sliderPoints, linear);
 
   // init equidistance
   // Points generated along the curve should be spaced this far apart.
@@ -108,7 +122,6 @@ export default function getCurve(sliderPoints: PIXI.Point[], length: number) {
           curPoint = curCurve.curve.length - 1;
           if (lastDistanceAt === distanceAt) {
             if (distanceAt < length * 0.97) {
-              // 0.97?
               console.warn(
                 '[curve] L/B shorter than given',
                 distanceAt / length

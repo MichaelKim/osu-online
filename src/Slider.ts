@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js';
-import getCurve from './Bezier';
+import { Bezier, Circle } from './Curve';
 import {
   APPROACH_R,
   BaseHitSound,
@@ -29,7 +29,7 @@ export class Slider {
   // Metadata
   x: number; // Position of the hit circle (initially at points[0])
   y: number;
-  points: PIXI.Point[];
+  points: PIXI.Point[]; // Control points
   t: number;
   hitSound: BaseHitSound;
   sliderType: CurveTypes;
@@ -133,7 +133,15 @@ export class Slider {
     this.size = csToSize(stats.cs);
 
     // Calculate curve points
-    this.curve = getCurve(this.points, this.length);
+    if (this.sliderType === CurveTypes.PERFECT && this.points.length === 3) {
+      this.curve = Circle.getCurve(this.points, this.length);
+    } else {
+      this.curve = Bezier.getCurve(
+        this.points,
+        this.sliderType === CurveTypes.LINEAR,
+        this.length
+      );
+    }
 
     this.circleSprite = initSprite(skin.circle, this.x, this.y, this.size);
     this.approachSprite = initSprite(

@@ -9,6 +9,7 @@ import {
   getNumberSprites,
   initSprite,
   ObjectTypes,
+  STACK_OFFSET_MULT,
   Stats
 } from './HitObjects';
 import { SampleSet } from './TimingPoint';
@@ -27,6 +28,7 @@ export default class HitCircle {
   comboNumber: number;
   sampleSet: SampleSet; // Sample set override
   additionSet: SampleSet;
+  stackCount: number = 0;
 
   // Computed
   fadeTime: number; // Starts to fade in
@@ -69,6 +71,10 @@ export default class HitCircle {
     // Compute timing windows
     [this.fadeTime, this.fullTime] = arToMS(stats.ar);
     this.size = csToSize(stats.cs);
+
+    // Stack offset
+    this.x -= (this.stackCount * this.size) / STACK_OFFSET_MULT;
+    this.y -= (this.stackCount * this.size) / STACK_OFFSET_MULT;
 
     // Load skin textures
     this.circleSprite = initSprite(skin.circle, this.x, this.y, this.size);

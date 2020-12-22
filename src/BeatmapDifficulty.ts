@@ -6,8 +6,9 @@ import * as AudioLoader from './AudioLoader';
 import { Slider } from './Slider';
 import TimingPoint, { SampleSet } from './TimingPoint';
 import { ObjectTypes } from './HitObjects';
+import { distSqr } from './util';
 
-const STACK_LENIENCE = 3;
+const STACK_LENIENCE_SQR = 3 * 3;
 
 type HitObject = HitCircle | Slider;
 
@@ -223,6 +224,9 @@ export default class BeatmapDifficulty {
         slider.sliderTime =
           (beatLength * (slider.length / this.sliderMultiplier)) / 100;
 
+        // Commonly computed value
+        slider.endTime = slider.t + slider.sliderTime * slider.slides;
+
         // Calculate slider ticks
         const tickDist =
           (100 * this.sliderMultiplier) /
@@ -237,6 +241,67 @@ export default class BeatmapDifficulty {
         }
 
         this.notes.push(slider);
+      }
+    }
+  }
+
+  // Taken from https://gist.github.com/peppy/1167470
+  calcStacking() {
+    const [fadeTime] = arToMS(this.ar);
+    // Reverse pass
+    for (let i = this.notes.length - 1; i > 0; i--) {
+      let objectI = this.notes[i];
+
+      // Already done
+      if (objectI.stackCount !== 0 || objectI.type === ObjectTypes.SPINNER) {
+        continue;
+      }
+
+      // Search for any stacking
+      for (let n = i - 1; n >= 0; n--) {
+        const objectN = this.notes[n];
+        if (objectN.type === ObjectTypes.SPINNER) {
+          continue;
+        }
+
+        const endTime =
+          objectN.type === ObjectTypes.SLIDER
+            ? (objectN as Slider).endTime
+            : objectN.t;
+        if (objectI.t - fadeTime * this.stackLeniency > endTime) {
+          break;
+        }
+
+        // Reverse stacking
+        if (objectN.type === ObjectTypes.SLIDER) {
+          const slider = objectN as Slider;
+          const endPoint = slider.curve[slider.curve.length - 1];
+
+          if (
+            distSqr(objectI.x, objectI.y, endPoint.x, endPoint.y) <
+            STACK_LENIENCE_SQR
+          ) {
+            const offset = objectI.stackCount - slider.stackCount + 1;
+            for (let j = n + 1; j <= i; j++) {
+              const objectJ = this.notes[j];
+              if (
+                distSqr(objectJ.x, objectJ.y, endPoint.x, endPoint.y) <
+                STACK_LENIENCE_SQR
+              ) {
+                objectJ.stackCount -= offset;
+              }
+            }
+          }
+        }
+
+        // Normal stacking
+        if (
+          distSqr(objectI.x, objectI.y, objectN.x, objectN.y) <
+          STACK_LENIENCE_SQR
+        ) {
+          objectN.stackCount = objectI.stackCount + 1;
+          objectI = objectN;
+        }
       }
     }
   }
@@ -257,6 +322,7 @@ export default class BeatmapDifficulty {
     this.right = 0;
 
     await this.parseHitObjects();
+    this.calcStacking();
     await this.loadMusic();
     const stats = {
       ar: this.ar,

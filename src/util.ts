@@ -42,3 +42,9 @@ export type Tuple<
   N extends number,
   R extends T[] = []
 > = R['length'] extends N ? R : Tuple<T, N, [T, ...R]>;
+
+export function distSqr(x1: number, y1: number, x2: number, y2: number) {
+  const dx = x1 - x2;
+  const dy = y1 - y2;
+  return dx * dx + dy * dy;
+}

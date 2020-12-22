@@ -9,6 +9,7 @@ import {
   initSprite,
   ObjectTypes,
   SliderHitSound,
+  STACK_OFFSET_MULT,
   Stats
 } from './HitObjects';
 import { Skin } from './Skin';
@@ -43,12 +44,14 @@ export class Slider {
   comboNumber: number;
   sampleSet: SampleSet; // Sample set override
   additionSet: SampleSet;
+  stackCount: number = 0;
 
   // Computed
   fadeTime: number; // Starts to fade in
   fullTime: number; // Fully opaque
   size: number; // Diameter of hit circle
   sliderTime: number; // Without repeats
+  endTime: number; // Total duration of slider
   ticks: number[] = [];
 
   // Rendering
@@ -125,12 +128,6 @@ export class Slider {
     this.comboIndex = comboIndex;
 
     this.graphics = new PIXI.Graphics();
-  }
-
-  load(skin: Skin, stats: Stats) {
-    this.skin = skin;
-    [this.fadeTime, this.fullTime] = arToMS(stats.ar);
-    this.size = csToSize(stats.cs);
 
     // Calculate curve points
     if (this.sliderType === CurveTypes.PERFECT && this.points.length === 3) {
@@ -141,6 +138,23 @@ export class Slider {
         this.sliderType === CurveTypes.LINEAR,
         this.length
       );
+    }
+  }
+
+  load(skin: Skin, stats: Stats) {
+    this.skin = skin;
+    [this.fadeTime, this.fullTime] = arToMS(stats.ar);
+    this.size = csToSize(stats.cs);
+
+    // Stack offset
+    if (this.stackCount !== 0) {
+      const offset = (this.stackCount * this.size) / STACK_OFFSET_MULT;
+      this.x -= offset;
+      this.y -= offset;
+      this.curve.forEach(c => {
+        c.x -= offset;
+        c.y -= offset;
+      });
     }
 
     this.circleSprite = initSprite(skin.circle, this.x, this.y, this.size);
@@ -171,7 +185,8 @@ export class Slider {
       return initSprite(skin.sliderScorePoint, point.x, point.y);
     });
 
-    const endPosition = this.points[this.points.length - 1];
+    const endPosition = this.curve[this.curve.length - 1];
+    // TODO: Should scale with circle size
     this.reverseSprite = initSprite(
       skin.reverseArrow,
       endPosition.x,
@@ -206,8 +221,8 @@ export class Slider {
 
   // Returns [start, end]
   calcIndices(time: number) {
-    const outTime = this.t + this.sliderTime * (this.slides - 1);
-    const endTime = this.t + this.sliderTime * this.slides;
+    // One less slide
+    const outTime = this.endTime - this.sliderTime;
 
     // Snake in: [t - fade, t - full] -> [0, 1]
     // TODO: this still feels too late
@@ -221,14 +236,14 @@ export class Slider {
     }
 
     // Snake out: [t + sliderTime * (slides - 1), t + sliderTime * slides] -> [0, 1]
-    if (time < endTime) {
+    if (time < this.endTime) {
       // Odd number of slides: start moves in
       if (this.slides % 2) {
-        return [clerp01(time, outTime, endTime), 1];
+        return [clerp01(time, outTime, this.endTime), 1];
       }
 
       // Even slides: end moves in
-      return [0, 1 - clerp01(time, outTime, endTime)];
+      return [0, 1 - clerp01(time, outTime, this.endTime)];
     }
 
     // Slider finished
@@ -314,11 +329,9 @@ export class Slider {
       return false;
     }
 
-    const endTime = this.t + this.sliderTime * this.slides;
-
     // Slider active
     // Check if slider is finished
-    if (this.active && time > endTime) {
+    if (this.active && time > this.endTime) {
       this.finished = time;
 
       // Play slider end hit sound

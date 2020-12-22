@@ -23,7 +23,11 @@ const assets = {
   sliderb: 'sliderb.png',
   sliderFollowCircle: 'sliderfollowcircle.png',
   sliderScorePoint: 'sliderscorepoint.png',
-  reverseArrow: 'reversearrow.png'
+  reverseArrow: 'reversearrow.png',
+  hit0: 'hit0.png',
+  hit50: 'hit50.png',
+  hit100: 'hit100.png',
+  hit300: 'hit300.png'
 };
 
 type Resources = Record<keyof typeof assets, PIXI.LoaderResource>;
@@ -159,6 +163,12 @@ export class Skin {
   sliderScorePoint: PIXI.Texture;
   reverseArrow: PIXI.Texture;
 
+  // Hits
+  hit0: PIXI.Texture;
+  hit50: PIXI.Texture;
+  hit100: PIXI.Texture;
+  hit300: PIXI.Texture;
+
   // Sounds
   soundLoader: PIXI.Loader;
   sounds: {
@@ -251,6 +261,10 @@ export class Skin {
         this.sliderFollowCircle = resources.sliderFollowCircle.texture;
         this.sliderScorePoint = resources.sliderScorePoint.texture;
         this.reverseArrow = resources.reverseArrow.texture;
+        this.hit0 = resources.hit0.texture;
+        this.hit50 = resources.hit0.texture;
+        this.hit100 = resources.hit0.texture;
+        this.hit300 = resources.hit0.texture;
 
         // Center textures
         this.cursor.defaultAnchor.set(0.5);
@@ -260,6 +274,10 @@ export class Skin {
         this.sliderFollowCircle.defaultAnchor.set(0.5);
         this.sliderScorePoint.defaultAnchor.set(0.5);
         this.reverseArrow.defaultAnchor.set(0.5);
+        this.hit0.defaultAnchor.set(0.5);
+        this.hit50.defaultAnchor.set(0.5);
+        this.hit100.defaultAnchor.set(0.5);
+        this.hit300.defaultAnchor.set(0.5);
 
         resolve();
       });

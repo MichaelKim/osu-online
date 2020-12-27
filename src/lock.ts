@@ -6,12 +6,13 @@ export async function lockPointer(view: HTMLCanvasElement) {
     // TODO: apparently this only works in Chrome
     unadjustedMovement: true
   });
-  // @ts-ignore
+  // @ts-ignore: promise is not void in Chrome 88+ (?)
   console.log(promise ? 'locked unadjusted' : 'locked normal');
+  await promise;
 }
 
 // Display out of focus error
-export default function initLock(view: HTMLCanvasElement) {
+export function initLock(view: HTMLCanvasElement) {
   const pointerLockWarning = document.getElementById('lock');
 
   pointerLockWarning.addEventListener('click', () => lockPointer(view));

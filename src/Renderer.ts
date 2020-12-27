@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js';
-import { lockPointer } from './lock';
+import { initLock, lockPointer } from './lock';
 
 export default class Renderer {
   renderer: PIXI.Renderer;
@@ -26,10 +26,11 @@ export default class Renderer {
     this.stage.addChild(this.notesStage, this.cursorStage);
   }
 
-  start() {
+  async start() {
     this.renderer.view.style.display = 'block';
     window.addEventListener('resize', this.resize);
-    lockPointer(this.renderer.view);
+    initLock(this.renderer.view);
+    await lockPointer(this.renderer.view);
     this.resize();
   }
 

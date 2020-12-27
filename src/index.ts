@@ -10,15 +10,15 @@ const game = new Game(document.getElementsByTagName('canvas')[0]);
 
 const skin = new Skin('assets/skin.ini');
 
-initLock(game.renderer.view);
+initLock(game.renderer.renderer.view);
 initStart()
-  .then(() => skin.load(game.renderer))
+  .then(() => skin.load(game.renderer.renderer))
   .then(init);
 
 function loadTest() {
   const container = new PIXI.Container();
 
-  game.stage.addChildAt(container, 0);
+  game.renderer.stage.addChildAt(container, 0);
 
   // Create a 5x5 grid of bunnies
   for (let i = 0; i < 25; i++) {
@@ -30,8 +30,8 @@ function loadTest() {
   }
 
   // Move container to the center
-  container.x = game.renderer.screen.width / 2;
-  container.y = game.renderer.screen.height / 2;
+  container.x = game.renderer.renderer.screen.width / 2;
+  container.y = game.renderer.renderer.screen.height / 2;
 
   // Center bunny sprite in local container coordinates
   container.pivot.x = container.width / 2;
@@ -52,89 +52,22 @@ function loadTest() {
   });
 }
 
-function loadCursor(texture: PIXI.Texture) {
-  const cursor = new PIXI.Sprite(texture);
-  cursor.position.set(
-    game.renderer.screen.width / 2,
-    game.renderer.screen.height / 2
-  );
-  game.cursorStage.addChild(cursor);
-  return cursor;
-}
-
-const cursorSensitivity = 2;
-
 async function init() {
   // loadTest();
   game.init();
-
-  const cursor = loadCursor(skin.cursor);
+  game.input.loadTexture(skin);
+  game.renderer.cursorStage.addChild(game.input.cursor);
 
   const beatmap = new BeatmapDifficulty(
     'beatmaps/LeaF - Wizdomiot (Asahina Momoko) [Hard].osu'
+    // 'beatmaps/Jesus-P - Death Should Not Have Taken Thee! (cheesiest) [Beginner].osu'
   );
 
   await beatmap.preload();
   await beatmap.load(skin);
 
   for (let i = beatmap.notes.length - 1; i >= 0; i--) {
-    beatmap.notes[i].addToStage(game.notesStage);
+    beatmap.notes[i].addToStage(game.renderer.notesStage);
   }
   game.play(beatmap);
-
-  let numMouseDown = 0;
-
-  function handleMouseDown() {
-    numMouseDown++;
-    const local = game.notesStage.toLocal(cursor.position, null, null, true);
-    beatmap.mousedown(game.time, local);
-  }
-
-  function handleMouseUp() {
-    numMouseDown--;
-    if (numMouseDown === 0) {
-      const local = game.notesStage.toLocal(cursor.position, null, null, true);
-      beatmap.mouseup(game.time, local);
-    }
-  }
-
-  window.addEventListener('mousedown', handleMouseDown);
-
-  window.addEventListener('mousemove', e => {
-    cursor.x = clamp(
-      cursor.x + e.movementX * cursorSensitivity,
-      0,
-      game.renderer.screen.width
-    );
-    cursor.y = clamp(
-      cursor.y + e.movementY * cursorSensitivity,
-      0,
-      game.renderer.screen.height
-    );
-
-    const local = game.notesStage.toLocal(cursor.position, null, null, true);
-    beatmap.mousemove(game.time, local);
-  });
-
-  window.addEventListener('mouseup', handleMouseUp);
-
-  window.addEventListener(
-    'keydown',
-    e => {
-      if (!e.repeat && (e.key === '1' || e.key === '2')) {
-        handleMouseDown();
-      }
-    },
-    false
-  );
-
-  window.addEventListener(
-    'keyup',
-    e => {
-      if (e.key === '1' || e.key === '2') {
-        handleMouseUp();
-      }
-    },
-    false
-  );
 }

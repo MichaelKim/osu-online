@@ -3,14 +3,14 @@ import BeatmapDifficulty from './BeatmapDifficulty';
 import Renderer from './Renderer';
 import InputController from './InputController';
 import { Skin } from './Skin';
+import Clock from './Clock';
 
 export default class Game {
   renderer: Renderer;
   input: InputController;
   skin: Skin;
-
-  ticker: PIXI.Ticker;
-  time: number;
+  clock: Clock;
+  requestID: number;
 
   beatmap: BeatmapDifficulty;
 
@@ -18,9 +18,7 @@ export default class Game {
     this.renderer = new Renderer(view);
     this.input = new InputController(this);
     this.skin = new Skin('assets/skin.ini');
-
-    this.ticker = new PIXI.Ticker();
-    this.time = 0;
+    this.clock = new Clock();
   }
 
   async init() {
@@ -71,27 +69,36 @@ export default class Game {
   }
 
   play(beatmap: BeatmapDifficulty) {
-    this.time = 0;
     this.beatmap = beatmap;
     beatmap.play();
-    this.ticker.add(() => {
-      this.time += this.ticker.deltaMS;
-      beatmap.update(this.time);
-      this.renderer.render();
-    }, PIXI.UPDATE_PRIORITY.LOW);
-    this.ticker.start();
+
+    this.clock.start();
+    this.requestID = window.requestAnimationFrame(this.update);
   }
 
+  update = () => {
+    this.clock.update();
+    this.beatmap.update(this.clock.time);
+    this.renderer.render();
+    this.requestID = window.requestAnimationFrame(this.update);
+  };
+
+  stop() {
+    window.cancelAnimationFrame(this.requestID);
+    this.requestID = null;
+  }
+
+  // TODO: input should be checked on update, not on event
   onDown(position: PIXI.Point) {
-    this.beatmap.mousedown(this.time, position);
+    this.beatmap.mousedown(this.clock.time, position);
   }
 
   onMove(position: PIXI.Point) {
     // TODO
-    this.beatmap?.mousemove(this.time, position);
+    this.beatmap?.mousemove(this.clock.time, position);
   }
 
   onUp(position: PIXI.Point) {
-    this.beatmap.mouseup(this.time, position);
+    this.beatmap.mouseup(this.clock.time, position);
   }
 }

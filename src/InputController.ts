@@ -7,6 +7,8 @@ import { clamp } from './util';
 export default class InputController {
   game: Game;
   cursor: PIXI.Sprite;
+  key1 = '1';
+  key2 = '2';
   cursorSensitivity: number = 2;
   numDown: number = 0; // Number of inputs currently pressing down
 
@@ -36,7 +38,7 @@ export default class InputController {
 
   onKeyDown = (e: KeyboardEvent) => {
     // Ignore repeated events from holding key down
-    if (!e.repeat && (e.key === '1' || e.key === '2')) {
+    if (!e.repeat && (e.key === this.key1 || e.key === this.key2)) {
       this.onDown();
     }
   };
@@ -65,7 +67,7 @@ export default class InputController {
   };
 
   onKeyUp = (e: KeyboardEvent) => {
-    if (e.key === '1' || e.key === '2') {
+    if (e.key === this.key1 || e.key === this.key2) {
       this.onUp();
     }
   };

@@ -78,6 +78,10 @@ export default class Game {
 
   update = () => {
     this.clock.update();
+
+    const local = this.renderer.toOsuPixels(this.input.cursor.position);
+    this.beatmap.mousemove(this.clock.time, local);
+
     this.beatmap.update(this.clock.time);
     this.renderer.render();
     this.requestID = window.requestAnimationFrame(this.update);
@@ -91,11 +95,6 @@ export default class Game {
   // TODO: input should be checked on update, not on event
   onDown(position: PIXI.Point) {
     this.beatmap.mousedown(this.clock.time, position);
-  }
-
-  onMove(position: PIXI.Point) {
-    // TODO
-    this.beatmap?.mousemove(this.clock.time, position);
   }
 
   onUp(position: PIXI.Point) {

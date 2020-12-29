@@ -62,8 +62,6 @@ export default class InputController {
     );
 
     this.cursor.position.set(x, y);
-    const local = this.game.renderer.toOsuPixels(this.cursor.position);
-    this.game.onMove(local);
   };
 
   onKeyUp = (e: KeyboardEvent) => {

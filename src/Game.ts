@@ -1,7 +1,7 @@
 import * as PIXI from 'pixi.js';
 import Beatmap from './Beatmap';
 import Clock from './Clock';
-import InputController from './InputController';
+import InputController, { InputType } from './InputController';
 import Renderer from './Renderer';
 import { Skin } from './Skin';
 
@@ -15,10 +15,10 @@ export default class Game {
 
   constructor(view: HTMLCanvasElement) {
     this.renderer = new Renderer(view);
-    this.input = new InputController(this);
     // TODO: what about switching skins?
     this.skin = new Skin('assets/skin.ini');
     this.clock = new Clock();
+    this.input = new InputController(this.clock);
   }
 
   async init() {
@@ -94,8 +94,30 @@ export default class Game {
   update = () => {
     this.clock.update();
 
-    const local = this.renderer.toOsuPixels(this.input.cursor.position);
-    this.beatmap.mousemove(this.clock.time, local);
+    // Check for input events since last frame
+    for (const event of this.input.events) {
+      switch (event.type) {
+        case InputType.DOWN:
+          this.beatmap.mousedown(
+            event.time,
+            this.renderer.toOsuPixels(event.position)
+          );
+          break;
+        case InputType.UP:
+          this.beatmap.mouseup(
+            event.time,
+            this.renderer.toOsuPixels(event.position)
+          );
+          break;
+        case InputType.MOVE:
+          this.beatmap.mousemove(
+            this.clock.time,
+            this.renderer.toOsuPixels(event.position)
+          );
+          break;
+      }
+    }
+    this.input.events = [];
 
     this.beatmap.update(this.clock.time);
     this.renderer.render();
@@ -105,14 +127,5 @@ export default class Game {
   stop() {
     window.cancelAnimationFrame(this.requestID);
     this.requestID = null;
-  }
-
-  // TODO: input should be checked on update, not on event
-  onDown(position: PIXI.Point) {
-    this.beatmap.mousedown(this.clock.time, position);
-  }
-
-  onUp(position: PIXI.Point) {
-    this.beatmap.mouseup(this.clock.time, position);
   }
 }

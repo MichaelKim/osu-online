@@ -1,24 +1,38 @@
 import * as PIXI from 'pixi.js';
-import Game from './Game';
+import Clock from './Clock';
 import { Skin } from './Skin';
 import { clamp } from './util';
 
+export enum InputType {
+  DOWN,
+  UP,
+  MOVE
+}
+
+interface InputEvent {
+  time: number;
+  type: InputType;
+  position: PIXI.Point;
+}
+
 // Handles cursor and click/tap
 export default class InputController {
-  game: Game;
+  clock: Clock;
   cursor: PIXI.Sprite;
   key1 = '1';
   key2 = '2';
   cursorSensitivity: number = 2;
   numDown: number = 0; // Number of inputs currently pressing down
 
-  constructor(game: Game) {
-    // Needs access to renderer (toOsuPixels) and
-    // needs to send input events to game
-    this.game = game;
+  events: InputEvent[] = [];
+
+  constructor(clock: Clock) {
+    // Needs clock to log input event timings
+    this.clock = clock;
   }
 
   loadTexture(skin: Skin) {
+    // this.cursor?.destroy();
     this.cursor = new PIXI.Sprite(skin.cursor);
     this.cursor.position.set(window.innerWidth / 2, window.innerHeight / 2);
   }
@@ -36,20 +50,23 @@ export default class InputController {
     window.removeEventListener('mouseup', this.onUp);
   }
 
-  onKeyDown = (e: KeyboardEvent) => {
+  private onKeyDown = (e: KeyboardEvent) => {
     // Ignore repeated events from holding key down
     if (!e.repeat && (e.key === this.key1 || e.key === this.key2)) {
       this.onDown();
     }
   };
 
-  onDown = () => {
+  private onDown = () => {
     this.numDown++;
-    const local = this.game.renderer.toOsuPixels(this.cursor.position);
-    this.game.onDown(local);
+    this.events.push({
+      time: this.clock.time,
+      type: InputType.DOWN,
+      position: this.cursor.position
+    });
   };
 
-  onMove = (e: MouseEvent) => {
+  private onMove = (e: MouseEvent) => {
     const x = clamp(
       this.cursor.x + e.movementX * this.cursorSensitivity,
       0,
@@ -62,19 +79,27 @@ export default class InputController {
     );
 
     this.cursor.position.set(x, y);
+    this.events.push({
+      time: this.clock.time,
+      type: InputType.MOVE,
+      position: this.cursor.position
+    });
   };
 
-  onKeyUp = (e: KeyboardEvent) => {
+  private onKeyUp = (e: KeyboardEvent) => {
     if (e.key === this.key1 || e.key === this.key2) {
       this.onUp();
     }
   };
 
-  onUp = () => {
+  private onUp = () => {
     this.numDown--;
     if (this.numDown === 0) {
-      const local = this.game.renderer.toOsuPixels(this.cursor.position);
-      this.game.onUp(local);
+      this.events.push({
+        time: this.clock.time,
+        type: InputType.UP,
+        position: this.cursor.position
+      });
     }
   };
 }

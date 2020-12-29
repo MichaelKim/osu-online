@@ -9,16 +9,9 @@ async function init() {
   await game.init();
   // game.loadTest();
 
-  const beatmap = new Beatmap(
+  await game.loadBeatmap(
     'beatmaps/LeaF - Wizdomiot (Asahina Momoko) [Hard].osu'
-    // 'beatmaps/Jesus-P - Death Should Not Have Taken Thee! (cheesiest) [Beginner].osu'
   );
-
-  await beatmap.preload();
-  await beatmap.load(game.skin);
-
-  for (let i = beatmap.notes.length - 1; i >= 0; i--) {
-    beatmap.notes[i].addToStage(game.renderer.notesStage);
-  }
-  game.play(beatmap);
+  // 'beatmaps/Jesus-P - Death Should Not Have Taken Thee! (cheesiest) [Beginner].osu'
+  game.play();
 }

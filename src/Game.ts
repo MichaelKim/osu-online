@@ -9,14 +9,14 @@ export default class Game {
   renderer: Renderer;
   input: InputController;
   skin: Skin;
+  beatmap: Beatmap;
   clock: Clock;
   requestID: number;
-
-  beatmap: Beatmap;
 
   constructor(view: HTMLCanvasElement) {
     this.renderer = new Renderer(view);
     this.input = new InputController(this);
+    // TODO: what about switching skins?
     this.skin = new Skin('assets/skin.ini');
     this.clock = new Clock();
   }
@@ -68,10 +68,25 @@ export default class Game {
     });
   }
 
-  play(beatmap: Beatmap) {
-    this.beatmap = beatmap;
-    beatmap.play();
+  async loadBeatmap(filepath: string) {
+    this.beatmap = new Beatmap(filepath);
 
+    await this.beatmap.preload();
+    await this.beatmap.load(this.skin);
+
+    // this.renderer.notesStage.removeChildren();
+    for (let i = this.beatmap.notes.length - 1; i >= 0; i--) {
+      this.beatmap.notes[i].addToStage(this.renderer.notesStage);
+    }
+  }
+
+  play() {
+    if (this.beatmap == null) {
+      console.error('no beatmap loaded');
+      return;
+    }
+
+    this.beatmap.play();
     this.clock.start();
     this.requestID = window.requestAnimationFrame(this.update);
   }

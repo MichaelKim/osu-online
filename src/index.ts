@@ -1,6 +1,6 @@
-import initStart from './start';
-import BeatmapDifficulty from './BeatmapDifficulty';
+import Beatmap from './Beatmap';
 import Game from './Game';
+import initStart from './start';
 
 initStart().then(init);
 
@@ -9,7 +9,7 @@ async function init() {
   await game.init();
   // game.loadTest();
 
-  const beatmap = new BeatmapDifficulty(
+  const beatmap = new Beatmap(
     'beatmaps/LeaF - Wizdomiot (Asahina Momoko) [Hard].osu'
     // 'beatmaps/Jesus-P - Death Should Not Have Taken Thee! (cheesiest) [Beginner].osu'
   );

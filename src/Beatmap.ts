@@ -1,18 +1,18 @@
 import * as PIXI from 'pixi.js';
-import HitCircle from './HitCircle';
-import { Skin } from './Skin';
-import { arToMS, odToMS } from './timing';
 import * as AudioLoader from './AudioLoader';
-import { Slider } from './Slider';
-import TimingPoint, { SampleSet } from './TimingPoint';
+import HitCircle from './HitCircle';
 import { ObjectTypes } from './HitObjects';
+import { Skin } from './Skin';
+import { Slider } from './Slider';
+import { arToMS, odToMS } from './timing';
+import TimingPoint, { SampleSet } from './TimingPoint';
 import { distSqr } from './util';
 
 const STACK_LENIENCE_SQR = 3 * 3;
 
 type HitObject = HitCircle | Slider;
 
-export default class BeatmapDifficulty {
+export default class Beatmap {
   filepath: string; // Path to .osu file
 
   // general

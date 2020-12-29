@@ -1,8 +1,5 @@
-- hit sounds
 - sliders
-  - reverse arrow
   - draw body
 - spinners
 - trails
-- stacking
 - hit object colors

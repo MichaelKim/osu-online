@@ -1,9 +1,9 @@
 import * as PIXI from 'pixi.js';
-import BeatmapDifficulty from './BeatmapDifficulty';
-import Renderer from './Renderer';
-import InputController from './InputController';
-import { Skin } from './Skin';
+import Beatmap from './Beatmap';
 import Clock from './Clock';
+import InputController from './InputController';
+import Renderer from './Renderer';
+import { Skin } from './Skin';
 
 export default class Game {
   renderer: Renderer;
@@ -12,7 +12,7 @@ export default class Game {
   clock: Clock;
   requestID: number;
 
-  beatmap: BeatmapDifficulty;
+  beatmap: Beatmap;
 
   constructor(view: HTMLCanvasElement) {
     this.renderer = new Renderer(view);
@@ -68,7 +68,7 @@ export default class Game {
     });
   }
 
-  play(beatmap: BeatmapDifficulty) {
+  play(beatmap: Beatmap) {
     this.beatmap = beatmap;
     beatmap.play();
 

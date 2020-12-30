@@ -11,7 +11,7 @@ export enum HitResultType {
   HIT300
 }
 
-class HitResultSprite {
+class HitResult {
   sprite: PIXI.Sprite;
   type: HitResultType;
   t: number;
@@ -58,19 +58,19 @@ class HitResultSprite {
   }
 }
 
-export default class HitResult {
+export default class HitResultController {
   renderer: Renderer;
   diameter: number;
 
   textures: Record<HitResultType, PIXI.Texture>;
 
-  free: Record<HitResultType, HitResultSprite[]> = {
+  free: Record<HitResultType, HitResult[]> = {
     [HitResultType.MISS]: [],
     [HitResultType.HIT50]: [],
     [HitResultType.HIT100]: [],
     [HitResultType.HIT300]: []
   };
-  used: HitResultSprite[] = [];
+  used: HitResult[] = [];
 
   constructor(renderer: Renderer, skin: Skin) {
     this.renderer = renderer;
@@ -93,7 +93,7 @@ export default class HitResult {
       result.reset(x, y, t);
       this.used.push(result);
     } else {
-      const result = new HitResultSprite(
+      const result = new HitResult(
         this.textures[type],
         x,
         y,

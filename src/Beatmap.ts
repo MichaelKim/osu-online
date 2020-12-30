@@ -2,7 +2,7 @@ import * as PIXI from 'pixi.js';
 import * as AudioLoader from './AudioLoader';
 import HitCircle from './HitCircle';
 import { ObjectTypes } from './HitObjects';
-import HitResult, { HitResultType } from './HitResult';
+import HitResultController, { HitResultType } from './HitResultController';
 import { Skin } from './Skin';
 import { Slider } from './Slider';
 import { arToMS, odToMS } from './timing';
@@ -43,13 +43,13 @@ export default class Beatmap {
   };
 
   // Gameplay
-  hitResult: HitResult;
+  hitResult: HitResultController;
   left: number;
   right: number;
   music: HTMLAudioElement;
   skin: Skin;
 
-  constructor(filepath: string, hitResult: HitResult) {
+  constructor(filepath: string, hitResult: HitResultController) {
     this.filepath = filepath;
     this.hitResult = hitResult;
   }

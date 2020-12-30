@@ -340,6 +340,45 @@ export default class Beatmap {
     this.music.play();
   }
 
+  // Returns index of earliest unfinished hit object
+  getNextNote() {
+    let index = this.left;
+    while (index < this.right && this.notes[index].finished > 0) index++;
+    return index;
+  }
+
+  isMissed(time: number, index: number) {
+    const object = this.notes[index];
+    switch (object.type) {
+      case ObjectTypes.HIT_CIRCLE:
+        if (time > object.t + this.hitWindows[50]) {
+          this.hitResult.addResult(
+            HitResultType.MISS,
+            object.x,
+            object.y,
+            time
+          );
+          return true;
+        }
+        break;
+      case ObjectTypes.SLIDER:
+        const slider = object as Slider;
+        // Ignore active sliders
+        // TODO: fix slider behaviour when missed slider head
+        if (!slider.active && time > slider.t + this.hitWindows[50]) {
+          this.hitResult.addResult(
+            HitResultType.MISS,
+            slider.points[0].x,
+            slider.points[0].y,
+            time
+          );
+          return true;
+        }
+        break;
+    }
+    return false;
+  }
+
   update(time: number) {
     // Check for new notes
     if (
@@ -351,44 +390,24 @@ export default class Beatmap {
     }
 
     // Check for missed notes
-    if (this.left < this.right) {
-      const object = this.notes[this.left];
-      // hit object still ongoing, check timing
-      if (object.finished === 0) {
-        switch (object.type) {
-          case ObjectTypes.HIT_CIRCLE:
-            if (time > object.t + this.hitWindows[50]) {
-              // missed
-              object.finished = time;
-              this.hitResult.addResult(
-                HitResultType.MISS,
-                object.x,
-                object.y,
-                time
-              );
-              console.log('circle miss');
-            }
-            break;
-          case ObjectTypes.SLIDER:
-            const slider = object as Slider;
-            if (!slider.active && time > slider.t + this.hitWindows[50]) {
-              // missed
-              slider.finished = time;
-              this.hitResult.addResult(
-                HitResultType.MISS,
-                slider.points[0].x,
-                slider.points[0].y,
-                time
-              );
-              console.log('slider miss');
-            }
-            break;
-        }
+    let next = this.left;
+    while (next < this.right) {
+      if (this.notes[next].finished > 0) {
+        // Ignore finished notes
+        next++;
+      } else if (this.isMissed(time, next)) {
+        // Found missed note: flag as finished and check for other missed notes
+        this.notes[next].finished = time;
+        next++;
+      } else {
+        // Not finished nor missed: can stop checking
+        break;
       }
     }
 
     // Update notes (opacity, size, position, etc.)
     while (this.left < this.right && this.notes[this.left].update(time)) {
+      // Don't have to update anymore
       this.notes[this.left].setVisible(false);
       this.left++;
     }
@@ -409,10 +428,15 @@ export default class Beatmap {
     // Ignore if no notes are currently visible
     if (this.left >= this.right) return;
 
-    const object = this.notes[this.left];
+    // Find next hit object to hit
+    const index = this.getNextNote();
+    if (index >= this.right) return;
+
+    // Check for hit
+    const object = this.notes[index];
     switch (object.type) {
       case ObjectTypes.HIT_CIRCLE:
-        if (object.finished === 0 && object.hit(position)) {
+        if (object.hit(position)) {
           object.finished = time;
 
           this.skin.playSound(object.sampleSet, object.hitSound);
@@ -423,7 +447,7 @@ export default class Beatmap {
         break;
       case ObjectTypes.SLIDER:
         const slider = object as Slider;
-        if (!slider.active && slider.finished === 0 && slider.hit(position)) {
+        if (!slider.active && slider.hit(position)) {
           slider.active = true;
 
           slider.playEdge(0);
@@ -443,24 +467,33 @@ export default class Beatmap {
   mousemove(time: number, position: PIXI.Point) {
     // Ignore if no notes are currently visible
     if (this.left >= this.right) return;
+
+    // Find current hit object
+    const index = this.getNextNote();
+    if (index >= this.right) return;
+
+    const object = this.notes[index];
     // TODO: handle spinners
-    const object = this.notes[this.left];
     if (object.type != ObjectTypes.SLIDER) return;
 
     const slider = object as Slider;
-    if (!slider.active || slider.finished > 0) return;
-    if (!slider.hit(position)) {
-      // Slider break
-      slider.active = false;
-      slider.finished = time;
-    }
+    if (!slider.active || slider.hit(position)) return;
+
+    // Slider break
+    slider.active = false;
+    slider.finished = time;
   }
 
   mouseup(time: number, position: PIXI.Point) {
     // Ignore if no notes are currently visible
     if (this.left >= this.right) return;
+
+    // Find current hit object
+    const index = this.getNextNote();
+    if (index >= this.right) return;
+
+    const object = this.notes[index];
     // TODO: handle spinners
-    const object = this.notes[this.left];
     if (object.type != ObjectTypes.SLIDER) return;
 
     const slider = object as Slider;

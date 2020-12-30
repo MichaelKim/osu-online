@@ -84,7 +84,7 @@ export default class Beatmap {
     while (i < file.length) {
       switch (file[i++]) {
         case '[General]':
-          while (i < file.length && file[i][0] !== '[') {
+          while (i < file.length && file[i][0] !== '[' && file[i].length > 0) {
             const [key, value] = readKeyValue();
             switch (key) {
               case 'AudioFilename':
@@ -112,7 +112,7 @@ export default class Beatmap {
           }
           break;
         case '[Difficulty]':
-          while (i < file.length && file[i][0] !== '[') {
+          while (i < file.length && file[i][0] !== '[' && file[i].length > 0) {
             const [key, value] = readKeyValue();
             switch (key) {
               case 'CircleSize':
@@ -134,14 +134,14 @@ export default class Beatmap {
           }
           break;
         case '[TimingPoints]':
-          while (i < file.length && file[i][0] !== '[') {
+          while (i < file.length && file[i][0] !== '[' && file[i].length > 0) {
             const tokens = file[i++].split(',');
             this.timingPoints.push(new TimingPoint(tokens));
           }
           break;
         case '[HitObjects]':
           // Parse hit objects later
-          while (i < file.length && file[i][0] !== '[') {
+          while (i < file.length && file[i][0] !== '[' && file[i].length > 0) {
             i++;
           }
           break;
@@ -160,20 +160,15 @@ export default class Beatmap {
     let comboNumber = 0;
     let comboIndex = 0;
 
-    let timingIndex = 1;
+    let timingIndex = -1;
     let baseBeatLength = 1,
       beatLength = 1;
-    if (this.timingPoints[0].inherited) {
-      beatLength = baseBeatLength * this.timingPoints[0].mult;
-    } else {
-      baseBeatLength = beatLength = this.timingPoints[0].beatLength;
-    }
 
     const file = await this.readFile();
 
     for (
       let i = file.indexOf('[HitObjects]') + 1;
-      i < file.length && file[i][0] !== '[';
+      i < file.length && file[i][0] !== '[' && file[i].length > 0;
       i++
     ) {
       const tokens = file[i].split(',');
@@ -196,14 +191,23 @@ export default class Beatmap {
       }
 
       // Update latest point
+      // TODO: alternative is to make a pass through timing points and
+      // calculate beat length for each point in advance
       const t = parseInt(tokens[2]);
       while (
-        timingIndex < this.timingPoints.length &&
-        this.timingPoints[timingIndex].time < t
+        timingIndex + 1 < this.timingPoints.length &&
+        this.timingPoints[timingIndex + 1].time <= t
       ) {
         timingIndex++;
+        // Calculate beat length
+        if (this.timingPoints[timingIndex].inherited) {
+          beatLength = baseBeatLength * this.timingPoints[timingIndex].mult;
+        } else {
+          baseBeatLength = beatLength = this.timingPoints[timingIndex]
+            .beatLength;
+        }
       }
-      const timingPoint = this.timingPoints[timingIndex];
+      const timingPoint = this.timingPoints[timingIndex - 1];
 
       // TODO: handle stacking
 
@@ -224,13 +228,6 @@ export default class Beatmap {
           timingPoint.sampleSet || this.sampleSet,
           this.hitSound
         );
-
-        // Calculate beat length
-        if (timingPoint.inherited) {
-          beatLength = baseBeatLength * timingPoint.mult;
-        } else {
-          baseBeatLength = beatLength = timingPoint.beatLength;
-        }
 
         // Calculate slider duration
         slider.sliderTime =

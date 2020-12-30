@@ -3,10 +3,12 @@ import * as AudioLoader from './AudioLoader';
 import HitCircle from './HitCircle';
 import { ObjectTypes } from './HitObjects';
 import HitResultController, { HitResultType } from './HitResultController';
+import HitSoundController from './HitSoundController';
+import { SampleSetType } from './SampleSet';
 import { Skin } from './Skin';
 import { Slider } from './Slider';
 import { arToMS, odToMS } from './timing';
-import TimingPoint, { SampleSet } from './TimingPoint';
+import TimingPoint from './TimingPoint';
 import { distSqr } from './util';
 
 const STACK_LENIENCE_SQR = 3 * 3;
@@ -20,7 +22,7 @@ export default class Beatmap {
   version: number = 14;
   audioFilename: string;
   audioLeadIn: number = 0;
-  sampleSet = SampleSet.NORMAL;
+  sampleSet: SampleSetType = SampleSetType.NORMAL;
   stackLeniency: number = 0.7;
 
   // difficulty
@@ -36,6 +38,7 @@ export default class Beatmap {
   // Computed
   fadeTime: number; // Starts to fade in
   fullTime: number; // Fully opaque
+  // TODO: replace with HitResultType?
   hitWindows: {
     300: number;
     100: number;
@@ -47,11 +50,16 @@ export default class Beatmap {
   left: number;
   right: number;
   music: HTMLAudioElement;
-  skin: Skin;
+  hitSound: HitSoundController;
 
-  constructor(filepath: string, hitResult: HitResultController) {
+  constructor(
+    filepath: string,
+    hitResult: HitResultController,
+    hitSound: HitSoundController
+  ) {
     this.filepath = filepath;
     this.hitResult = hitResult;
+    this.hitSound = hitSound;
   }
 
   async readFile() {
@@ -88,13 +96,13 @@ export default class Beatmap {
               case 'SampleSet':
                 switch (value) {
                   case 'Normal':
-                    this.sampleSet = SampleSet.NORMAL;
+                    this.sampleSet = SampleSetType.NORMAL;
                     break;
                   case 'Soft':
-                    this.sampleSet = SampleSet.SOFT;
+                    this.sampleSet = SampleSetType.SOFT;
                     break;
                   case 'Drum':
-                    this.sampleSet = SampleSet.DRUM;
+                    this.sampleSet = SampleSetType.DRUM;
                     break;
                 }
               case 'StackLeniency':
@@ -213,7 +221,8 @@ export default class Beatmap {
           tokens,
           comboNumber,
           comboIndex,
-          timingPoint.sampleSet || this.sampleSet
+          timingPoint.sampleSet || this.sampleSet,
+          this.hitSound
         );
 
         // Calculate beat length
@@ -318,8 +327,6 @@ export default class Beatmap {
   }
 
   async load(skin: Skin) {
-    this.skin = skin;
-
     // TODO: extract gameplay logic
     this.left = 0;
     this.right = 0;
@@ -439,7 +446,7 @@ export default class Beatmap {
         if (object.hit(position)) {
           object.finished = time;
 
-          this.skin.playSound(object.sampleSet, object.hitSound);
+          this.hitSound.playBaseSound(object.sampleSet, object.hitSound);
 
           const result = this.getHitResult(time, object);
           this.hitResult.addResult(result, object.x, object.y, time);

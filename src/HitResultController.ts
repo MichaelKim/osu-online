@@ -75,6 +75,7 @@ export default class HitResultController {
   constructor(renderer: Renderer, skin: Skin) {
     this.renderer = renderer;
 
+    // TODO: replace with reference to skin
     this.textures = {
       [HitResultType.MISS]: skin.hit0,
       [HitResultType.HIT50]: skin.hit50,

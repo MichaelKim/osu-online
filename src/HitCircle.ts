@@ -4,7 +4,6 @@ import { Skin } from './Skin';
 import { arToMS, csToSize } from './timing';
 import {
   APPROACH_R,
-  BaseHitSound,
   FADE_OUT_MS,
   getNumberSprites,
   initSprite,
@@ -12,7 +11,8 @@ import {
   STACK_OFFSET_MULT,
   Stats
 } from './HitObjects';
-import { SampleSet } from './TimingPoint';
+import { BaseHitSound } from './HitSoundController';
+import { SampleSetType } from './SampleSet';
 
 export default class HitCircle {
   type = ObjectTypes.HIT_CIRCLE;
@@ -26,8 +26,8 @@ export default class HitCircle {
   // Beatmap
   comboIndex: number; // Combo color index
   comboNumber: number;
-  sampleSet: SampleSet; // Sample set override
-  additionSet: SampleSet;
+  sampleSet: SampleSetType; // Sample set override
+  additionSet: SampleSetType;
   stackCount: number = 0;
 
   // Computed
@@ -46,7 +46,7 @@ export default class HitCircle {
     tokens: string[],
     comboNumber: number,
     comboIndex: number,
-    sampleSet: SampleSet
+    sampleSet: SampleSetType
   ) {
     // x,y,time,type,hitSound,objectParams,hitSample
     this.x = parseFloat(tokens[0]);
@@ -55,7 +55,7 @@ export default class HitCircle {
     this.hitSound = parseInt(tokens[4]) || BaseHitSound.NORMAL;
 
     // TODO: normalSet:additionSet:index:volume:filename
-    let hitSample: Tuple<SampleSet, 2> = [0, 0];
+    let hitSample: Tuple<SampleSetType, 2> = [0, 0];
     if (tokens.length > 6) {
       const sampleTokens = tokens[6].split(':');
       hitSample = [parseInt(sampleTokens[0]), parseInt(sampleTokens[1])];

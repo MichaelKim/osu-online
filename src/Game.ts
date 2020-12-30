@@ -2,6 +2,7 @@ import * as PIXI from 'pixi.js';
 import Beatmap from './Beatmap';
 import Clock from './Clock';
 import HitResultController from './HitResultController';
+import HitSoundController from './HitSoundController';
 import InputController, { InputType } from './InputController';
 import Renderer from './Renderer';
 import { Skin } from './Skin';
@@ -14,7 +15,10 @@ export default class Game {
   beatmap: Beatmap;
   clock: Clock;
   requestID: number;
+
+  // Based on skin
   hitResult: HitResultController;
+  hitSound: HitSoundController;
 
   constructor(view: HTMLCanvasElement) {
     this.renderer = new Renderer(view);
@@ -73,8 +77,9 @@ export default class Game {
 
   async loadBeatmap(filepath: string) {
     this.hitResult = new HitResultController(this.renderer, this.skin);
+    this.hitSound = new HitSoundController(this.skin);
 
-    this.beatmap = new Beatmap(filepath, this.hitResult);
+    this.beatmap = new Beatmap(filepath, this.hitResult, this.hitSound);
 
     await this.beatmap.preload();
     await this.beatmap.load(this.skin);

@@ -1,11 +1,5 @@
+import { SampleSetType } from './SampleSet';
 import { clamp } from './util';
-
-export enum SampleSet {
-  DEFAULT = 0,
-  NORMAL = 1,
-  SOFT = 2,
-  DRUM = 3
-}
 
 enum Effects {
   KIAI = 1 << 0
@@ -17,7 +11,7 @@ export default class TimingPoint {
   beatLength: number;
   mult: number; // inverse slider velocity multiplier
   meter: number;
-  sampleSet: SampleSet;
+  sampleSet: 0 | SampleSetType; // 0: beatmap default
   sampleIndex: number; // TODO: what is this
   volume: number;
   inherited: boolean;

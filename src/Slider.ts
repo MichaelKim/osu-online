@@ -2,19 +2,21 @@ import * as PIXI from 'pixi.js';
 import { Bezier, Circle } from './Curve';
 import {
   APPROACH_R,
-  BaseHitSound,
   FADE_OUT_MS,
   FOLLOW_R,
   getNumberSprites,
   initSprite,
   ObjectTypes,
-  SliderHitSound,
   STACK_OFFSET_MULT,
   Stats
 } from './HitObjects';
+import HitSoundController, {
+  BaseHitSound,
+  SliderHitSound
+} from './HitSoundController';
+import { SampleSetType } from './SampleSet';
 import { Skin } from './Skin';
 import { arToMS, csToSize } from './timing';
-import { SampleSet } from './TimingPoint';
 import { clerp, clerp01, Tuple } from './util';
 
 enum CurveTypes {
@@ -36,14 +38,15 @@ export class Slider {
   sliderType: CurveTypes;
   slides: number; // Total number of slides (0 repeats = 1 slide)
   length: number;
+  // TODO: this type is supposed to be like a bitset of BaseHitSounds
   edgeSounds: BaseHitSound[] = [];
-  edgeSets: Tuple<SampleSet, 2>[] = []; // [normal, addition]
+  edgeSets: Tuple<SampleSetType, 2>[] = []; // [normal, addition]
 
   // Beatmap
   comboIndex: number; // Combo color index
   comboNumber: number;
-  sampleSet: SampleSet; // Sample set override
-  additionSet: SampleSet;
+  sampleSet: SampleSetType; // Sample set override
+  additionSet: SampleSetType;
   stackCount: number = 0;
 
   // Computed
@@ -67,15 +70,16 @@ export class Slider {
   // Gameplay
   finished = 0;
   active = false; // Is the slider being followed?
-  skin: Skin;
   ticksHit = 0; // Number of slider ticks already hit (per repeat)
   repeatsHit = 0; // Number of repeats (incl. slider ends) hit
+  hitSoundController: HitSoundController;
 
   constructor(
     tokens: string[],
     comboNumber: number,
     comboIndex: number,
-    sampleSet: SampleSet
+    sampleSet: SampleSetType,
+    hitSoundController: HitSoundController
   ) {
     // x,y,time,type,hitSound,curveType|curvePoints,slides,length,edgeSounds,edgeSets,hitSample
     this.x = parseFloat(tokens[0]);
@@ -116,7 +120,7 @@ export class Slider {
     }
 
     // TODO: normalSet:additionSet:index:volume:filename
-    let hitSample: Tuple<SampleSet, 2> = [0, 0];
+    let hitSample: Tuple<SampleSetType, 2> = [0, 0];
     if (tokens.length > 10) {
       const sampleTokens = tokens[10].split(':');
       hitSample = [parseInt(sampleTokens[0]), parseInt(sampleTokens[1])];
@@ -126,6 +130,7 @@ export class Slider {
 
     this.comboNumber = comboNumber;
     this.comboIndex = comboIndex;
+    this.hitSoundController = hitSoundController;
 
     this.graphics = new PIXI.Graphics();
 
@@ -142,7 +147,6 @@ export class Slider {
   }
 
   load(skin: Skin, stats: Stats) {
-    this.skin = skin;
     [this.fadeTime, this.fullTime] = arToMS(stats.ar);
     this.size = csToSize(stats.cs);
 
@@ -270,7 +274,7 @@ export class Slider {
     // [normal, addition]
     const setIndex = hitSound === BaseHitSound.NORMAL ? 0 : 1;
     const sampleSet = this.edgeSets[index]?.[setIndex] || this.sampleSet;
-    this.skin.playSound(sampleSet, hitSound);
+    this.hitSoundController.playBaseSound(sampleSet, hitSound);
   }
 
   update(time: number) {
@@ -393,7 +397,10 @@ export class Slider {
     if (this.active) {
       for (let i = this.ticksHit; i < ticksHitNew; i++) {
         // Number of ticks hit increased: new ticks
-        this.skin.playSound(this.sampleSet, SliderHitSound.SLIDER_TICK);
+        this.hitSoundController.playSound(
+          this.sampleSet,
+          SliderHitSound.SLIDER_TICK
+        );
       }
     }
     this.ticksHit = ticksHitNew;

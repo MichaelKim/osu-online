@@ -1,7 +1,5 @@
 import * as PIXI from 'pixi.js';
-import { AudioResource } from './AudioLoader';
-import { BaseHitSound, HitSound, SliderHitSound } from './HitObjects';
-import { SampleSet } from './TimingPoint';
+import SampleSetData, { SampleSetType } from './SampleSet';
 import { Tuple } from './util';
 
 // Filepaths to each asset
@@ -56,88 +54,11 @@ function loadHitCircle(
   return texture;
 }
 
-const soundAssets = {
-  hitClap: 'hitclap',
-  hitFinish: 'hitfinish',
-  hitNormal: 'hitnormal',
-  hitWhistle: 'hitwhistle',
-  sliderSlide: 'sliderslide',
-  sliderTick: 'slidertick',
-  sliderWhistle: 'sliderwhistle'
-};
-type SoundResources = Record<keyof typeof soundAssets, AudioResource>;
-
 function parseKeyValue(line: string) {
   const split = line.indexOf(':');
   const key = line.slice(0, split).trim();
   const value = line.slice(split + 1).trim();
   return [key, value];
-}
-
-class SampleSetSounds {
-  name: string;
-  loader: PIXI.Loader;
-
-  hitClap: HTMLAudioElement[];
-  hitFinish: HTMLAudioElement[];
-  hitNormal: HTMLAudioElement[];
-  hitWhistle: HTMLAudioElement[];
-  sliderSlide: HTMLAudioElement;
-  sliderTick: HTMLAudioElement[];
-  sliderWhistle: HTMLAudioElement;
-
-  constructor(name: string, loader: PIXI.Loader) {
-    this.name = name;
-    this.loader = loader;
-  }
-
-  async load() {
-    return new Promise<void>(resolve => {
-      const paths = Object.entries(soundAssets).map(([name, url]) => ({
-        name: this.name + name,
-        url: `assets/audio/${this.name}-${url}.wav`
-      }));
-      this.loader.add(paths).load((_, resources: SoundResources) => {
-        // TODO: check for missing / error sounds
-        this.hitClap = [resources[this.name + 'hitClap'].data];
-        this.hitFinish = [resources[this.name + 'hitFinish'].data];
-        this.hitNormal = [resources[this.name + 'hitNormal'].data];
-        this.hitWhistle = [resources[this.name + 'hitWhistle'].data];
-        this.sliderSlide = resources[this.name + 'sliderSlide'].data;
-        this.sliderTick = [resources[this.name + 'sliderTick'].data];
-        this.sliderWhistle = resources[this.name + 'sliderWhistle'].data;
-        resolve();
-      });
-    });
-  }
-
-  play(hitSound: HitSound) {
-    switch (hitSound) {
-      case BaseHitSound.NORMAL:
-        this.playSound(this.hitNormal);
-        break;
-      case BaseHitSound.WHISTLE:
-        this.playSound(this.hitWhistle);
-        break;
-      case BaseHitSound.FINISH:
-        this.playSound(this.hitFinish);
-        break;
-      case BaseHitSound.CLAP:
-        this.playSound(this.hitClap);
-        break;
-      case SliderHitSound.SLIDER_TICK:
-        this.playSound(this.sliderTick);
-        break;
-    }
-  }
-
-  playSound(sound: HTMLAudioElement[]) {
-    let i = 0;
-    while (i < sound.length && !sound[i].paused) i++;
-    if (i === sound.length)
-      sound.push(sound[0].cloneNode(true) as HTMLAudioElement);
-    sound[i].play();
-  }
 }
 
 export class Skin {
@@ -164,6 +85,7 @@ export class Skin {
   reverseArrow: PIXI.Texture;
 
   // Hits
+  // TODO: replace with Record<HitResultType, PIXI.Texture>?
   hit0: PIXI.Texture;
   hit50: PIXI.Texture;
   hit100: PIXI.Texture;
@@ -171,20 +93,16 @@ export class Skin {
 
   // Sounds
   soundLoader: PIXI.Loader;
-  sounds: {
-    [SampleSet.NORMAL]: SampleSetSounds;
-    [SampleSet.SOFT]: SampleSetSounds;
-    [SampleSet.DRUM]: SampleSetSounds;
-  };
+  sampleSets: Record<SampleSetType, SampleSetData>;
 
   constructor(filepath: string) {
     this.filepath = filepath;
 
     this.soundLoader = new PIXI.Loader();
-    this.sounds = {
-      [SampleSet.NORMAL]: new SampleSetSounds('normal', this.soundLoader),
-      [SampleSet.SOFT]: new SampleSetSounds('soft', this.soundLoader),
-      [SampleSet.DRUM]: new SampleSetSounds('drum', this.soundLoader)
+    this.sampleSets = {
+      [SampleSetType.NORMAL]: new SampleSetData('normal', this.soundLoader),
+      [SampleSetType.SOFT]: new SampleSetData('soft', this.soundLoader),
+      [SampleSetType.DRUM]: new SampleSetData('drum', this.soundLoader)
     };
   }
 
@@ -224,9 +142,9 @@ export class Skin {
   }
 
   async loadSounds() {
-    await this.sounds[SampleSet.NORMAL].load();
-    await this.sounds[SampleSet.DRUM].load();
-    await this.sounds[SampleSet.SOFT].load();
+    await this.sampleSets[SampleSetType.NORMAL].load();
+    await this.sampleSets[SampleSetType.DRUM].load();
+    await this.sampleSets[SampleSetType.SOFT].load();
   }
 
   loadTextures(renderer: PIXI.Renderer) {
@@ -290,15 +208,5 @@ export class Skin {
       this.loadSounds(),
       this.parseFile()
     ]);
-  }
-
-  playSound(sampleSet: SampleSet, hitSound: HitSound) {
-    if (sampleSet === SampleSet.NORMAL || this.layeredHitSounds) {
-      this.sounds[SampleSet.NORMAL].play(hitSound);
-    }
-
-    if (sampleSet !== SampleSet.NORMAL) {
-      this.sounds[sampleSet].play(hitSound);
-    }
   }
 }

@@ -414,11 +414,18 @@ export class Slider {
   }
 
   hit(position: PIXI.Point) {
-    const dx = position.x - this.x;
-    const dy = position.y - this.y;
-    // Once active, cursor needs to stay within follow circle
-    const scale = this.active ? FOLLOW_R : 1;
-    const r = (scale * this.size) / 2;
+    // TODO: should this be two separate methods?
+    if (this.active) {
+      const dx = position.x - this.x;
+      const dy = position.y - this.y;
+      // Once active, cursor needs to stay within follow circle
+      const r = (FOLLOW_R * this.size) / 2;
+      return dx * dx + dy * dy < r * r;
+    }
+
+    const dx = position.x - this.points[0].x;
+    const dy = position.y - this.points[0].y;
+    const r = this.size / 2;
     return dx * dx + dy * dy < r * r;
   }
 }

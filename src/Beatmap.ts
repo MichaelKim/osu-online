@@ -38,11 +38,10 @@ export default class Beatmap {
   // Computed
   fadeTime: number; // Starts to fade in
   fullTime: number; // Fully opaque
-  // TODO: replace with HitResultType?
   hitWindows: {
-    300: number;
-    100: number;
-    50: number;
+    [HitResultType.HIT300]: number;
+    [HitResultType.HIT100]: number;
+    [HitResultType.HIT50]: number;
   };
 
   // Gameplay
@@ -209,8 +208,6 @@ export default class Beatmap {
       }
       const timingPoint = this.timingPoints[timingIndex - 1];
 
-      // TODO: handle stacking
-
       if (type & ObjectTypes.HIT_CIRCLE) {
         const circle = new HitCircle(
           tokens,
@@ -355,7 +352,7 @@ export default class Beatmap {
     const object = this.notes[index];
     switch (object.type) {
       case ObjectTypes.HIT_CIRCLE:
-        if (time > object.t + this.hitWindows[50]) {
+        if (time > object.t + this.hitWindows[HitResultType.HIT50]) {
           this.hitResult.addResult(
             HitResultType.MISS,
             object.x,
@@ -369,7 +366,10 @@ export default class Beatmap {
         const slider = object as Slider;
         // Ignore active sliders
         // TODO: fix slider behaviour when missed slider head
-        if (!slider.active && time > slider.t + this.hitWindows[50]) {
+        if (
+          !slider.active &&
+          time > slider.t + this.hitWindows[HitResultType.HIT50]
+        ) {
           this.hitResult.addResult(
             HitResultType.MISS,
             slider.points[0].x,
@@ -422,9 +422,11 @@ export default class Beatmap {
 
   getHitResult(time: number, object: HitObject) {
     const dt = Math.abs(time - object.t);
-    if (dt <= this.hitWindows[300]) return HitResultType.HIT300;
-    if (dt <= this.hitWindows[100]) return HitResultType.HIT100;
-    if (dt <= this.hitWindows[50]) return HitResultType.HIT50;
+    if (dt <= this.hitWindows[HitResultType.HIT300])
+      return HitResultType.HIT300;
+    if (dt <= this.hitWindows[HitResultType.HIT100])
+      return HitResultType.HIT100;
+    if (dt <= this.hitWindows[HitResultType.HIT50]) return HitResultType.HIT50;
     return HitResultType.MISS;
   }
 

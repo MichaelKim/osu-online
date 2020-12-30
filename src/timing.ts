@@ -1,5 +1,6 @@
 // Timing windows
 
+import { HitResultType } from './HitResultController';
 import { lerp } from './util';
 
 // Approach Rate values (in ms)
@@ -36,9 +37,9 @@ const OD10_50 = 100;
 
 export function odToMS(od: number) {
   return {
-    300: lerp(od, 0, 10, OD0_300, OD10_300),
-    100: lerp(od, 0, 10, OD0_100, OD10_100),
-    50: lerp(od, 0, 10, OD0_50, OD10_50)
+    [HitResultType.HIT300]: lerp(od, 0, 10, OD0_300, OD10_300),
+    [HitResultType.HIT100]: lerp(od, 0, 10, OD0_100, OD10_100),
+    [HitResultType.HIT50]: lerp(od, 0, 10, OD0_50, OD10_50)
   };
 }
 

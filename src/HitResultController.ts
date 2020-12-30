@@ -59,10 +59,9 @@ class HitResult {
 }
 
 export default class HitResultController {
+  skin: Skin;
   renderer: Renderer;
   diameter: number;
-
-  textures: Record<HitResultType, PIXI.Texture>;
 
   free: Record<HitResultType, HitResult[]> = {
     [HitResultType.MISS]: [],
@@ -73,15 +72,8 @@ export default class HitResultController {
   used: HitResult[] = [];
 
   constructor(renderer: Renderer, skin: Skin) {
+    this.skin = skin;
     this.renderer = renderer;
-
-    // TODO: replace with reference to skin
-    this.textures = {
-      [HitResultType.MISS]: skin.hit0,
-      [HitResultType.HIT50]: skin.hit50,
-      [HitResultType.HIT100]: skin.hit100,
-      [HitResultType.HIT300]: skin.hit300
-    };
   }
 
   loadDiameter(diameter: number) {
@@ -95,7 +87,7 @@ export default class HitResultController {
       this.used.push(result);
     } else {
       const result = new HitResult(
-        this.textures[type],
+        this.skin.hits[type],
         x,
         y,
         this.diameter,

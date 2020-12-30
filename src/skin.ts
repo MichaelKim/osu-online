@@ -1,4 +1,5 @@
 import * as PIXI from 'pixi.js';
+import { HitResultType } from './HitResultController';
 import SampleSetData, { SampleSetType } from './SampleSet';
 import { Tuple } from './util';
 
@@ -85,11 +86,7 @@ export class Skin {
   reverseArrow: PIXI.Texture;
 
   // Hits
-  // TODO: replace with Record<HitResultType, PIXI.Texture>?
-  hit0: PIXI.Texture;
-  hit50: PIXI.Texture;
-  hit100: PIXI.Texture;
-  hit300: PIXI.Texture;
+  hits: Record<HitResultType, PIXI.Texture>;
 
   // Sounds
   soundLoader: PIXI.Loader;
@@ -179,10 +176,12 @@ export class Skin {
         this.sliderFollowCircle = resources.sliderFollowCircle.texture;
         this.sliderScorePoint = resources.sliderScorePoint.texture;
         this.reverseArrow = resources.reverseArrow.texture;
-        this.hit0 = resources.hit0.texture;
-        this.hit50 = resources.hit50.texture;
-        this.hit100 = resources.hit100.texture;
-        this.hit300 = resources.hit300.texture;
+        this.hits = {
+          [HitResultType.MISS]: resources.hit0.texture,
+          [HitResultType.HIT50]: resources.hit50.texture,
+          [HitResultType.HIT100]: resources.hit100.texture,
+          [HitResultType.HIT300]: resources.hit300.texture
+        };
 
         // Center textures
         this.cursor.defaultAnchor.set(0.5);
@@ -192,10 +191,10 @@ export class Skin {
         this.sliderFollowCircle.defaultAnchor.set(0.5);
         this.sliderScorePoint.defaultAnchor.set(0.5);
         this.reverseArrow.defaultAnchor.set(0.5);
-        this.hit0.defaultAnchor.set(0.5);
-        this.hit50.defaultAnchor.set(0.5);
-        this.hit100.defaultAnchor.set(0.5);
-        this.hit300.defaultAnchor.set(0.5);
+        this.hits[HitResultType.MISS].defaultAnchor.set(0.5);
+        this.hits[HitResultType.HIT50].defaultAnchor.set(0.5);
+        this.hits[HitResultType.HIT100].defaultAnchor.set(0.5);
+        this.hits[HitResultType.HIT300].defaultAnchor.set(0.5);
 
         resolve();
       });

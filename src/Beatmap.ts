@@ -2,6 +2,7 @@ import * as PIXI from 'pixi.js';
 import * as AudioLoader from './AudioLoader';
 import HitCircle from './HitCircle';
 import { ObjectTypes } from './HitObjects';
+import HitResult, { HitResultType } from './HitResult';
 import { Skin } from './Skin';
 import { Slider } from './Slider';
 import { arToMS, odToMS } from './timing';
@@ -42,13 +43,15 @@ export default class Beatmap {
   };
 
   // Gameplay
+  hitResult: HitResult;
   left: number;
   right: number;
   music: HTMLAudioElement;
   skin: Skin;
 
-  constructor(filepath: string) {
+  constructor(filepath: string, hitResult: HitResult) {
     this.filepath = filepath;
+    this.hitResult = hitResult;
   }
 
   async readFile() {
@@ -357,6 +360,12 @@ export default class Beatmap {
             if (time > object.t + this.hitWindows[50]) {
               // missed
               object.finished = time;
+              this.hitResult.addResult(
+                HitResultType.MISS,
+                object.x,
+                object.y,
+                time
+              );
               console.log('circle miss');
             }
             break;
@@ -364,7 +373,13 @@ export default class Beatmap {
             const slider = object as Slider;
             if (!slider.active && time > slider.t + this.hitWindows[50]) {
               // missed
-              object.finished = time;
+              slider.finished = time;
+              this.hitResult.addResult(
+                HitResultType.MISS,
+                slider.points[0].x,
+                slider.points[0].y,
+                time
+              );
               console.log('slider miss');
             }
             break;
@@ -384,10 +399,10 @@ export default class Beatmap {
 
   getHitResult(time: number, object: HitObject) {
     const dt = Math.abs(time - object.t);
-    if (dt <= this.hitWindows[300]) return 300;
-    if (dt <= this.hitWindows[100]) return 100;
-    if (dt <= this.hitWindows[50]) return 50;
-    return 0;
+    if (dt <= this.hitWindows[300]) return HitResultType.HIT300;
+    if (dt <= this.hitWindows[100]) return HitResultType.HIT100;
+    if (dt <= this.hitWindows[50]) return HitResultType.HIT50;
+    return HitResultType.MISS;
   }
 
   mousedown(time: number, position: PIXI.Point) {
@@ -402,7 +417,8 @@ export default class Beatmap {
 
           this.skin.playSound(object.sampleSet, object.hitSound);
 
-          console.log('circle:', this.getHitResult(time, object));
+          const result = this.getHitResult(time, object);
+          this.hitResult.addResult(result, object.x, object.y, time);
         }
         break;
       case ObjectTypes.SLIDER:
@@ -412,7 +428,13 @@ export default class Beatmap {
 
           slider.playEdge(0);
 
-          console.log('slider head:', this.getHitResult(time, slider));
+          const result = this.getHitResult(time, object);
+          this.hitResult.addResult(
+            result,
+            slider.points[0].x,
+            slider.points[0].y,
+            time
+          );
         }
         break;
     }

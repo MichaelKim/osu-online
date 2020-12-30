@@ -54,13 +54,13 @@ export function getNumberSprites(
   number: number,
   x: number,
   y: number,
-  circleSize: number
+  diameter: number
 ) {
   const sprites: PIXI.Sprite[] = [];
   const length = Math.floor(Math.log10(number) + 1);
 
   // TODO: assuming each digit has the same size
-  const scale = circleSize / 160;
+  const scale = diameter / 160;
   const width = (skin.numbers[0].width - skin.hitCircleOverlap) * scale;
   let digitX = x + ((length - 1) * width) / 2;
   while (number > 0) {

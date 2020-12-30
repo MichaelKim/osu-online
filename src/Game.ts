@@ -1,9 +1,11 @@
 import * as PIXI from 'pixi.js';
 import Beatmap from './Beatmap';
 import Clock from './Clock';
+import HitResult from './HitResult';
 import InputController, { InputType } from './InputController';
 import Renderer from './Renderer';
 import { Skin } from './Skin';
+import { csToSize } from './timing';
 
 export default class Game {
   renderer: Renderer;
@@ -12,6 +14,7 @@ export default class Game {
   beatmap: Beatmap;
   clock: Clock;
   requestID: number;
+  hitResult: HitResult;
 
   constructor(view: HTMLCanvasElement) {
     this.renderer = new Renderer(view);
@@ -69,7 +72,9 @@ export default class Game {
   }
 
   async loadBeatmap(filepath: string) {
-    this.beatmap = new Beatmap(filepath);
+    this.hitResult = new HitResult(this.renderer, this.skin);
+
+    this.beatmap = new Beatmap(filepath, this.hitResult);
 
     await this.beatmap.preload();
     await this.beatmap.load(this.skin);
@@ -78,6 +83,8 @@ export default class Game {
     for (let i = this.beatmap.notes.length - 1; i >= 0; i--) {
       this.beatmap.notes[i].addToStage(this.renderer.notesStage);
     }
+
+    this.hitResult.loadDiameter(csToSize(this.beatmap.cs));
   }
 
   play() {
@@ -120,6 +127,7 @@ export default class Game {
     this.input.events = [];
 
     this.beatmap.update(this.clock.time);
+    this.hitResult.update(this.clock.time);
     this.renderer.render();
     this.requestID = window.requestAnimationFrame(this.update);
   };

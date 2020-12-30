@@ -262,9 +262,9 @@ export class Skin {
         this.sliderScorePoint = resources.sliderScorePoint.texture;
         this.reverseArrow = resources.reverseArrow.texture;
         this.hit0 = resources.hit0.texture;
-        this.hit50 = resources.hit0.texture;
-        this.hit100 = resources.hit0.texture;
-        this.hit300 = resources.hit0.texture;
+        this.hit50 = resources.hit50.texture;
+        this.hit100 = resources.hit100.texture;
+        this.hit300 = resources.hit300.texture;
 
         // Center textures
         this.cursor.defaultAnchor.set(0.5);

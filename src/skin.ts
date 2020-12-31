@@ -26,7 +26,8 @@ const assets = {
   hit0: 'hit0.png',
   hit50: 'hit50.png',
   hit100: 'hit100.png',
-  hit300: 'hit300.png'
+  hit300: 'hit300.png',
+  followPoint: 'followpoint.png'
 };
 
 type Resources = Record<keyof typeof assets, PIXI.LoaderResource>;
@@ -76,6 +77,7 @@ export class Skin {
   // Hit circle
   circle: PIXI.Texture;
   approach: PIXI.Texture;
+  followPoint: PIXI.Texture;
   // Numbers
   numbers: Tuple<PIXI.Texture, 10>;
 
@@ -160,6 +162,7 @@ export class Skin {
           resources.circle.texture,
           resources.overlay.texture
         );
+        this.followPoint = resources.followPoint.texture;
         this.numbers = [
           resources.default0.texture,
           resources.default1.texture,

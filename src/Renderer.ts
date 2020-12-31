@@ -7,7 +7,11 @@ export default class Renderer {
   // Stages
   stage: PIXI.Container; // Base stage
   cursorStage: PIXI.Container; // Highest stage for cursor
-  notesStage: PIXI.Container; // Stage for hit objects (osu!pixels with 4:3)
+  gameStage: PIXI.Container; // Game field (osu!pixels with 4:3)
+
+  // Substage
+  notesStage: PIXI.Container; // Stage for hit objects
+  hitResultStage: PIXI.Container; // Stage for hit results
 
   constructor(view: HTMLCanvasElement) {
     this.renderer = new PIXI.Renderer({
@@ -22,8 +26,12 @@ export default class Renderer {
 
     this.stage = new PIXI.Container();
     this.cursorStage = new PIXI.Container();
+    this.gameStage = new PIXI.Container();
+    this.stage.addChild(this.gameStage, this.cursorStage);
+
     this.notesStage = new PIXI.Container();
-    this.stage.addChild(this.notesStage, this.cursorStage);
+    this.hitResultStage = new PIXI.Container();
+    this.gameStage.addChild(this.notesStage, this.hitResultStage);
   }
 
   async start() {
@@ -50,8 +58,8 @@ export default class Renderer {
     const scale = width * 3 > height * 4 ? height / 480 : width / 640;
     const xoffset = (width - 512 * scale) / 2;
     const yoffset = (height - 384 * scale) / 2;
-    this.notesStage.position.set(xoffset, yoffset);
-    this.notesStage.scale.set(scale);
+    this.gameStage.position.set(xoffset, yoffset);
+    this.gameStage.scale.set(scale);
   };
 
   render() {
@@ -60,7 +68,7 @@ export default class Renderer {
 
   // Converts real pixels to osu!pixels
   toOsuPixels(point: PIXI.Point) {
-    return this.notesStage.toLocal(point, null, null, true);
+    return this.gameStage.toLocal(point, null, null, true);
   }
 
   // getBounds() {

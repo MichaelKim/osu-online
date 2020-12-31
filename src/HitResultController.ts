@@ -60,7 +60,7 @@ class HitResult {
 
 export default class HitResultController {
   skin: Skin;
-  renderer: Renderer;
+  stage: PIXI.Container;
   diameter: number;
 
   free: Record<HitResultType, HitResult[]> = {
@@ -71,9 +71,9 @@ export default class HitResultController {
   };
   used: HitResult[] = [];
 
-  constructor(renderer: Renderer, skin: Skin) {
+  constructor(stage: PIXI.Container, skin: Skin) {
     this.skin = skin;
-    this.renderer = renderer;
+    this.stage = stage;
   }
 
   loadDiameter(diameter: number) {
@@ -94,7 +94,7 @@ export default class HitResultController {
         type,
         t
       );
-      this.renderer.notesStage.addChild(result.sprite);
+      this.stage.addChild(result.sprite);
       this.used.push(result);
     }
   }

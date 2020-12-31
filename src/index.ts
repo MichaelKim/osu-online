@@ -1,4 +1,3 @@
-import Beatmap from './Beatmap';
 import Game from './Game';
 import initStart from './start';
 
@@ -11,7 +10,7 @@ async function init() {
 
   await game.loadBeatmap(
     'beatmaps/LeaF - Wizdomiot (Asahina Momoko) [Hard].osu'
+    // 'beatmaps/Jesus-P - Death Should Not Have Taken Thee! (cheesiest) [Beginner].osu'
   );
-  // 'beatmaps/Jesus-P - Death Should Not Have Taken Thee! (cheesiest) [Beginner].osu'
   game.play();
 }

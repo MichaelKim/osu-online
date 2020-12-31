@@ -76,7 +76,10 @@ export default class Game {
   }
 
   async loadBeatmap(filepath: string) {
-    this.hitResult = new HitResultController(this.renderer, this.skin);
+    this.hitResult = new HitResultController(
+      this.renderer.hitResultStage,
+      this.skin
+    );
     this.hitSound = new HitSoundController(this.skin);
 
     this.beatmap = new Beatmap(filepath, this.hitResult, this.hitSound);

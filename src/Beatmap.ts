@@ -46,10 +46,10 @@ export default class Beatmap {
 
   // Gameplay
   hitResult: HitResultController;
+  hitSound: HitSoundController;
   left: number;
   right: number;
   music: HTMLAudioElement;
-  hitSound: HitSoundController;
 
   constructor(
     filepath: string,
@@ -404,7 +404,7 @@ export default class Beatmap {
         this.notes[next].finished = time;
         next++;
       } else {
-        // Not finished nor missed: can stop checking
+        // Neither finished nor missed: can stop checking
         break;
       }
     }

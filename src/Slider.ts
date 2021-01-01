@@ -44,7 +44,7 @@ export class Slider {
 
   // Beatmap
   comboIndex: number; // Combo color index
-  comboNumber: number;
+  comboNumber: number; // 1-indexed
   sampleSet: SampleSetType; // Sample set override
   additionSet: SampleSetType;
   stackCount: number = 0;
@@ -54,7 +54,7 @@ export class Slider {
   fullTime: number; // Fully opaque
   size: number; // Diameter of hit circle
   sliderTime: number; // Without repeats
-  endTime: number; // Total duration of slider
+  endTime: number; // Time when slider ends
   ticks: number[] = [];
 
   // Rendering

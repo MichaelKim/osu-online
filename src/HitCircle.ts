@@ -113,6 +113,7 @@ export default class HitCircle {
       const alpha = 1 - clerp01(time - this.finished, 0, FADE_OUT_MS);
 
       this.circleSprite.alpha = alpha;
+      // TODO: combo numbers disappear instantly
       this.numberSprites.forEach(s => (s.alpha = alpha));
       this.approachSprite.alpha = alpha;
       return time > this.finished + FADE_OUT_MS;

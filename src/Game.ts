@@ -1,6 +1,7 @@
 import * as PIXI from 'pixi.js';
 import Beatmap from './Beatmap';
 import Clock from './Clock';
+import FollowPointController from './FollowPointController';
 import HitResultController from './HitResultController';
 import HitSoundController from './HitSoundController';
 import InputController, { InputType } from './InputController';
@@ -19,6 +20,7 @@ export default class Game {
   // Based on skin
   hitResult: HitResultController;
   hitSound: HitSoundController;
+  followPoint: FollowPointController;
 
   constructor(view: HTMLCanvasElement) {
     this.renderer = new Renderer(view);
@@ -81,8 +83,17 @@ export default class Game {
       this.skin
     );
     this.hitSound = new HitSoundController(this.skin);
+    this.followPoint = new FollowPointController(
+      this.renderer.followStage,
+      this.skin
+    );
 
-    this.beatmap = new Beatmap(filepath, this.hitResult, this.hitSound);
+    this.beatmap = new Beatmap(
+      filepath,
+      this.hitResult,
+      this.hitSound,
+      this.followPoint
+    );
 
     await this.beatmap.preload();
     await this.beatmap.load(this.skin);
@@ -136,6 +147,7 @@ export default class Game {
 
     this.beatmap.update(this.clock.time);
     this.hitResult.update(this.clock.time);
+    this.followPoint.update(this.clock.time);
     this.renderer.render();
     this.requestID = window.requestAnimationFrame(this.update);
   };

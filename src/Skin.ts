@@ -189,6 +189,7 @@ export class Skin {
         // Center textures
         this.cursor.defaultAnchor.set(0.5);
         this.approach.defaultAnchor.set(0.5);
+        this.followPoint.defaultAnchor.set(0.5);
         this.numbers.forEach(n => n.defaultAnchor.set(0.5));
         this.sliderb.defaultAnchor.set(0.5);
         this.sliderFollowCircle.defaultAnchor.set(0.5);

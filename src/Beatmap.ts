@@ -1,5 +1,6 @@
 import * as PIXI from 'pixi.js';
 import * as AudioLoader from './AudioLoader';
+import FollowPointController from './FollowPointController';
 import HitCircle from './HitCircle';
 import { ObjectTypes } from './HitObjects';
 import HitResultController, { HitResultType } from './HitResultController';
@@ -47,6 +48,7 @@ export default class Beatmap {
   // Gameplay
   hitResult: HitResultController;
   hitSound: HitSoundController;
+  followPoints: FollowPointController;
   left: number;
   right: number;
   music: HTMLAudioElement;
@@ -54,11 +56,13 @@ export default class Beatmap {
   constructor(
     filepath: string,
     hitResult: HitResultController,
-    hitSound: HitSoundController
+    hitSound: HitSoundController,
+    followPoints: FollowPointController
   ) {
     this.filepath = filepath;
     this.hitResult = hitResult;
     this.hitSound = hitSound;
+    this.followPoints = followPoints;
   }
 
   async readFile() {
@@ -390,6 +394,37 @@ export default class Beatmap {
       time > this.notes[this.right].t - this.fadeTime
     ) {
       this.notes[this.right].setVisible(true);
+
+      // Follow point trails
+      // TODO: this timing isn't correct
+      // Follow trail should appear for ~1s, fully fading around ~0.5s after the previous hit object ends
+      // This means the trail can appear before the next object begins to fade in
+      if (this.right > 0) {
+        const prevObject = this.notes[this.right - 1];
+        const nextObject = this.notes[this.right];
+
+        if (
+          nextObject.comboNumber !== 1 &&
+          nextObject.type !== ObjectTypes.SPINNER
+        ) {
+          // TODO: maybe add unified start position / end position getters on hit objects
+          const next = new PIXI.Point(nextObject.x, nextObject.y);
+          const nextT = nextObject.t;
+          if (prevObject.type === ObjectTypes.SLIDER) {
+            const slider = prevObject as Slider;
+            const prev =
+              slider.slides % 2 === 0
+                ? slider.points[0]
+                : slider.points[slider.points.length - 1];
+            const prevT = slider.endTime;
+            this.followPoints.addTrail(prev, next, prevT, nextT);
+          } else {
+            const prev = new PIXI.Point(prevObject.x, prevObject.y);
+            const prevT = prevObject.t;
+            this.followPoints.addTrail(prev, next, prevT, nextT);
+          }
+        }
+      }
       this.right++;
     }
 

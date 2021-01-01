@@ -3,3 +3,4 @@
 - spinners
 - trails
 - hit object colors
+- 50k, 100k, 300g, 300k

@@ -12,6 +12,7 @@ export default class Renderer {
   // Substage
   notesStage: PIXI.Container; // Stage for hit objects
   hitResultStage: PIXI.Container; // Stage for hit results
+  followStage: PIXI.Container; // Stage for follow points
 
   constructor(view: HTMLCanvasElement) {
     this.renderer = new PIXI.Renderer({
@@ -31,7 +32,12 @@ export default class Renderer {
 
     this.notesStage = new PIXI.Container();
     this.hitResultStage = new PIXI.Container();
-    this.gameStage.addChild(this.notesStage, this.hitResultStage);
+    this.followStage = new PIXI.Container();
+    this.gameStage.addChild(
+      this.followStage,
+      this.notesStage,
+      this.hitResultStage
+    );
   }
 
   async start() {

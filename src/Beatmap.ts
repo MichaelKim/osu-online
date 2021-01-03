@@ -10,7 +10,7 @@ import { Skin } from './Skin';
 import { Slider } from './Slider';
 import { arToMS, odToMS } from './timing';
 import TimingPoint from './TimingPoint';
-import { distSqr } from './util';
+import { distSqr, parseKeyValue } from './util';
 
 const STACK_LENIENCE_SQR = 3 * 3;
 
@@ -76,19 +76,11 @@ export default class Beatmap {
 
     let i = 0;
 
-    function readKeyValue() {
-      const line = file[i++];
-      const split = line.indexOf(':');
-      const key = line.slice(0, split).trim();
-      const value = line.slice(split + 1).trim();
-      return [key, value];
-    }
-
     while (i < file.length) {
       switch (file[i++]) {
         case '[General]':
           while (i < file.length && file[i][0] !== '[' && file[i].length > 0) {
-            const [key, value] = readKeyValue();
+            const [key, value] = parseKeyValue(file[i++]);
             switch (key) {
               case 'AudioFilename':
                 this.audioFilename = value;
@@ -116,7 +108,7 @@ export default class Beatmap {
           break;
         case '[Difficulty]':
           while (i < file.length && file[i][0] !== '[' && file[i].length > 0) {
-            const [key, value] = readKeyValue();
+            const [key, value] = parseKeyValue(file[i++]);
             switch (key) {
               case 'CircleSize':
                 this.cs = parseFloat(value);
@@ -399,30 +391,29 @@ export default class Beatmap {
       // TODO: this timing isn't correct
       // Follow trail should appear for ~1s, fully fading around ~0.5s after the previous hit object ends
       // This means the trail can appear before the next object begins to fade in
-      if (this.right > 0) {
-        const prevObject = this.notes[this.right - 1];
-        const nextObject = this.notes[this.right];
+      const nextObject = this.notes[this.right];
 
-        if (
-          nextObject.comboNumber !== 1 &&
-          nextObject.type !== ObjectTypes.SPINNER
-        ) {
-          // TODO: maybe add unified start position / end position getters on hit objects
-          const next = new PIXI.Point(nextObject.x, nextObject.y);
-          const nextT = nextObject.t;
-          if (prevObject.type === ObjectTypes.SLIDER) {
-            const slider = prevObject as Slider;
-            const prev =
-              slider.slides % 2 === 0
-                ? slider.points[0]
-                : slider.points[slider.points.length - 1];
-            const prevT = slider.endTime;
-            this.followPoints.addTrail(prev, next, prevT, nextT);
-          } else {
-            const prev = new PIXI.Point(prevObject.x, prevObject.y);
-            const prevT = prevObject.t;
-            this.followPoints.addTrail(prev, next, prevT, nextT);
-          }
+      if (
+        nextObject.comboNumber !== 1 &&
+        nextObject.type !== ObjectTypes.SPINNER
+      ) {
+        const prevObject = this.notes[this.right - 1];
+
+        // TODO: maybe add unified start position / end position getters on hit objects
+        const next = new PIXI.Point(nextObject.x, nextObject.y);
+        const nextT = nextObject.t;
+        if (prevObject.type === ObjectTypes.SLIDER) {
+          const slider = prevObject as Slider;
+          const prev =
+            slider.slides % 2 === 0
+              ? slider.points[0]
+              : slider.points[slider.points.length - 1];
+          const prevT = slider.endTime;
+          this.followPoints.addTrail(prev, next, prevT, nextT);
+        } else {
+          const prev = new PIXI.Point(prevObject.x, prevObject.y);
+          const prevT = prevObject.t;
+          this.followPoints.addTrail(prev, next, prevT, nextT);
         }
       }
       this.right++;

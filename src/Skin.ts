@@ -1,7 +1,7 @@
 import * as PIXI from 'pixi.js';
 import { HitResultType } from './HitResultController';
 import SampleSetData, { SampleSetType } from './SampleSet';
-import { Tuple } from './util';
+import { parseKeyValue, Tuple } from './util';
 
 // Filepaths to each asset
 const assets = {
@@ -54,13 +54,6 @@ function loadHitCircle(
   renderer.render(overlay, texture, false);
 
   return texture;
-}
-
-function parseKeyValue(line: string) {
-  const split = line.indexOf(':');
-  const key = line.slice(0, split).trim();
-  const value = line.slice(split + 1).trim();
-  return [key, value];
 }
 
 export class Skin {

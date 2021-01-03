@@ -48,3 +48,10 @@ export function distSqr(x1: number, y1: number, x2: number, y2: number) {
   const dy = y1 - y2;
   return dx * dx + dy * dy;
 }
+
+export function parseKeyValue(line: string) {
+  const split = line.indexOf(':');
+  const key = line.slice(0, split).trim();
+  const value = line.slice(split + 1).trim();
+  return [key, value];
+}

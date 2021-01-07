@@ -1,12 +1,13 @@
 import * as PIXI from 'pixi.js';
 import { Skin } from './Skin';
 
-export enum ObjectTypes {
-  HIT_CIRCLE = 1 << 0,
-  SLIDER = 1 << 1,
-  NEW_COMBO = 1 << 2,
-  SPINNER = 1 << 3,
-  COMBO_SKIP = (1 << 4) | (1 << 5) | (1 << 6)
+// See https://github.com/Microsoft/TypeScript/issues/27976
+export const enum ObjectTypes {
+  HIT_CIRCLE = 1, // 1 << 0,
+  SLIDER = 2, // 1 << 1,
+  NEW_COMBO = 4, // 1 << 2,
+  SPINNER = 8, // 1 << 3,
+  COMBO_SKIP = 112 // (1 << 4) | (1 << 5) | (1 << 6)
 }
 
 export interface Stats {

@@ -255,16 +255,18 @@ export default class Beatmap {
       let objectI = this.notes[i];
 
       // Already done
-      if (objectI.stackCount !== 0 || objectI.type === ObjectTypes.SPINNER) {
+      if (
+        objectI.stackCount !== 0 /*|| objectI.type === ObjectTypes.SPINNER*/
+      ) {
         continue;
       }
 
       // Search for any stacking
       for (let n = i - 1; n >= 0; n--) {
         const objectN = this.notes[n];
-        if (objectN.type === ObjectTypes.SPINNER) {
-          continue;
-        }
+        // if (objectN.type === ObjectTypes.SPINNER) {
+        //   continue;
+        // }
 
         const endTime =
           objectN.type === ObjectTypes.SLIDER
@@ -394,8 +396,9 @@ export default class Beatmap {
       const nextObject = this.notes[this.right];
 
       if (
-        nextObject.comboNumber !== 1 &&
-        nextObject.type !== ObjectTypes.SPINNER
+        nextObject.comboNumber !==
+        1 /*&&
+        nextObject.type !== ObjectTypes.SPINNER*/
       ) {
         const prevObject = this.notes[this.right - 1];
 

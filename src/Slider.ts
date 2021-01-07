@@ -27,7 +27,7 @@ enum CurveTypes {
 }
 
 export class Slider {
-  type = ObjectTypes.SLIDER;
+  readonly type = ObjectTypes.SLIDER;
 
   // Metadata
   x: number; // Position of the hit circle (initially at points[0])
@@ -55,11 +55,11 @@ export class Slider {
   size: number; // Diameter of hit circle
   sliderTime: number; // Without repeats
   endTime: number; // Time when slider ends
+  curve: PIXI.Point[];
   ticks: number[] = [];
 
   // Rendering
   graphics: PIXI.Graphics;
-  curve: PIXI.Point[];
   tickSprites: PIXI.Sprite[];
   circleSprite: PIXI.Sprite;
   approachSprite: PIXI.Sprite;

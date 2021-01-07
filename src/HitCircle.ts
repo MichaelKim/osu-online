@@ -15,7 +15,7 @@ import { BaseHitSound } from './HitSoundController';
 import { SampleSetType } from './SampleSet';
 
 export default class HitCircle {
-  type = ObjectTypes.HIT_CIRCLE;
+  readonly type = ObjectTypes.HIT_CIRCLE;
 
   // Metadata
   x: number;

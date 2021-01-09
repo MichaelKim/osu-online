@@ -10,13 +10,6 @@ export const enum ObjectTypes {
   COMBO_SKIP = 112 // (1 << 4) | (1 << 5) | (1 << 6)
 }
 
-export interface Stats {
-  ar: number;
-  od: number;
-  cs: number;
-  sliderMultiplier: number;
-}
-
 // Common sprite initialization
 export function initSprite(
   texture: PIXI.Texture,

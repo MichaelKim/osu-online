@@ -8,11 +8,12 @@ import {
   getNumberSprites,
   initSprite,
   ObjectTypes,
-  STACK_OFFSET_MULT,
-  Stats
+  STACK_OFFSET_MULT
 } from './HitObjects';
 import { BaseHitSound } from './HitSoundController';
 import { SampleSetType } from './SampleSet';
+import Beatmap from './Beatmap';
+import { TimingPoint } from './Loader/TimingPointLoader';
 
 export default class HitCircle {
   readonly type = ObjectTypes.HIT_CIRCLE;
@@ -40,13 +41,16 @@ export default class HitCircle {
   approachSprite: PIXI.Sprite;
   numberSprites: PIXI.Sprite[];
 
+  // Gameplay
   finished = 0;
 
   constructor(
     tokens: string[],
     comboNumber: number,
     comboIndex: number,
-    sampleSet: SampleSetType
+    beatmap: Beatmap,
+    timingPoint: TimingPoint,
+    skin: Skin
   ) {
     // x,y,time,type,hitSound,objectParams,hitSample
     this.x = parseFloat(tokens[0]);
@@ -60,23 +64,17 @@ export default class HitCircle {
       const sampleTokens = tokens[6].split(':');
       hitSample = [parseInt(sampleTokens[0]), parseInt(sampleTokens[1])];
     }
-    this.sampleSet = hitSample[0] || sampleSet;
+    this.sampleSet = hitSample[0] || timingPoint.sampleSet || beatmap.sampleSet;
     this.additionSet = hitSample[1] || this.sampleSet;
 
     this.comboNumber = comboNumber;
     this.comboIndex = comboIndex;
-  }
 
-  load(skin: Skin, stats: Stats) {
     // Compute timing windows
-    [this.fadeTime, this.fullTime] = arToMS(stats.ar);
-    this.size = csToSize(stats.cs);
+    [this.fadeTime, this.fullTime] = arToMS(beatmap.ar);
+    this.size = csToSize(beatmap.cs);
 
-    // Stack offset
-    this.x -= (this.stackCount * this.size) / STACK_OFFSET_MULT;
-    this.y -= (this.stackCount * this.size) / STACK_OFFSET_MULT;
-
-    // Load skin textures
+    // Load sprites
     this.circleSprite = initSprite(skin.circle, this.x, this.y, this.size);
     this.approachSprite = initSprite(
       skin.approach,
@@ -91,6 +89,12 @@ export default class HitCircle {
       this.y,
       this.size
     );
+  }
+
+  load() {
+    // Stack offset
+    this.x -= (this.stackCount * this.size) / STACK_OFFSET_MULT;
+    this.y -= (this.stackCount * this.size) / STACK_OFFSET_MULT;
   }
 
   addToStage(stage: PIXI.Container) {

@@ -151,7 +151,7 @@ export default class Beatmap {
     this.hitWindows = odToMS(this.od);
   }
 
-  async parseHitObjects() {
+  async parseHitObjects(skin: Skin) {
     let comboNumber = 0;
     let comboIndex = 0;
 
@@ -209,7 +209,9 @@ export default class Beatmap {
           tokens,
           comboNumber,
           comboIndex,
-          timingPoint.sampleSet || this.sampleSet
+          this,
+          timingPoint,
+          skin
         );
 
         this.notes.push(circle);
@@ -218,29 +220,11 @@ export default class Beatmap {
           tokens,
           comboNumber,
           comboIndex,
-          timingPoint.sampleSet || this.sampleSet,
+          this,
+          timingPoint,
+          skin,
           this.hitSound
         );
-
-        // Calculate slider duration
-        slider.sliderTime =
-          (beatLength * (slider.length / this.sliderMultiplier)) / 100;
-
-        // Commonly computed value
-        slider.endTime = slider.t + slider.sliderTime * slider.slides;
-
-        // Calculate slider ticks
-        const tickDist =
-          (100 * this.sliderMultiplier) /
-          this.sliderTickRate /
-          timingPoint.mult;
-        const numTicks = Math.ceil(slider.length / tickDist) - 2; // Ignore start and end
-        if (numTicks > 0) {
-          const tickOffset = 1 / (numTicks + 1);
-          for (let i = 0, t = tickOffset; i < numTicks; i++, t += tickOffset) {
-            slider.ticks.push(t);
-          }
-        }
 
         this.notes.push(slider);
       }
@@ -323,16 +307,10 @@ export default class Beatmap {
     this.left = 0;
     this.right = 0;
 
-    await this.parseHitObjects();
+    await this.parseHitObjects(skin);
     this.calcStacking();
     await this.loadMusic();
-    const stats = {
-      ar: this.ar,
-      cs: this.cs,
-      od: this.od,
-      sliderMultiplier: this.sliderMultiplier
-    };
-    this.notes.forEach(n => n.load(skin, stats));
+    this.notes.forEach(n => n.load());
   }
 
   play() {

@@ -1,4 +1,5 @@
 import * as PIXI from 'pixi.js';
+import Beatmap from './Beatmap';
 import { Bezier, Circle } from './Curve';
 import {
   APPROACH_R,
@@ -7,8 +8,7 @@ import {
   getNumberSprites,
   initSprite,
   ObjectTypes,
-  STACK_OFFSET_MULT,
-  Stats
+  STACK_OFFSET_MULT
 } from './HitObjects';
 import HitSoundController, {
   BaseHitSound,
@@ -17,6 +17,7 @@ import HitSoundController, {
 import { SampleSetType } from './SampleSet';
 import { Skin } from './Skin';
 import { arToMS, csToSize } from './timing';
+import TimingPoint from './TimingPoint';
 import { clerp, clerp01, Tuple } from './util';
 
 enum CurveTypes {
@@ -78,7 +79,9 @@ export class Slider {
     tokens: string[],
     comboNumber: number,
     comboIndex: number,
-    sampleSet: SampleSetType,
+    beatmap: Beatmap,
+    timingPoint: TimingPoint,
+    skin: Skin,
     hitSoundController: HitSoundController
   ) {
     // x,y,time,type,hitSound,curveType|curvePoints,slides,length,edgeSounds,edgeSets,hitSample
@@ -125,7 +128,7 @@ export class Slider {
       const sampleTokens = tokens[10].split(':');
       hitSample = [parseInt(sampleTokens[0]), parseInt(sampleTokens[1])];
     }
-    this.sampleSet = hitSample[0] || sampleSet;
+    this.sampleSet = hitSample[0] || timingPoint.sampleSet || beatmap.sampleSet;
     this.additionSet = hitSample[1] || hitSample[0];
 
     this.comboNumber = comboNumber;
@@ -144,23 +147,32 @@ export class Slider {
         this.length
       );
     }
-  }
 
-  load(skin: Skin, stats: Stats) {
-    [this.fadeTime, this.fullTime] = arToMS(stats.ar);
-    this.size = csToSize(stats.cs);
+    // Calculate slider duration
+    this.sliderTime =
+      (timingPoint.beatLength * (this.length / beatmap.sliderMultiplier)) / 100;
 
-    // Stack offset
-    if (this.stackCount !== 0) {
-      const offset = (this.stackCount * this.size) / STACK_OFFSET_MULT;
-      this.x -= offset;
-      this.y -= offset;
-      this.curve.forEach(c => {
-        c.x -= offset;
-        c.y -= offset;
-      });
+    // Commonly computed value
+    this.endTime = this.t + this.sliderTime * this.slides;
+
+    // Calculate slider ticks
+    const tickDist =
+      (100 * beatmap.sliderMultiplier) /
+      beatmap.sliderTickRate /
+      timingPoint.mult;
+    const numTicks = Math.ceil(this.length / tickDist) - 2; // Ignore start and end
+    if (numTicks > 0) {
+      const tickOffset = 1 / (numTicks + 1);
+      for (let i = 0, t = tickOffset; i < numTicks; i++, t += tickOffset) {
+        this.ticks.push(t);
+      }
     }
 
+    // Compute timing windows
+    [this.fadeTime, this.fullTime] = arToMS(beatmap.ar);
+    this.size = csToSize(beatmap.cs);
+
+    // Load sprites
     this.circleSprite = initSprite(skin.circle, this.x, this.y, this.size);
     this.approachSprite = initSprite(
       skin.approach,
@@ -199,6 +211,19 @@ export class Slider {
     const dx = this.points[this.points.length - 2].x - endPosition.x;
     const dy = this.points[this.points.length - 2].y - endPosition.y;
     this.reverseSprite.rotation = Math.atan2(dy, dx);
+  }
+
+  load() {
+    // Stack offset
+    if (this.stackCount !== 0) {
+      const offset = (this.stackCount * this.size) / STACK_OFFSET_MULT;
+      this.x -= offset;
+      this.y -= offset;
+      this.curve.forEach(c => {
+        c.x -= offset;
+        c.y -= offset;
+      });
+    }
   }
 
   addToStage(stage: PIXI.Container) {

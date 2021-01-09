@@ -15,7 +15,7 @@ export default class TimingPoint {
   sampleIndex: number; // TODO: what is this
   volume: number;
   inherited: boolean;
-  kiai: boolean;
+  kiai: boolean = false;
 
   constructor(tokens: string[]) {
     // time,beatLength,meter,sampleSet,sampleIndex,volume,uninherited,effects

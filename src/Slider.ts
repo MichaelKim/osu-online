@@ -1,6 +1,6 @@
 import * as PIXI from 'pixi.js';
 import Beatmap from './Beatmap';
-import { Bezier, Circle } from './Curve';
+import { CurveTypes, getSliderCurve } from './Curve';
 import {
   APPROACH_R,
   FADE_OUT_MS,
@@ -19,13 +19,6 @@ import { Skin } from './Skin';
 import { arToMS, csToSize } from './timing';
 import TimingPoint from './TimingPoint';
 import { clerp, clerp01, Tuple } from './util';
-
-enum CurveTypes {
-  BEZIER = 'B',
-  CATMULL = 'C', // centripetal catmull-rom
-  LINEAR = 'L',
-  PERFECT = 'P' // circle
-}
 
 export class Slider {
   readonly type = ObjectTypes.SLIDER;
@@ -138,15 +131,7 @@ export class Slider {
     this.graphics = new PIXI.Graphics();
 
     // Calculate curve points
-    if (this.sliderType === CurveTypes.PERFECT && this.points.length === 3) {
-      this.curve = Circle.getCurve(this.points, this.length);
-    } else {
-      this.curve = Bezier.getCurve(
-        this.points,
-        this.sliderType === CurveTypes.LINEAR,
-        this.length
-      );
-    }
+    this.curve = getSliderCurve(this.sliderType, this.points, this.length);
 
     // Calculate slider duration
     this.sliderTime =

@@ -28,7 +28,7 @@ const config = {
               ],
               '@babel/preset-typescript'
             ],
-            plugins: ['@babel/plugin-proposal-class-properties']
+            plugins: ['@babel/plugin-proposal-class-properties', 'const-enum']
           }
         }
       }

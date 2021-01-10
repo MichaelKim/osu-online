@@ -253,23 +253,20 @@ export default class Beatmap {
         // }
 
         const endTime =
-          objectN.type === ObjectTypes.SLIDER
-            ? (objectN as Slider).endTime
-            : objectN.t;
+          objectN.type === ObjectTypes.SLIDER ? objectN.endTime : objectN.t;
         if (objectI.t - fadeTime * this.stackLeniency > endTime) {
           break;
         }
 
         // Reverse stacking
         if (objectN.type === ObjectTypes.SLIDER) {
-          const slider = objectN as Slider;
-          const endPoint = slider.curve[slider.curve.length - 1];
+          const endPoint = objectN.curve[objectN.curve.length - 1];
 
           if (
             distSqr(objectI.x, objectI.y, endPoint.x, endPoint.y) <
             STACK_LENIENCE_SQR
           ) {
-            const offset = objectI.stackCount - slider.stackCount + 1;
+            const offset = objectI.stackCount - objectN.stackCount + 1;
             for (let j = n + 1; j <= i; j++) {
               const objectJ = this.notes[j];
               if (
@@ -339,17 +336,16 @@ export default class Beatmap {
         }
         break;
       case ObjectTypes.SLIDER:
-        const slider = object as Slider;
         // Ignore active sliders
         // TODO: fix slider behaviour when missed slider head
         if (
-          !slider.active &&
-          time > slider.t + this.hitWindows[HitResultType.HIT50]
+          !object.active &&
+          time > object.t + this.hitWindows[HitResultType.HIT50]
         ) {
           this.hitResult.addResult(
             HitResultType.MISS,
-            slider.points[0].x,
-            slider.points[0].y,
+            object.points[0].x,
+            object.points[0].y,
             time
           );
           return true;
@@ -384,12 +380,11 @@ export default class Beatmap {
         const next = new PIXI.Point(nextObject.x, nextObject.y);
         const nextT = nextObject.t;
         if (prevObject.type === ObjectTypes.SLIDER) {
-          const slider = prevObject as Slider;
           const prev =
-            slider.slides % 2 === 0
-              ? slider.points[0]
-              : slider.points[slider.points.length - 1];
-          const prevT = slider.endTime;
+            prevObject.slides % 2 === 0
+              ? prevObject.points[0]
+              : prevObject.points[prevObject.points.length - 1];
+          const prevT = prevObject.endTime;
           this.followPoints.addTrail(prev, next, prevT, nextT);
         } else {
           const prev = new PIXI.Point(prevObject.x, prevObject.y);
@@ -459,17 +454,16 @@ export default class Beatmap {
         }
         break;
       case ObjectTypes.SLIDER:
-        const slider = object as Slider;
-        if (!slider.active && slider.hit(position)) {
-          slider.active = true;
+        if (!object.active && object.hit(position)) {
+          object.active = true;
 
-          slider.playEdge(0);
+          object.playEdge(0);
 
           const result = this.getHitResult(time, object);
           this.hitResult.addResult(
             result,
-            slider.points[0].x,
-            slider.points[0].y,
+            object.points[0].x,
+            object.points[0].y,
             time
           );
         }
@@ -489,12 +483,11 @@ export default class Beatmap {
     // TODO: handle spinners
     if (object.type != ObjectTypes.SLIDER) return;
 
-    const slider = object as Slider;
-    if (!slider.active || slider.hit(position)) return;
+    if (!object.active || object.hit(position)) return;
 
     // Slider break
-    slider.active = false;
-    slider.finished = time;
+    object.active = false;
+    object.finished = time;
   }
 
   mouseup(time: number, position: PIXI.Point) {
@@ -509,11 +502,10 @@ export default class Beatmap {
     // TODO: handle spinners
     if (object.type != ObjectTypes.SLIDER) return;
 
-    const slider = object as Slider;
-    if (!slider.active) return;
+    if (!object.active) return;
 
     // Active slider was let go
-    slider.active = false;
-    slider.finished = time;
+    object.active = false;
+    object.finished = time;
   }
 }

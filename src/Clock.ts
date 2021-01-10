@@ -1,5 +1,5 @@
 export default class Clock {
-  startTime: number;
+  startTime: number = 0;
   time: number = 0;
 
   constructor() {}

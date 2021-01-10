@@ -1,6 +1,5 @@
 import * as PIXI from 'pixi.js';
 import { initSprite } from './HitObjects';
-import Renderer from './Renderer';
 import { Skin } from './Skin';
 import { clerp01 } from './util';
 
@@ -82,7 +81,7 @@ export default class HitResultController {
 
   addResult(type: HitResultType, x: number, y: number, t: number) {
     if (this.free[type].length > 0) {
-      const result = this.free[type].pop();
+      const result = this.free[type].pop()!;
       result.reset(x, y, t);
       this.used.push(result);
     } else {

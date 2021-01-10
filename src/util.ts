@@ -55,3 +55,9 @@ export function parseKeyValue(line: string) {
   const value = line.slice(split + 1).trim();
   return [key, value];
 }
+
+export async function readFile(filepath: string) {
+  const res = await fetch(filepath);
+  const text = await res.text();
+  return text.split('\n').map(l => l.trim());
+}

@@ -1,7 +1,7 @@
 import * as PIXI from 'pixi.js';
 import { HitResultType } from './HitResultController';
 import SampleSetData, { SampleSetType } from './SampleSet';
-import { parseKeyValue, Tuple } from './util';
+import { parseKeyValue, readFile, Tuple } from './util';
 
 // Filepaths to each asset
 const assets = {
@@ -99,10 +99,7 @@ export class Skin {
   }
 
   async parseFile() {
-    const res = await fetch(this.filepath);
-    const text = await res.text();
-
-    const file = text.split('\n').map(l => l.trim());
+    const file = await readFile(this.filepath);
     let i = 0;
     while (i < file.length) {
       switch (file[i++]) {

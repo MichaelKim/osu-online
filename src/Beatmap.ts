@@ -11,7 +11,7 @@ import Slider from './Slider';
 import Spinner from './Spinner';
 import { arToMS, odToMS } from './timing';
 import TimingPoint from './TimingPoint';
-import { distSqr, parseKeyValue } from './util';
+import { distSqr, parseKeyValue, readFile } from './util';
 
 const STACK_LENIENCE_SQR = 3 * 3;
 
@@ -66,14 +66,8 @@ export default class Beatmap {
     this.followPoints = followPoints;
   }
 
-  async readFile() {
-    const res = await fetch(this.filepath);
-    const text = await res.text();
-    return text.split('\n').map(l => l.trim());
-  }
-
   async parseFile() {
-    const file = await this.readFile();
+    const file = await readFile(this.filepath);
 
     let i = 0;
 
@@ -160,7 +154,7 @@ export default class Beatmap {
     let baseBeatLength = 1,
       beatLength = 1;
 
-    const file = await this.readFile();
+    const file = await readFile(this.filepath);
 
     for (
       let i = file.indexOf('[HitObjects]') + 1;

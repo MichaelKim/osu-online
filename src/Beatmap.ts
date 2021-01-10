@@ -7,14 +7,15 @@ import HitResultController, { HitResultType } from './HitResultController';
 import HitSoundController from './HitSoundController';
 import { SampleSetType } from './SampleSet';
 import { Skin } from './Skin';
-import { Slider } from './Slider';
+import Slider from './Slider';
+import Spinner from './Spinner';
 import { arToMS, odToMS } from './timing';
 import TimingPoint from './TimingPoint';
 import { distSqr, parseKeyValue } from './util';
 
 const STACK_LENIENCE_SQR = 3 * 3;
 
-type HitObject = HitCircle | Slider;
+type HitObject = HitCircle | Slider | Spinner;
 
 export default class Beatmap {
   filepath: string; // Path to .osu file
@@ -241,18 +242,16 @@ export default class Beatmap {
       let objectI = this.notes[i];
 
       // Already done
-      if (
-        objectI.stackCount !== 0 /*|| objectI.type === ObjectTypes.SPINNER*/
-      ) {
+      if (objectI.type === ObjectTypes.SPINNER || objectI.stackCount !== 0) {
         continue;
       }
 
       // Search for any stacking
       for (let n = i - 1; n >= 0; n--) {
         const objectN = this.notes[n];
-        // if (objectN.type === ObjectTypes.SPINNER) {
-        //   continue;
-        // }
+        if (objectN.type === ObjectTypes.SPINNER) {
+          continue;
+        }
 
         const endTime =
           objectN.type === ObjectTypes.SLIDER ? objectN.endTime : objectN.t;
@@ -272,8 +271,9 @@ export default class Beatmap {
             for (let j = n + 1; j <= i; j++) {
               const objectJ = this.notes[j];
               if (
+                objectJ.type !== ObjectTypes.SPINNER &&
                 distSqr(objectJ.x, objectJ.y, endPoint.x, endPoint.y) <
-                STACK_LENIENCE_SQR
+                  STACK_LENIENCE_SQR
               ) {
                 objectJ.stackCount -= offset;
               }
@@ -371,9 +371,8 @@ export default class Beatmap {
       const nextObject = this.notes[this.right];
 
       if (
-        nextObject.comboNumber !==
-        1 /*&&
-        nextObject.type !== ObjectTypes.SPINNER*/
+        nextObject.type !== ObjectTypes.SPINNER &&
+        nextObject.comboNumber !== 1
       ) {
         const prevObject = this.notes[this.right - 1];
 

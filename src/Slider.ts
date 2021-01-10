@@ -20,7 +20,7 @@ import { arToMS, csToSize } from './timing';
 import TimingPoint from './TimingPoint';
 import { clerp, clerp01, Tuple } from './util';
 
-export class Slider {
+export default class Slider {
   readonly type = ObjectTypes.SLIDER;
 
   // Metadata

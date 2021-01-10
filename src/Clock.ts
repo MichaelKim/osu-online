@@ -1,17 +1,29 @@
 export default class Clock {
-  startTime: number = 0;
-  time: number = 0;
+  private startTime: number = 0;
+  private requestID: number = 0;
+  private callback: (time: number) => void;
 
-  constructor() {}
+  constructor(callback: (time: number) => void) {
+    this.callback = callback;
+  }
 
   start() {
     this.startTime = performance.now();
-    this.time = 0;
+    this.requestID = window.requestAnimationFrame(this.update);
   }
 
   // TODO: sync with audio
-  update() {
-    const now = performance.now();
-    this.time = now - this.startTime;
+  private update = (time: number) => {
+    this.callback(time - this.startTime);
+    this.requestID = window.requestAnimationFrame(this.update);
+  };
+
+  getTime() {
+    return performance.now() - this.startTime;
+  }
+
+  stop() {
+    window.cancelAnimationFrame(this.requestID);
+    this.requestID = 0;
   }
 }

@@ -60,7 +60,7 @@ export default class InputController {
   private onDown = () => {
     this.numDown++;
     this.events.push({
-      time: this.clock.time,
+      time: this.clock.getTime(),
       type: InputType.DOWN,
       position: this.cursor.position
     });
@@ -80,7 +80,7 @@ export default class InputController {
 
     this.cursor.position.set(x, y);
     this.events.push({
-      time: this.clock.time,
+      time: this.clock.getTime(),
       type: InputType.MOVE,
       position: this.cursor.position
     });
@@ -96,7 +96,7 @@ export default class InputController {
     this.numDown--;
     if (this.numDown === 0) {
       this.events.push({
-        time: this.clock.time,
+        time: this.clock.getTime(),
         type: InputType.UP,
         position: this.cursor.position
       });

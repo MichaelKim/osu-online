@@ -15,7 +15,6 @@ export default class Game {
   skin: Skin;
   beatmap: Beatmap;
   clock: Clock;
-  requestID: number;
 
   // Based on skin
   hitResult: HitResultController;
@@ -26,7 +25,7 @@ export default class Game {
     this.renderer = new Renderer(view);
     // TODO: what about switching skins?
     this.skin = new Skin('assets/skin.ini');
-    this.clock = new Clock();
+    this.clock = new Clock(this.update);
     this.input = new InputController(this.clock);
   }
 
@@ -114,12 +113,9 @@ export default class Game {
 
     this.beatmap.play();
     this.clock.start();
-    this.requestID = window.requestAnimationFrame(this.update);
   }
 
-  update = () => {
-    this.clock.update();
-
+  update = (time: number) => {
     // Check for input events since last frame
     for (const event of this.input.events) {
       switch (event.type) {
@@ -137,7 +133,7 @@ export default class Game {
           break;
         case InputType.MOVE:
           this.beatmap.mousemove(
-            this.clock.time,
+            time,
             this.renderer.toOsuPixels(event.position)
           );
           break;
@@ -145,15 +141,9 @@ export default class Game {
     }
     this.input.events = [];
 
-    this.beatmap.update(this.clock.time);
-    this.hitResult.update(this.clock.time);
-    this.followPoint.update(this.clock.time);
+    this.beatmap.update(time);
+    this.hitResult.update(time);
+    this.followPoint.update(time);
     this.renderer.render();
-    this.requestID = window.requestAnimationFrame(this.update);
   };
-
-  stop() {
-    window.cancelAnimationFrame(this.requestID);
-    this.requestID = null;
-  }
 }

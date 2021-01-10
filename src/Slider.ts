@@ -14,7 +14,7 @@ import HitSoundController, {
   BaseHitSound,
   SliderHitSound
 } from './HitSoundController';
-import { SampleSetType } from './SampleSet';
+import { parseHitSample, SampleSetType } from './SampleSet';
 import { Skin } from './Skin';
 import { arToMS, csToSize } from './timing';
 import TimingPoint from './TimingPoint';
@@ -41,7 +41,6 @@ export class Slider {
   comboNumber: number; // 1-indexed
   sampleSet: SampleSetType; // Sample set override
   additionSet: SampleSetType;
-  stackCount: number = 0;
 
   // Computed
   fadeTime: number; // Starts to fade in
@@ -53,6 +52,7 @@ export class Slider {
   ticks: number[] = [];
 
   // Rendering
+  container: PIXI.Container;
   graphics: PIXI.Graphics;
   tickSprites: PIXI.Sprite[];
   circleSprite: PIXI.Sprite;
@@ -115,12 +115,7 @@ export class Slider {
       console.warn('Mismatching edge sound lengths', tokens);
     }
 
-    // TODO: normalSet:additionSet:index:volume:filename
-    let hitSample: Tuple<SampleSetType, 2> = [0, 0];
-    if (tokens.length > 10) {
-      const sampleTokens = tokens[10].split(':');
-      hitSample = [parseInt(sampleTokens[0]), parseInt(sampleTokens[1])];
-    }
+    const hitSample = tokens.length > 10 ? parseHitSample(tokens[10]) : [0, 0];
     this.sampleSet = hitSample[0] || timingPoint.sampleSet || beatmap.sampleSet;
     this.additionSet = hitSample[1] || hitSample[0];
 
@@ -196,23 +191,10 @@ export class Slider {
     const dx = this.points[this.points.length - 2].x - endPosition.x;
     const dy = this.points[this.points.length - 2].y - endPosition.y;
     this.reverseSprite.rotation = Math.atan2(dy, dx);
-  }
 
-  load() {
-    // Stack offset
-    if (this.stackCount !== 0) {
-      const offset = (this.stackCount * this.size) / STACK_OFFSET_MULT;
-      this.x -= offset;
-      this.y -= offset;
-      this.curve.forEach(c => {
-        c.x -= offset;
-        c.y -= offset;
-      });
-    }
-  }
-
-  addToStage(stage: PIXI.Container) {
-    stage.addChild(
+    this.container = new PIXI.Container();
+    this.container.visible = false;
+    this.container.addChild(
       this.graphics,
       ...this.tickSprites,
       this.reverseSprite,
@@ -223,14 +205,18 @@ export class Slider {
     );
   }
 
+  set stackCount(stack: number) {
+    // Stack offset
+    const offset = (stack * this.size) / STACK_OFFSET_MULT;
+    this.container.position.set(offset);
+  }
+
+  addToStage(stage: PIXI.Container) {
+    stage.addChild(this.container);
+  }
+
   setVisible(visible: boolean) {
-    this.graphics.visible = visible;
-    this.tickSprites.forEach(s => (s.visible = visible));
-    this.reverseSprite.visible = visible;
-    this.circleSprite.visible = visible;
-    this.approachSprite.visible = visible;
-    this.followSprite.visible = visible;
-    this.numberSprites.forEach(s => (s.visible = visible));
+    this.container.visible = visible;
   }
 
   // Returns [start, end]
@@ -291,16 +277,8 @@ export class Slider {
     if (this.finished > 0) {
       // Fade out everything
       const alpha = 1 - clerp01(time - this.finished, 0, FADE_OUT_MS);
+      this.container.alpha = alpha;
 
-      // TODO: fade these out starting from their own alphas
-      this.approachSprite.alpha = 0;
-      this.circleSprite.alpha = 0;
-      this.numberSprites.forEach(s => (s.alpha = 0));
-      this.tickSprites.forEach(s => (s.alpha = 0));
-      this.reverseSprite.alpha = 0;
-
-      this.graphics.alpha = alpha;
-      this.followSprite.alpha = alpha;
       return time > this.finished + FADE_OUT_MS;
     }
 
@@ -318,14 +296,11 @@ export class Slider {
         this.t - this.fadeTime,
         this.t - this.fullTime
       );
+      this.container.alpha = alpha;
 
       // Slider
-      this.graphics.alpha = alpha;
-
-      // Hit circle
-      this.circleSprite.alpha = alpha;
-      this.approachSprite.alpha = alpha;
-      this.numberSprites.forEach(s => (s.alpha = alpha));
+      this.followSprite.alpha = 0;
+      this.reverseSprite.alpha = 0;
 
       // Update approach circle sizes
       const size =
@@ -363,6 +338,7 @@ export class Slider {
     const position = this.curve[curveIndex];
 
     const alpha = 1 - clerp01(time - this.t, 0, this.fadeTime - this.fullTime);
+    this.container.alpha = 1;
 
     // Fade out hit circle, combo number, approach circle
     this.circleSprite.alpha = alpha;

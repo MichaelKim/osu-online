@@ -22,8 +22,6 @@ export function initSprite(
   if (size > 0) {
     sprite.scale.set(size / texture.width);
   }
-  sprite.visible = false;
-  sprite.alpha = 0;
   return sprite;
 }
 
@@ -46,8 +44,6 @@ export function getNumberSprites(
     const sprite = new PIXI.Sprite(skin.numbers[number % 10]);
     sprite.scale.set(scale);
     sprite.position.set(digitX, y);
-    sprite.visible = false;
-    sprite.alpha = 0;
     sprites.push(sprite);
 
     digitX -= width;

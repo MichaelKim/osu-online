@@ -1,5 +1,6 @@
 import * as PIXI from 'pixi.js';
 import { AudioResource } from './AudioLoader';
+import { Tuple } from './util';
 
 export enum SampleSetType {
   NORMAL = 1,
@@ -16,6 +17,12 @@ const soundAssets = {
   sliderTick: 'slidertick',
   sliderWhistle: 'sliderwhistle'
 };
+
+export function parseHitSample(line: string): Tuple<SampleSetType, 2> {
+  // TODO: normalSet:additionSet:index:volume:filename
+  const sampleTokens = line.split(':');
+  return [parseInt(sampleTokens[0]), parseInt(sampleTokens[1])];
+}
 
 type SoundResources = Record<keyof typeof soundAssets, AudioResource>;
 

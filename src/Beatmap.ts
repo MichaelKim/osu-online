@@ -186,8 +186,6 @@ export default class Beatmap {
       }
 
       // Update latest point
-      // TODO: alternative is to make a pass through timing points and
-      // calculate beat length for each point in advance
       const t = parseInt(tokens[2]);
       while (
         timingIndex + 1 < this.timingPoints.length &&
@@ -202,7 +200,11 @@ export default class Beatmap {
             .beatLength;
         }
       }
-      const timingPoint = this.timingPoints[timingIndex - 1];
+      const timingPoint = {
+        ...this.timingPoints[timingIndex - 1],
+        beatLength,
+        inherited: false
+      };
 
       if (type & ObjectTypes.HIT_CIRCLE) {
         const circle = new HitCircle(
@@ -307,7 +309,6 @@ export default class Beatmap {
     await this.parseHitObjects(skin);
     this.calcStacking();
     await this.loadMusic();
-    this.notes.forEach(n => n.load());
   }
 
   play() {

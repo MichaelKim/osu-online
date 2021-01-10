@@ -11,7 +11,7 @@ import {
   STACK_OFFSET_MULT
 } from './HitObjects';
 import { BaseHitSound } from './HitSoundController';
-import { SampleSetType } from './SampleSet';
+import { parseHitSample, SampleSetType } from './SampleSet';
 import Beatmap from './Beatmap';
 import { TimingPoint } from './Loader/TimingPointLoader';
 
@@ -29,7 +29,6 @@ export default class HitCircle {
   comboNumber: number;
   sampleSet: SampleSetType; // Sample set override
   additionSet: SampleSetType;
-  stackCount: number = 0;
 
   // Computed
   fadeTime: number; // Starts to fade in
@@ -37,6 +36,7 @@ export default class HitCircle {
   size: number; // Diameter of hit circle
 
   // Sprites
+  container: PIXI.Container;
   circleSprite: PIXI.Sprite;
   approachSprite: PIXI.Sprite;
   numberSprites: PIXI.Sprite[];
@@ -58,12 +58,7 @@ export default class HitCircle {
     this.t = parseInt(tokens[2]);
     this.hitSound = parseInt(tokens[4]) || BaseHitSound.NORMAL;
 
-    // TODO: normalSet:additionSet:index:volume:filename
-    let hitSample: Tuple<SampleSetType, 2> = [0, 0];
-    if (tokens.length > 6) {
-      const sampleTokens = tokens[6].split(':');
-      hitSample = [parseInt(sampleTokens[0]), parseInt(sampleTokens[1])];
-    }
+    const hitSample = tokens.length > 10 ? parseHitSample(tokens[10]) : [0, 0];
     this.sampleSet = hitSample[0] || timingPoint.sampleSet || beatmap.sampleSet;
     this.additionSet = hitSample[1] || this.sampleSet;
 
@@ -89,37 +84,45 @@ export default class HitCircle {
       this.y,
       this.size
     );
-  }
 
-  load() {
-    // Stack offset
-    this.x -= (this.stackCount * this.size) / STACK_OFFSET_MULT;
-    this.y -= (this.stackCount * this.size) / STACK_OFFSET_MULT;
-  }
-
-  addToStage(stage: PIXI.Container) {
-    stage.addChild(
+    this.container = new PIXI.Container();
+    this.container.visible = false;
+    this.container.addChild(
       this.circleSprite,
       ...this.numberSprites,
       this.approachSprite
     );
   }
 
+  set stackCount(stack: number) {
+    // Stack offset
+    const offset = (stack * this.size) / STACK_OFFSET_MULT;
+    this.container.position.set(offset);
+  }
+
+  addToStage(stage: PIXI.Container) {
+    stage.addChild(this.container);
+  }
+
   setVisible(visible: boolean) {
-    this.circleSprite.visible = visible;
-    this.approachSprite.visible = visible;
-    this.numberSprites.forEach(s => (s.visible = visible));
+    this.container.visible = visible;
   }
 
   update(time: number) {
     if (this.finished > 0) {
       // Either hit or missed: Fade out everything
       const alpha = 1 - clerp01(time - this.finished, 0, FADE_OUT_MS);
+      this.container.alpha = alpha;
 
-      this.circleSprite.alpha = alpha;
-      // TODO: combo numbers disappear instantly
-      this.numberSprites.forEach(s => (s.alpha = alpha));
-      this.approachSprite.alpha = alpha;
+      this.numberSprites.forEach(s => (s.alpha = 0));
+      this.approachSprite.alpha = 0;
+      3;
+
+      // Expand hit circle
+      const size =
+        this.size * clerp(time - this.finished, 0, FADE_OUT_MS, 1, 1.2);
+      this.circleSprite.scale.set(size / this.circleSprite.texture.width);
+
       return time > this.finished + FADE_OUT_MS;
     }
 
@@ -136,11 +139,7 @@ export default class HitCircle {
         this.t - this.fadeTime,
         this.t - this.fullTime
       );
-
-      // Hit circle
-      this.circleSprite.alpha = alpha;
-      this.approachSprite.alpha = alpha;
-      this.numberSprites.forEach(s => (s.alpha = alpha));
+      this.container.alpha = alpha;
 
       // Update approach circle sizes
       const size =
@@ -150,9 +149,7 @@ export default class HitCircle {
     }
 
     // Waiting for hit
-    this.circleSprite.alpha = 1;
-    this.approachSprite.alpha = 1;
-    this.numberSprites.forEach(s => (s.alpha = 1));
+    this.container.alpha = 1;
     this.approachSprite.scale.set(
       this.size / this.approachSprite.texture.width
     );

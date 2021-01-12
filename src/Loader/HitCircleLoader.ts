@@ -1,3 +1,4 @@
+import Beatmap from '../Beatmap';
 import {
   APPROACH_R,
   getNumberSprites,
@@ -7,7 +8,6 @@ import {
 import { BaseHitSound } from '../HitSoundController';
 import { parseHitSample, SampleSetType } from '../SampleSet';
 import { Skin } from '../Skin';
-import { Beatmap } from './BeatmapLoader';
 import { TimingPoint } from './TimingPointLoader';
 
 // TODO: combine x,y into position?

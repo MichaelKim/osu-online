@@ -3,7 +3,7 @@ import Beatmap from '../Beatmap';
 import { HitObjectTypes } from '.';
 import { BaseHitSound } from '../HitSoundController';
 import { parseHitSample, SampleSetType } from '../SampleSet';
-import TimingPoint from '../TimingPoint';
+import { TimingPoint } from '../Loader/TimingPointLoader';
 
 export default class Spinner {
   readonly type = HitObjectTypes.SPINNER;

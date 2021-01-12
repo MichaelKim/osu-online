@@ -9,8 +9,8 @@ import { SampleSetType } from './SampleSet';
 import { Skin } from './Skin';
 import Slider from './HitObjects/Slider';
 import { arToMS, odToMS } from './timing';
-import TimingPoint from './TimingPoint';
 import { parseKeyValue, readFile, within } from './util';
+import { parseTimingPoint, TimingPoint } from './Loader/TimingPointLoader';
 
 const STACK_LENIENCE_SQR = 3 * 3;
 
@@ -123,7 +123,7 @@ export default class Beatmap {
         case '[TimingPoints]':
           while (i < file.length && file[i][0] !== '[' && file[i].length > 0) {
             const tokens = file[i++].split(',');
-            this.timingPoints.push(new TimingPoint(tokens));
+            this.timingPoints.push(parseTimingPoint(tokens));
           }
           break;
         case '[HitObjects]':

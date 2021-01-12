@@ -19,8 +19,8 @@ import {
 } from '../Loader/SliderLoader';
 import { Skin } from '../Skin';
 import { arToMS, csToSize } from '../timing';
-import TimingPoint from '../TimingPoint';
 import { clerp, clerp01 } from '../util';
+import { TimingPoint } from '../Loader/TimingPointLoader';
 
 export default class Slider {
   readonly type = HitObjectTypes.SLIDER;

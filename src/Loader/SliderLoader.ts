@@ -1,4 +1,5 @@
 import * as PIXI from 'pixi.js';
+import Beatmap from '../Beatmap';
 import { CurveTypes, getSliderCurve } from '../Curve';
 import {
   APPROACH_R,
@@ -11,7 +12,6 @@ import { BaseHitSound } from '../HitSoundController';
 import { parseHitSample, SampleSetType } from '../SampleSet';
 import { Skin } from '../Skin';
 import { Tuple } from '../util';
-import { Beatmap } from './BeatmapLoader';
 import { TimingPoint } from './TimingPointLoader';
 
 type EdgeSet = Tuple<SampleSetType, 2>; // [normal, addition]

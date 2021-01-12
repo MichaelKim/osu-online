@@ -1,5 +1,4 @@
 import * as PIXI from 'pixi.js';
-import Beatmap from '../Beatmap';
 import {
   APPROACH_R,
   FADE_OUT_MS,
@@ -11,16 +10,17 @@ import HitSoundController, {
   BaseHitSound,
   SliderHitSound
 } from '../HitSoundController';
+import { BeatmapData } from '../Loader/BeatmapLoader';
 import {
   loadSliderSprites,
   parseSlider,
   SliderData,
   SliderSprites
 } from '../Loader/SliderLoader';
+import { TimingPoint } from '../Loader/TimingPointLoader';
 import { Skin } from '../Skin';
 import { arToMS, csToSize } from '../timing';
 import { clerp, clerp01 } from '../util';
-import { TimingPoint } from '../Loader/TimingPointLoader';
 
 export default class Slider {
   readonly type = HitObjectTypes.SLIDER;
@@ -49,7 +49,7 @@ export default class Slider {
     tokens: string[],
     comboNumber: number,
     comboIndex: number,
-    beatmap: Beatmap,
+    beatmap: BeatmapData,
     timingPoint: TimingPoint,
     skin: Skin,
     hitSoundController: HitSoundController

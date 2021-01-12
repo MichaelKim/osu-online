@@ -1,5 +1,4 @@
 import * as PIXI from 'pixi.js';
-import Beatmap from '../Beatmap';
 import { CurveTypes, getSliderCurve } from '../Curve';
 import {
   APPROACH_R,
@@ -12,6 +11,7 @@ import { BaseHitSound } from '../HitSoundController';
 import { parseHitSample, SampleSetType } from '../SampleSet';
 import { Skin } from '../Skin';
 import { Tuple } from '../util';
+import { BeatmapData } from './BeatmapLoader';
 import { TimingPoint } from './TimingPointLoader';
 
 type EdgeSet = Tuple<SampleSetType, 2>; // [normal, addition]
@@ -59,7 +59,7 @@ export function parseSlider(
   comboNumber: number,
   comboIndex: number,
   timingPoint: TimingPoint,
-  beatmap: Beatmap
+  beatmap: BeatmapData
 ): SliderData {
   // x,y,time,type,hitSound,curveType|curvePoints,slides,length,edgeSounds,edgeSets,hitSample
   const x = parseFloat(tokens[0]);

@@ -1,4 +1,3 @@
-import Beatmap from '../Beatmap';
 import {
   APPROACH_R,
   getNumberSprites,
@@ -8,6 +7,7 @@ import {
 import { BaseHitSound } from '../HitSoundController';
 import { parseHitSample, SampleSetType } from '../SampleSet';
 import { Skin } from '../Skin';
+import { BeatmapData } from './BeatmapLoader';
 import { TimingPoint } from './TimingPointLoader';
 
 // TODO: combine x,y into position?
@@ -40,7 +40,7 @@ export function parseHitCircle(
   comboNumber: number,
   comboIndex: number,
   timingPoint: TimingPoint,
-  beatmap: Beatmap
+  beatmap: BeatmapData
 ): HitCircleData {
   // x,y,time,type,hitSound,objectParams,hitSample
   const x = parseFloat(tokens[0]);

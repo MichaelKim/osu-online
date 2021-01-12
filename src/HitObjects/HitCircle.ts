@@ -1,6 +1,6 @@
 import * as PIXI from 'pixi.js';
-import Beatmap from '../Beatmap';
 import { APPROACH_R, FADE_OUT_MS, HitObjectTypes, STACK_OFFSET_MULT } from '.';
+import { BeatmapData } from '../Loader/BeatmapLoader';
 import {
   HitCircleData,
   HitCircleSprites,
@@ -34,7 +34,7 @@ export default class HitCircle {
     tokens: string[],
     comboNumber: number,
     comboIndex: number,
-    beatmap: Beatmap,
+    beatmap: BeatmapData,
     timingPoint: TimingPoint,
     skin: Skin
   ) {

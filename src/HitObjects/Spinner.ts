@@ -1,9 +1,9 @@
 import * as PIXI from 'pixi.js';
-import Beatmap from '../Beatmap';
 import { HitObjectTypes } from '.';
 import { BaseHitSound } from '../HitSoundController';
 import { parseHitSample, SampleSetType } from '../SampleSet';
 import { TimingPoint } from '../Loader/TimingPointLoader';
+import { BeatmapData } from '../Loader/BeatmapLoader';
 
 export default class Spinner {
   readonly type = HitObjectTypes.SPINNER;
@@ -35,7 +35,11 @@ export default class Spinner {
   spinProgress: number = 0;
   finished: number = 0;
 
-  constructor(tokens: string[], timingPoint: TimingPoint, beatmap: Beatmap) {
+  constructor(
+    tokens: string[],
+    timingPoint: TimingPoint,
+    beatmap: BeatmapData
+  ) {
     // x,y,time,type,hitSound,endTime,hitSample
     this.t = parseInt(tokens[2]);
     this.hitSound = parseInt(tokens[4]) || BaseHitSound.NORMAL;

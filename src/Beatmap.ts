@@ -1,37 +1,25 @@
 import * as PIXI from 'pixi.js';
 import * as AudioLoader from './AudioLoader';
 import FollowPointController from './FollowPointController';
-import HitCircle from './HitObjects/HitCircle';
 import { HitObject, HitObjectTypes } from './HitObjects';
 import HitResultController, { HitResultType } from './HitResultController';
 import HitSoundController from './HitSoundController';
-import { SampleSetType } from './SampleSet';
+import {
+  BeatmapData,
+  parseBeatmap,
+  parseHitObjects
+} from './Loader/BeatmapLoader';
 import { Skin } from './Skin';
-import Slider from './HitObjects/Slider';
 import { arToMS, odToMS } from './timing';
-import { parseKeyValue, readFile, within } from './util';
-import { parseTimingPoint, TimingPoint } from './Loader/TimingPointLoader';
+import { readFile, within } from './util';
 
 const STACK_LENIENCE_SQR = 3 * 3;
 
 export default class Beatmap {
   filepath: string; // Path to .osu file
 
-  // general
-  version: number = 14;
-  audioFilename: string;
-  audioLeadIn: number = 0;
-  sampleSet: SampleSetType = SampleSetType.NORMAL;
-  stackLeniency: number = 0.7;
+  data: BeatmapData;
 
-  // difficulty
-  cs: number;
-  od: number;
-  ar: number = 5;
-  sliderMultiplier: number = 1.4;
-  sliderTickRate: number = 1;
-
-  timingPoints: TimingPoint[] = [];
   notes: HitObject[] = [];
 
   // Computed
@@ -63,171 +51,14 @@ export default class Beatmap {
     this.followPoints = followPoints;
   }
 
-  async parseFile() {
-    const file = await readFile(this.filepath);
-
-    let i = 0;
-
-    while (i < file.length) {
-      switch (file[i++]) {
-        case '[General]':
-          while (i < file.length && file[i][0] !== '[' && file[i].length > 0) {
-            const [key, value] = parseKeyValue(file[i++]);
-            switch (key) {
-              case 'AudioFilename':
-                this.audioFilename = value;
-                break;
-              case 'AudioLeadIn':
-                this.audioLeadIn = parseInt(value);
-                break;
-              case 'SampleSet':
-                switch (value) {
-                  case 'Normal':
-                    this.sampleSet = SampleSetType.NORMAL;
-                    break;
-                  case 'Soft':
-                    this.sampleSet = SampleSetType.SOFT;
-                    break;
-                  case 'Drum':
-                    this.sampleSet = SampleSetType.DRUM;
-                    break;
-                }
-              case 'StackLeniency':
-                this.stackLeniency = parseFloat(value);
-                break;
-            }
-          }
-          break;
-        case '[Difficulty]':
-          while (i < file.length && file[i][0] !== '[' && file[i].length > 0) {
-            const [key, value] = parseKeyValue(file[i++]);
-            switch (key) {
-              case 'CircleSize':
-                this.cs = parseFloat(value);
-                break;
-              case 'OverallDifficulty':
-                this.od = parseFloat(value);
-                break;
-              case 'ApproachRate':
-                this.ar = parseFloat(value);
-                break;
-              case 'SliderMultiplier':
-                this.sliderMultiplier = parseFloat(value);
-                break;
-              case 'SliderTickRate':
-                this.sliderTickRate = parseFloat(value);
-                break;
-            }
-          }
-          break;
-        case '[TimingPoints]':
-          while (i < file.length && file[i][0] !== '[' && file[i].length > 0) {
-            const tokens = file[i++].split(',');
-            this.timingPoints.push(parseTimingPoint(tokens));
-          }
-          break;
-        case '[HitObjects]':
-          // Parse hit objects later
-          while (i < file.length && file[i][0] !== '[' && file[i].length > 0) {
-            i++;
-          }
-          break;
-      }
-    }
-  }
-
   async preload() {
-    await this.parseFile();
-
-    [this.fadeTime, this.fullTime] = arToMS(this.ar);
-    this.hitWindows = odToMS(this.od);
-  }
-
-  async parseHitObjects(skin: Skin) {
-    let comboNumber = 0;
-    let comboIndex = 0;
-
-    let timingIndex = -1;
-    let baseBeatLength = 1,
-      beatLength = 1;
-
     const file = await readFile(this.filepath);
-
-    for (
-      let i = file.indexOf('[HitObjects]') + 1;
-      i < file.length && file[i][0] !== '[' && file[i].length > 0;
-      i++
-    ) {
-      const tokens = file[i].split(',');
-      if (tokens.length < 4) {
-        console.error(`Line ${i} missing tokens`);
-        continue;
-      }
-
-      const type = parseInt(tokens[3]);
-
-      // Calculate combo number
-      if (type & HitObjectTypes.NEW_COMBO) {
-        // New combo
-        comboNumber = 1;
-
-        const skip = (type & HitObjectTypes.COMBO_SKIP) >> 4;
-        comboIndex += skip;
-      } else {
-        comboNumber++;
-      }
-
-      // Update latest point
-      const t = parseInt(tokens[2]);
-      while (
-        timingIndex + 1 < this.timingPoints.length &&
-        this.timingPoints[timingIndex + 1].time <= t
-      ) {
-        timingIndex++;
-        // Calculate beat length
-        if (this.timingPoints[timingIndex].inherited) {
-          beatLength = baseBeatLength * this.timingPoints[timingIndex].mult;
-        } else {
-          baseBeatLength = beatLength = this.timingPoints[timingIndex]
-            .beatLength;
-        }
-      }
-      const timingPoint = {
-        ...this.timingPoints[timingIndex - 1],
-        beatLength,
-        inherited: false
-      };
-
-      if (type & HitObjectTypes.HIT_CIRCLE) {
-        const circle = new HitCircle(
-          tokens,
-          comboNumber,
-          comboIndex,
-          this,
-          timingPoint,
-          skin
-        );
-
-        this.notes.push(circle);
-      } else if (type & HitObjectTypes.SLIDER) {
-        const slider = new Slider(
-          tokens,
-          comboNumber,
-          comboIndex,
-          this,
-          timingPoint,
-          skin,
-          this.hitSound
-        );
-
-        this.notes.push(slider);
-      }
-    }
+    this.data = parseBeatmap(file);
   }
 
   // Taken from https://gist.github.com/peppy/1167470
   calcStacking() {
-    const [fadeTime] = arToMS(this.ar);
+    const [fadeTime] = arToMS(this.data.ar);
     // Reverse pass
     for (let i = this.notes.length - 1; i > 0; i--) {
       let objectI = this.notes[i];
@@ -244,7 +75,10 @@ export default class Beatmap {
           continue;
         }
 
-        if (objectI.o.t - fadeTime * this.stackLeniency > objectN.endTime) {
+        if (
+          objectI.o.t - fadeTime * this.data.stackLeniency >
+          objectN.endTime
+        ) {
           break;
         }
 
@@ -274,19 +108,24 @@ export default class Beatmap {
   }
 
   async loadMusic() {
-    if (this.audioFilename == null) console.error('Missing audio filename');
+    if (this.data.audioFilename == null)
+      console.error('Missing audio filename');
 
     // TODO: extract audio playback
-    const res = await AudioLoader.load('beatmaps/' + this.audioFilename);
+    const res = await AudioLoader.load('beatmaps/' + this.data.audioFilename);
     this.music = res.data;
   }
 
   async load(skin: Skin) {
+    [this.fadeTime, this.fullTime] = arToMS(this.data.ar);
+    this.hitWindows = odToMS(this.data.od);
+
     // TODO: extract gameplay logic
     this.left = 0;
     this.right = 0;
 
-    await this.parseHitObjects(skin);
+    const file = await readFile(this.filepath);
+    this.notes = parseHitObjects(file, this.data, skin, this.hitSound);
     this.calcStacking();
     await this.loadMusic();
   }

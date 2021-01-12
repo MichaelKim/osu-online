@@ -1,6 +1,6 @@
 import * as PIXI from 'pixi.js';
 import HitCircle from './HitCircle';
-import { Skin } from './Skin';
+import { Skin } from '../Skin';
 import Slider from './Slider';
 import Spinner from './Spinner';
 

@@ -1,9 +1,9 @@
 import * as PIXI from 'pixi.js';
-import Beatmap from './Beatmap';
-import { HitObjectTypes } from './HitObjects';
-import { BaseHitSound } from './HitSoundController';
-import { parseHitSample, SampleSetType } from './SampleSet';
-import TimingPoint from './TimingPoint';
+import Beatmap from '../Beatmap';
+import { HitObjectTypes } from '.';
+import { BaseHitSound } from '../HitSoundController';
+import { parseHitSample, SampleSetType } from '../SampleSet';
+import TimingPoint from '../TimingPoint';
 
 export default class Spinner {
   readonly type = HitObjectTypes.SPINNER;

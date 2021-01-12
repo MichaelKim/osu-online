@@ -1,13 +1,13 @@
 import * as PIXI from 'pixi.js';
 import * as AudioLoader from './AudioLoader';
 import FollowPointController from './FollowPointController';
-import HitCircle from './HitCircle';
+import HitCircle from './HitObjects/HitCircle';
 import { HitObject, HitObjectTypes } from './HitObjects';
 import HitResultController, { HitResultType } from './HitResultController';
 import HitSoundController from './HitSoundController';
 import { SampleSetType } from './SampleSet';
 import { Skin } from './Skin';
-import Slider from './Slider';
+import Slider from './HitObjects/Slider';
 import { arToMS, odToMS } from './timing';
 import TimingPoint from './TimingPoint';
 import { parseKeyValue, readFile, within } from './util';

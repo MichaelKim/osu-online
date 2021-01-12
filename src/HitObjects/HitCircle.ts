@@ -1,21 +1,16 @@
 import * as PIXI from 'pixi.js';
-import Beatmap from './Beatmap';
-import {
-  APPROACH_R,
-  FADE_OUT_MS,
-  HitObjectTypes,
-  STACK_OFFSET_MULT
-} from './HitObjects';
+import Beatmap from '../Beatmap';
+import { APPROACH_R, FADE_OUT_MS, HitObjectTypes, STACK_OFFSET_MULT } from '.';
 import {
   HitCircleData,
   HitCircleSprites,
   loadHitCircleSprites,
   parseHitCircle
-} from './Loader/HitCircleLoader';
-import { TimingPoint } from './Loader/TimingPointLoader';
-import { Skin } from './Skin';
-import { arToMS, csToSize } from './timing';
-import { clerp, clerp01 } from './util';
+} from '../Loader/HitCircleLoader';
+import { TimingPoint } from '../Loader/TimingPointLoader';
+import { Skin } from '../Skin';
+import { arToMS, csToSize } from '../timing';
+import { clerp, clerp01 } from '../util';
 
 export default class HitCircle {
   readonly type = HitObjectTypes.HIT_CIRCLE;

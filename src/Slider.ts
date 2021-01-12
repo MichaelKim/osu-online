@@ -1,67 +1,44 @@
 import * as PIXI from 'pixi.js';
 import Beatmap from './Beatmap';
-import { CurveTypes, getSliderCurve } from './Curve';
 import {
   APPROACH_R,
   FADE_OUT_MS,
   FOLLOW_R,
-  getNumberSprites,
-  initSprite,
-  ObjectTypes,
+  HitObjectTypes,
   STACK_OFFSET_MULT
 } from './HitObjects';
 import HitSoundController, {
   BaseHitSound,
   SliderHitSound
 } from './HitSoundController';
-import { parseHitSample, SampleSetType } from './SampleSet';
+import {
+  loadSliderSprites,
+  parseSlider,
+  SliderData,
+  SliderSprites
+} from './Loader/SliderLoader';
 import { Skin } from './Skin';
 import { arToMS, csToSize } from './timing';
 import TimingPoint from './TimingPoint';
-import { clerp, clerp01, Tuple } from './util';
+import { clerp, clerp01 } from './util';
 
 export default class Slider {
-  readonly type = ObjectTypes.SLIDER;
+  readonly type = HitObjectTypes.SLIDER;
 
-  // Metadata
-  x: number; // Position of the hit circle (initially at points[0])
-  y: number;
-  points: PIXI.Point[]; // Control points
-  t: number;
-  hitSound: BaseHitSound;
-  sliderType: CurveTypes;
-  slides: number; // Total number of slides (0 repeats = 1 slide)
-  length: number;
-  // TODO: this type is supposed to be like a bitset of BaseHitSounds
-  edgeSounds: BaseHitSound[] = [];
-  edgeSets: Tuple<SampleSetType, 2>[] = []; // [normal, addition]
-
-  // Beatmap
-  comboIndex: number; // Combo color index
-  comboNumber: number; // 1-indexed
-  sampleSet: SampleSetType; // Sample set override
-  additionSet: SampleSetType;
+  o: SliderData;
 
   // Computed
   fadeTime: number; // Starts to fade in
   fullTime: number; // Fully opaque
   size: number; // Diameter of hit circle
-  sliderTime: number; // Without repeats
-  endTime: number; // Time when slider ends
-  curve: PIXI.Point[];
-  ticks: number[] = [];
 
   // Rendering
   container: PIXI.Container;
   graphics: PIXI.Graphics;
-  tickSprites: PIXI.Sprite[];
-  circleSprite: PIXI.Sprite;
-  approachSprite: PIXI.Sprite;
-  numberSprites: PIXI.Sprite[];
-  followSprite: PIXI.Sprite;
-  reverseSprite: PIXI.Sprite;
+  s: SliderSprites;
 
   // Gameplay
+  position: PIXI.Point;
   finished = 0;
   active = false; // Is the slider being followed?
   ticksHit = 0; // Number of slider ticks already hit (per repeat)
@@ -77,131 +54,28 @@ export default class Slider {
     skin: Skin,
     hitSoundController: HitSoundController
   ) {
-    // x,y,time,type,hitSound,curveType|curvePoints,slides,length,edgeSounds,edgeSets,hitSample
-    this.x = parseFloat(tokens[0]);
-    this.y = parseFloat(tokens[1]);
-    this.t = parseInt(tokens[2]);
-    this.hitSound = parseInt(tokens[4]) || BaseHitSound.NORMAL;
+    this.o = parseSlider(tokens, comboNumber, comboIndex, timingPoint, beatmap);
+    this.position = this.start;
 
-    const [curveType, ...curveTokens] = tokens[5].split('|');
-    this.sliderType = curveType as CurveTypes;
-    const otherPoints = curveTokens.map(t => {
-      const [x, y] = t.split(':');
-      return {
-        x: parseFloat(x),
-        y: parseFloat(y)
-      };
-    });
-    this.points = [{ x: this.x, y: this.y }, ...otherPoints].map(
-      ({ x, y }) => new PIXI.Point(x, y)
-    );
-
-    this.slides = parseInt(tokens[6]);
-    this.length = parseFloat(tokens[7]);
-
-    if (tokens.length > 8) {
-      this.edgeSounds = tokens[8].split('|').map(t => parseInt(t));
-    }
-
-    if (tokens.length > 9) {
-      const edgeSetTokens = tokens[9].split('|');
-      this.edgeSets = edgeSetTokens.map(t => {
-        const set = t.split(':');
-        return [parseInt(set[0]), parseInt(set[1])];
-      });
-    }
-
-    if (this.edgeSounds.length !== this.edgeSets.length) {
-      console.warn('Mismatching edge sound lengths', tokens);
-    }
-
-    const hitSample = tokens.length > 10 ? parseHitSample(tokens[10]) : [0, 0];
-    this.sampleSet = hitSample[0] || timingPoint.sampleSet || beatmap.sampleSet;
-    this.additionSet = hitSample[1] || hitSample[0];
-
-    this.comboNumber = comboNumber;
-    this.comboIndex = comboIndex;
     this.hitSoundController = hitSoundController;
-
-    this.graphics = new PIXI.Graphics();
-
-    // Calculate curve points
-    this.curve = getSliderCurve(this.sliderType, this.points, this.length);
-
-    // Calculate slider duration
-    this.sliderTime =
-      (timingPoint.beatLength * (this.length / beatmap.sliderMultiplier)) / 100;
-
-    // Commonly computed value
-    this.endTime = this.t + this.sliderTime * this.slides;
-
-    // Calculate slider ticks
-    const tickDist =
-      (100 * beatmap.sliderMultiplier) /
-      beatmap.sliderTickRate /
-      timingPoint.mult;
-    const numTicks = Math.ceil(this.length / tickDist) - 2; // Ignore start and end
-    if (numTicks > 0) {
-      const tickOffset = 1 / (numTicks + 1);
-      for (let i = 0, t = tickOffset; i < numTicks; i++, t += tickOffset) {
-        this.ticks.push(t);
-      }
-    }
 
     // Compute timing windows
     [this.fadeTime, this.fullTime] = arToMS(beatmap.ar);
     this.size = csToSize(beatmap.cs);
 
-    // Load sprites
-    this.circleSprite = initSprite(skin.circle, this.x, this.y, this.size);
-    this.approachSprite = initSprite(
-      skin.approach,
-      this.x,
-      this.y,
-      this.size * APPROACH_R
-    );
-    this.followSprite = initSprite(
-      skin.sliderFollowCircle,
-      this.x,
-      this.y,
-      this.size * FOLLOW_R
-    );
-    this.numberSprites = getNumberSprites(
-      skin,
-      this.comboNumber,
-      this.x,
-      this.y,
-      this.size
-    );
-
-    this.tickSprites = this.ticks.map(t => {
-      const index = Math.floor(this.curve.length * t);
-      const point = this.curve[index];
-
-      return initSprite(skin.sliderScorePoint, point.x, point.y);
-    });
-
-    const endPosition = this.curve[this.curve.length - 1];
-    // TODO: Should scale with circle size
-    this.reverseSprite = initSprite(
-      skin.reverseArrow,
-      endPosition.x,
-      endPosition.y
-    );
-    const dx = this.points[this.points.length - 2].x - endPosition.x;
-    const dy = this.points[this.points.length - 2].y - endPosition.y;
-    this.reverseSprite.rotation = Math.atan2(dy, dx);
+    this.s = loadSliderSprites(this.o, skin, this.size);
+    this.graphics = new PIXI.Graphics();
 
     this.container = new PIXI.Container();
     this.container.visible = false;
     this.container.addChild(
       this.graphics,
-      ...this.tickSprites,
-      this.reverseSprite,
-      this.circleSprite,
-      this.followSprite,
-      ...this.numberSprites,
-      this.approachSprite
+      ...this.s.tickSprites,
+      this.s.reverseSprite,
+      this.s.circleSprite,
+      this.s.followSprite,
+      this.s.numberSprites,
+      this.s.approachSprite
     );
   }
 
@@ -209,6 +83,18 @@ export default class Slider {
     // Stack offset
     const offset = (stack * this.size) / STACK_OFFSET_MULT;
     this.container.position.set(offset);
+  }
+
+  get start() {
+    return new PIXI.Point(this.o.x, this.o.y);
+  }
+
+  get end() {
+    return this.o.curve[this.o.curve.length - 1];
+  }
+
+  get endTime() {
+    return this.o.endTime;
   }
 
   addToStage(stage: PIXI.Container) {
@@ -222,12 +108,15 @@ export default class Slider {
   // Returns [start, end]
   calcIndices(time: number) {
     // One less slide
-    const outTime = this.endTime - this.sliderTime;
+    const outTime = this.o.endTime - this.o.sliderTime;
 
     // Snake in: [t - fade, t - full] -> [0, 1]
     // TODO: this still feels too late
-    if (time < this.t - this.fullTime) {
-      return [0, clerp01(time, this.t - this.fadeTime, this.t - this.fullTime)];
+    if (time < this.o.t - this.fullTime) {
+      return [
+        0,
+        clerp01(time, this.o.t - this.fadeTime, this.o.t - this.fullTime)
+      ];
     }
 
     // Full slider
@@ -236,14 +125,14 @@ export default class Slider {
     }
 
     // Snake out: [t + sliderTime * (slides - 1), t + sliderTime * slides] -> [0, 1]
-    if (time < this.endTime) {
+    if (time < this.o.endTime) {
       // Odd number of slides: start moves in
-      if (this.slides % 2) {
-        return [clerp01(time, outTime, this.endTime), 1];
+      if (this.o.slides % 2) {
+        return [clerp01(time, outTime, this.o.endTime), 1];
       }
 
       // Even slides: end moves in
-      return [0, 1 - clerp01(time, outTime, this.endTime)];
+      return [0, 1 - clerp01(time, outTime, this.o.endTime)];
     }
 
     // Slider finished
@@ -254,22 +143,25 @@ export default class Slider {
     const [start, end] = this.calcIndices(time);
 
     // TODO: change to curve pointAt
-    const startIndex = Math.floor(this.curve.length * start);
-    const endIndex = Math.floor(this.curve.length * end);
+    const startIndex = Math.floor(this.o.curve.length * start);
+    const endIndex = Math.floor(this.o.curve.length * end);
 
     this.graphics.clear();
     this.graphics.lineStyle(5, 0xffffff);
-    this.graphics.moveTo(this.curve[startIndex].x, this.curve[startIndex].y);
+    this.graphics.moveTo(
+      this.o.curve[startIndex].x,
+      this.o.curve[startIndex].y
+    );
     for (let i = startIndex + 1; i < endIndex; i++) {
-      this.graphics.lineTo(this.curve[i].x, this.curve[i].y);
+      this.graphics.lineTo(this.o.curve[i].x, this.o.curve[i].y);
     }
   }
 
   playEdge(index: number) {
-    const hitSound = this.edgeSounds[index] || this.hitSound;
+    const hitSound = this.o.edgeSounds[index] || this.o.hitSound;
     // [normal, addition]
     const setIndex = hitSound === BaseHitSound.NORMAL ? 0 : 1;
-    const sampleSet = this.edgeSets[index]?.[setIndex] || this.sampleSet;
+    const sampleSet = this.o.edgeSets[index]?.[setIndex] || this.o.sampleSet;
     this.hitSoundController.playBaseSound(sampleSet, hitSound);
   }
 
@@ -283,36 +175,39 @@ export default class Slider {
     }
 
     // Not visible yet
-    if (time < this.t - this.fadeTime) {
+    if (time < this.o.t - this.fadeTime) {
       return false;
     }
 
     this.updateSlider(time);
 
     // Fade in
-    if (time < this.t) {
+    if (time < this.o.t) {
       const alpha = clerp01(
         time,
-        this.t - this.fadeTime,
-        this.t - this.fullTime
+        this.o.t - this.fadeTime,
+        this.o.t - this.fullTime
       );
       this.container.alpha = alpha;
 
       // Slider
-      this.followSprite.alpha = 0;
-      this.reverseSprite.alpha = 0;
+      this.s.followSprite.alpha = 0;
+      this.s.reverseSprite.alpha = 0;
 
       // Update approach circle sizes
       const size =
-        this.size * clerp(time, this.t - this.fadeTime, this.t, APPROACH_R, 1);
-      this.approachSprite.scale.set(size / this.approachSprite.texture.width);
+        this.size *
+        clerp(time, this.o.t - this.fadeTime, this.o.t, APPROACH_R, 1);
+      this.s.approachSprite.scale.set(
+        size / this.s.approachSprite.texture.width
+      );
 
       // Reverse arrow
-      if (this.slides > 1) {
-        this.reverseSprite.alpha = clerp01(
+      if (this.o.slides > 1) {
+        this.s.reverseSprite.alpha = clerp01(
           time,
-          this.t - this.fullTime,
-          this.t - this.fullTime + 100
+          this.o.t - this.fullTime,
+          this.o.t - this.fullTime + 100
         );
       }
       return false;
@@ -320,44 +215,44 @@ export default class Slider {
 
     // Slider active
     // Check if slider is finished
-    if (this.active && time > this.endTime) {
+    if (this.active && time > this.o.endTime) {
       this.finished = time;
 
       // Play slider end hit sound
-      this.playEdge(this.edgeSounds.length - 1);
+      this.playEdge(this.o.edgeSounds.length - 1);
 
       return false;
     }
 
     // Update slider ball
-    const progress = (time - this.t) / this.sliderTime; // Current repeat
+    const progress = (time - this.o.t) / this.o.sliderTime; // Current repeat
     const forwards = Math.floor(progress) % 2 === 0; // Sliding direction
     const delta = forwards ? progress % 1 : 1 - (progress % 1);
     // TODO: use pointAt
-    const curveIndex = Math.floor(this.curve.length * delta);
-    const position = this.curve[curveIndex];
+    const curveIndex = Math.floor(this.o.curve.length * delta);
+    const position = this.o.curve[curveIndex];
 
-    const alpha = 1 - clerp01(time - this.t, 0, this.fadeTime - this.fullTime);
+    const alpha =
+      1 - clerp01(time - this.o.t, 0, this.fadeTime - this.fullTime);
     this.container.alpha = 1;
 
     // Fade out hit circle, combo number, approach circle
-    this.circleSprite.alpha = alpha;
-    this.circleSprite.position.copyFrom(position);
+    // TODO: these might actually instantly fade out once hit
+    this.s.circleSprite.alpha = alpha;
+    this.s.circleSprite.position.copyFrom(position);
 
-    this.numberSprites.forEach(s => {
-      s.alpha = alpha;
-      s.position.copyFrom(position);
-    });
+    this.s.numberSprites.alpha = alpha;
+    this.s.numberSprites.position.copyFrom(position);
 
-    this.approachSprite.alpha = alpha;
-    this.approachSprite.position.copyFrom(position);
+    this.s.approachSprite.alpha = alpha;
+    this.s.approachSprite.position.copyFrom(position);
 
     // Fade in follow circle
-    this.followSprite.alpha = clerp01(time - this.t, 0, 150);
-    this.followSprite.position.copyFrom(position);
+    this.s.followSprite.alpha = clerp01(time - this.o.t, 0, 150);
+    this.s.followSprite.position.copyFrom(position);
     // Expand follow circle
-    const size = this.size * clerp(time - this.t, 0, 150, 1, FOLLOW_R);
-    this.followSprite.scale.set(size / this.followSprite.texture.width);
+    const size = this.size * clerp(time - this.o.t, 0, 150, 1, FOLLOW_R);
+    this.s.followSprite.scale.set(size / this.s.followSprite.texture.width);
 
     // Update slider ticks
     let tickStart = 0,
@@ -368,13 +263,13 @@ export default class Slider {
       tickEnd = delta;
     }
     let ticksHitNew = 0;
-    for (let i = 0; i < this.ticks.length; i++) {
+    for (let i = 0; i < this.o.ticks.length; i++) {
       // TODO: ticks are evenly spaced, so [0, end] -> [length - end, 1] is more efficient
-      if (this.ticks[i] > tickStart && this.ticks[i] < tickEnd) {
+      if (this.o.ticks[i] > tickStart && this.o.ticks[i] < tickEnd) {
         // TODO: fade in and pop out
-        this.tickSprites[i].alpha = 1;
+        this.s.tickSprites[i].alpha = 1;
       } else {
-        this.tickSprites[i].alpha = 0;
+        this.s.tickSprites[i].alpha = 0;
         ticksHitNew++;
       }
     }
@@ -384,7 +279,7 @@ export default class Slider {
       for (let i = this.ticksHit; i < ticksHitNew; i++) {
         // Number of ticks hit increased: new ticks
         this.hitSoundController.playSound(
-          this.sampleSet,
+          this.o.sampleSet,
           SliderHitSound.SLIDER_TICK
         );
       }
@@ -400,8 +295,8 @@ export default class Slider {
       }
     }
 
-    this.x = position.x;
-    this.y = position.y;
+    // TODO
+    this.position.copyFrom(position);
 
     return false;
   }
@@ -409,15 +304,16 @@ export default class Slider {
   hit(position: PIXI.Point) {
     // TODO: should this be two separate methods?
     if (this.active) {
-      const dx = position.x - this.x;
-      const dy = position.y - this.y;
+      // TODO: use within()
+      const dx = position.x - this.position.x;
+      const dy = position.y - this.position.y;
       // Once active, cursor needs to stay within follow circle
       const r = (FOLLOW_R * this.size) / 2;
       return dx * dx + dy * dy < r * r;
     }
 
-    const dx = position.x - this.points[0].x;
-    const dy = position.y - this.points[0].y;
+    const dx = position.x - this.start.x;
+    const dy = position.y - this.start.y;
     const r = this.size / 2;
     return dx * dx + dy * dy < r * r;
   }

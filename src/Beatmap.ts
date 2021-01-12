@@ -2,20 +2,17 @@ import * as PIXI from 'pixi.js';
 import * as AudioLoader from './AudioLoader';
 import FollowPointController from './FollowPointController';
 import HitCircle from './HitCircle';
-import { ObjectTypes } from './HitObjects';
+import { HitObject, HitObjectTypes } from './HitObjects';
 import HitResultController, { HitResultType } from './HitResultController';
 import HitSoundController from './HitSoundController';
 import { SampleSetType } from './SampleSet';
 import { Skin } from './Skin';
 import Slider from './Slider';
-import Spinner from './Spinner';
 import { arToMS, odToMS } from './timing';
 import TimingPoint from './TimingPoint';
-import { distSqr, parseKeyValue, readFile } from './util';
+import { parseKeyValue, readFile, within } from './util';
 
 const STACK_LENIENCE_SQR = 3 * 3;
-
-type HitObject = HitCircle | Slider | Spinner;
 
 export default class Beatmap {
   filepath: string; // Path to .osu file
@@ -50,8 +47,8 @@ export default class Beatmap {
   hitResult: HitResultController;
   hitSound: HitSoundController;
   followPoints: FollowPointController;
-  left: number;
-  right: number;
+  left: number = 0;
+  right: number = 0;
   music: HTMLAudioElement;
 
   constructor(
@@ -170,11 +167,11 @@ export default class Beatmap {
       const type = parseInt(tokens[3]);
 
       // Calculate combo number
-      if (type & ObjectTypes.NEW_COMBO) {
+      if (type & HitObjectTypes.NEW_COMBO) {
         // New combo
         comboNumber = 1;
 
-        const skip = (type & ObjectTypes.COMBO_SKIP) >> 4;
+        const skip = (type & HitObjectTypes.COMBO_SKIP) >> 4;
         comboIndex += skip;
       } else {
         comboNumber++;
@@ -201,7 +198,7 @@ export default class Beatmap {
         inherited: false
       };
 
-      if (type & ObjectTypes.HIT_CIRCLE) {
+      if (type & HitObjectTypes.HIT_CIRCLE) {
         const circle = new HitCircle(
           tokens,
           comboNumber,
@@ -212,7 +209,7 @@ export default class Beatmap {
         );
 
         this.notes.push(circle);
-      } else if (type & ObjectTypes.SLIDER) {
+      } else if (type & HitObjectTypes.SLIDER) {
         const slider = new Slider(
           tokens,
           comboNumber,
@@ -236,38 +233,30 @@ export default class Beatmap {
       let objectI = this.notes[i];
 
       // Already done
-      if (objectI.type === ObjectTypes.SPINNER || objectI.stackCount !== 0) {
+      if (objectI.type === HitObjectTypes.SPINNER || objectI.stackCount !== 0) {
         continue;
       }
 
       // Search for any stacking
       for (let n = i - 1; n >= 0; n--) {
         const objectN = this.notes[n];
-        if (objectN.type === ObjectTypes.SPINNER) {
+        if (objectN.type === HitObjectTypes.SPINNER) {
           continue;
         }
 
-        const endTime =
-          objectN.type === ObjectTypes.SLIDER ? objectN.endTime : objectN.t;
-        if (objectI.t - fadeTime * this.stackLeniency > endTime) {
+        if (objectI.o.t - fadeTime * this.stackLeniency > objectN.endTime) {
           break;
         }
 
         // Reverse stacking
-        if (objectN.type === ObjectTypes.SLIDER) {
-          const endPoint = objectN.curve[objectN.curve.length - 1];
-
-          if (
-            distSqr(objectI.x, objectI.y, endPoint.x, endPoint.y) <
-            STACK_LENIENCE_SQR
-          ) {
+        if (objectN.type === HitObjectTypes.SLIDER) {
+          if (within(objectN.end, objectI.start, STACK_LENIENCE_SQR)) {
             const offset = objectI.stackCount - objectN.stackCount + 1;
             for (let j = n + 1; j <= i; j++) {
               const objectJ = this.notes[j];
               if (
-                objectJ.type !== ObjectTypes.SPINNER &&
-                distSqr(objectJ.x, objectJ.y, endPoint.x, endPoint.y) <
-                  STACK_LENIENCE_SQR
+                objectJ.type !== HitObjectTypes.SPINNER &&
+                within(objectN.end, objectJ.start, STACK_LENIENCE_SQR)
               ) {
                 objectJ.stackCount -= offset;
               }
@@ -276,10 +265,7 @@ export default class Beatmap {
         }
 
         // Normal stacking
-        if (
-          distSqr(objectI.x, objectI.y, objectN.x, objectN.y) <
-          STACK_LENIENCE_SQR
-        ) {
+        if (within(objectI.start, objectN.start, STACK_LENIENCE_SQR)) {
           objectN.stackCount = objectI.stackCount + 1;
           objectI = objectN;
         }
@@ -319,28 +305,28 @@ export default class Beatmap {
   isMissed(time: number, index: number) {
     const object = this.notes[index];
     switch (object.type) {
-      case ObjectTypes.HIT_CIRCLE:
-        if (time > object.t + this.hitWindows[HitResultType.HIT50]) {
+      case HitObjectTypes.HIT_CIRCLE:
+        if (time > object.o.t + this.hitWindows[HitResultType.HIT50]) {
           this.hitResult.addResult(
             HitResultType.MISS,
-            object.x,
-            object.y,
+            object.o.x,
+            object.o.y,
             time
           );
           return true;
         }
         break;
-      case ObjectTypes.SLIDER:
+      case HitObjectTypes.SLIDER:
         // Ignore active sliders
         // TODO: fix slider behaviour when missed slider head
         if (
           !object.active &&
-          time > object.t + this.hitWindows[HitResultType.HIT50]
+          time > object.o.t + this.hitWindows[HitResultType.HIT50]
         ) {
           this.hitResult.addResult(
             HitResultType.MISS,
-            object.points[0].x,
-            object.points[0].y,
+            object.start.x,
+            object.start.y,
             time
           );
           return true;
@@ -354,7 +340,7 @@ export default class Beatmap {
     // Check for new notes
     if (
       this.right < this.notes.length &&
-      time > this.notes[this.right].t - this.fadeTime
+      time > this.notes[this.right].o.t - this.fadeTime
     ) {
       this.notes[this.right].setVisible(true);
 
@@ -365,25 +351,27 @@ export default class Beatmap {
       const nextObject = this.notes[this.right];
 
       if (
-        nextObject.type !== ObjectTypes.SPINNER &&
-        nextObject.comboNumber !== 1
+        nextObject.type !== HitObjectTypes.SPINNER &&
+        nextObject.o.comboNumber !== 1
       ) {
         const prevObject = this.notes[this.right - 1];
 
-        // TODO: maybe add unified start position / end position getters on hit objects
-        const next = new PIXI.Point(nextObject.x, nextObject.y);
-        const nextT = nextObject.t;
-        if (prevObject.type === ObjectTypes.SLIDER) {
+        if (prevObject.type === HitObjectTypes.SLIDER) {
           const prev =
-            prevObject.slides % 2 === 0
-              ? prevObject.points[0]
-              : prevObject.points[prevObject.points.length - 1];
-          const prevT = prevObject.endTime;
-          this.followPoints.addTrail(prev, next, prevT, nextT);
-        } else {
-          const prev = new PIXI.Point(prevObject.x, prevObject.y);
-          const prevT = prevObject.t;
-          this.followPoints.addTrail(prev, next, prevT, nextT);
+            prevObject.o.slides % 2 === 0 ? prevObject.start : prevObject.end;
+          this.followPoints.addTrail(
+            prev,
+            nextObject.start,
+            prevObject.endTime,
+            nextObject.o.t
+          );
+        } else if (prevObject.type === HitObjectTypes.HIT_CIRCLE) {
+          this.followPoints.addTrail(
+            prevObject.start,
+            nextObject.start,
+            prevObject.o.t,
+            nextObject.o.t
+          );
         }
       }
       this.right++;
@@ -417,7 +405,7 @@ export default class Beatmap {
   }
 
   getHitResult(time: number, object: HitObject) {
-    const dt = Math.abs(time - object.t);
+    const dt = Math.abs(time - object.o.t);
     if (dt <= this.hitWindows[HitResultType.HIT300])
       return HitResultType.HIT300;
     if (dt <= this.hitWindows[HitResultType.HIT100])
@@ -437,17 +425,17 @@ export default class Beatmap {
     // Check for hit
     const object = this.notes[index];
     switch (object.type) {
-      case ObjectTypes.HIT_CIRCLE:
+      case HitObjectTypes.HIT_CIRCLE:
         if (object.hit(position)) {
           object.finished = time;
 
-          this.hitSound.playBaseSound(object.sampleSet, object.hitSound);
+          this.hitSound.playBaseSound(object.o.sampleSet, object.o.hitSound);
 
           const result = this.getHitResult(time, object);
-          this.hitResult.addResult(result, object.x, object.y, time);
+          this.hitResult.addResult(result, object.o.x, object.o.y, time);
         }
         break;
-      case ObjectTypes.SLIDER:
+      case HitObjectTypes.SLIDER:
         if (!object.active && object.hit(position)) {
           object.active = true;
 
@@ -456,8 +444,8 @@ export default class Beatmap {
           const result = this.getHitResult(time, object);
           this.hitResult.addResult(
             result,
-            object.points[0].x,
-            object.points[0].y,
+            object.start.x,
+            object.start.y,
             time
           );
         }
@@ -475,7 +463,7 @@ export default class Beatmap {
 
     const object = this.notes[index];
     // TODO: handle spinners
-    if (object.type != ObjectTypes.SLIDER) return;
+    if (object.type != HitObjectTypes.SLIDER) return;
 
     if (!object.active || object.hit(position)) return;
 
@@ -494,7 +482,7 @@ export default class Beatmap {
 
     const object = this.notes[index];
     // TODO: handle spinners
-    if (object.type != ObjectTypes.SLIDER) return;
+    if (object.type != HitObjectTypes.SLIDER) return;
 
     if (!object.active) return;
 

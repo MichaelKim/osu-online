@@ -1,12 +1,16 @@
 import * as PIXI from 'pixi.js';
 import Beatmap from './Beatmap';
-import { ObjectTypes } from './HitObjects';
+import { HitObjectTypes } from './HitObjects';
 import { BaseHitSound } from './HitSoundController';
 import { parseHitSample, SampleSetType } from './SampleSet';
 import TimingPoint from './TimingPoint';
 
 export default class Spinner {
-  readonly type = ObjectTypes.SPINNER;
+  readonly type = HitObjectTypes.SPINNER;
+
+  o: {
+    t: number;
+  };
 
   // Metadata
   readonly x = 256; // Center of playfield

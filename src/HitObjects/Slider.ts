@@ -31,6 +31,7 @@ export default class Slider {
   fadeTime: number; // Starts to fade in
   fullTime: number; // Fully opaque
   size: number; // Diameter of hit circle
+  private stack: number = 0;
 
   // Rendering
   container: PIXI.Container;
@@ -79,9 +80,14 @@ export default class Slider {
     );
   }
 
+  get stackCount() {
+    return this.stack;
+  }
+
   set stackCount(stack: number) {
     // Stack offset
-    const offset = (stack * this.size) / STACK_OFFSET_MULT;
+    this.stack = stack;
+    const offset = -(stack * this.size) / STACK_OFFSET_MULT;
     this.container.position.set(offset);
   }
 

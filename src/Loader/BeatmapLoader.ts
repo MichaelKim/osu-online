@@ -51,16 +51,17 @@ type Gen<T> = Generator<T, void, void>;
 
 function* getSections(
   file: string[]
-): Gen<[string, Generator<string, void, void>]> {
+): Gen<[string, () => Generator<string, void, void>]> {
   for (let i = 0; i < file.length; i++) {
     function* parseSection() {
+      i++;
       while (i < file.length && file[i][0] !== '[' && file[i].length > 0) {
         yield file[i];
         i++;
       }
     }
 
-    yield [file[i], parseSection()];
+    yield [file[i], parseSection];
   }
 }
 
@@ -100,21 +101,21 @@ export function parseBeatmap(file: string[]) {
   for (const [name, section] of getSections(file)) {
     switch (name) {
       case '[General]': {
-        for (const line of section) {
+        for (const line of section()) {
           const [key, value] = parseKeyValue(line);
           parseGeneral(key, value);
         }
         break;
       }
       case '[Difficulty]': {
-        for (const line of section) {
+        for (const line of section()) {
           const [key, value] = parseKeyValue(line);
           parseDifficulty(key, value);
         }
         break;
       }
       case '[TimingPoints]': {
-        for (const line of section) {
+        for (const line of section()) {
           const tokens = line.split(',');
           b.timingPoints.push(parseTimingPoint(tokens));
         }
@@ -122,7 +123,7 @@ export function parseBeatmap(file: string[]) {
       }
       case '[HitObjects]': {
         // Parse hit objects later
-        for (const _ of section) {
+        for (const _ of section()) {
         }
         break;
       }

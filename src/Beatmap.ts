@@ -108,8 +108,7 @@ export default class Beatmap {
   }
 
   async loadMusic() {
-    if (this.data.audioFilename == null)
-      console.error('Missing audio filename');
+    if (!this.data.audioFilename) console.error('Missing audio filename');
 
     // TODO: extract audio playback
     const res = await AudioLoader.load('beatmaps/' + this.data.audioFilename);

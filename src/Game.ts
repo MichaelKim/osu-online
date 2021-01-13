@@ -102,7 +102,7 @@ export default class Game {
       this.beatmap.notes[i].addToStage(this.renderer.notesStage);
     }
 
-    this.hitResult.loadDiameter(csToSize(this.beatmap.cs));
+    this.hitResult.loadDiameter(csToSize(this.beatmap.data.cs));
   }
 
   play() {

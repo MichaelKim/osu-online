@@ -43,10 +43,10 @@ export type Tuple<
   R extends T[] = []
 > = R['length'] extends N ? R : Tuple<T, N, [T, ...R]>;
 
-export function within(a: PIXI.Point, b: PIXI.Point, maxDistSqr: number) {
+export function within(a: PIXI.Point, b: PIXI.Point, maxDist: number) {
   const dx = a.x - b.x;
   const dy = a.y - b.y;
-  return dx * dx + dy * dy < maxDistSqr;
+  return Math.hypot(dx, dy) < maxDist;
 }
 
 export function parseKeyValue(line: string) {

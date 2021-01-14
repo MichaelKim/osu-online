@@ -20,7 +20,7 @@ import {
 import { TimingPoint } from '../Loader/TimingPointLoader';
 import { Skin } from '../Skin';
 import { arToMS, csToSize } from '../timing';
-import { clerp, clerp01 } from '../util';
+import { clerp, clerp01, within } from '../util';
 
 export default class Slider {
   readonly type = HitObjectTypes.SLIDER;
@@ -308,19 +308,9 @@ export default class Slider {
   }
 
   hit(position: PIXI.Point) {
-    // TODO: should this be two separate methods?
-    if (this.active) {
-      // TODO: use within()
-      const dx = position.x - this.position.x;
-      const dy = position.y - this.position.y;
-      // Once active, cursor needs to stay within follow circle
-      const r = (FOLLOW_R * this.size) / 2;
-      return dx * dx + dy * dy < r * r;
-    }
-
-    const dx = position.x - this.start.x;
-    const dy = position.y - this.start.y;
-    const r = this.size / 2;
-    return dx * dx + dy * dy < r * r;
+    // Once active, cursor needs to stay within follow circle
+    const diameter = this.active ? FOLLOW_R * this.size : this.size;
+    // Hitbox follows the slider head after slider starts
+    return within(position, this.position, diameter / 2);
   }
 }

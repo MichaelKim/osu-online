@@ -13,7 +13,7 @@ import { Skin } from './Skin';
 import { arToMS, odToMS } from './timing';
 import { readFile, within } from './util';
 
-const STACK_LENIENCE_SQR = 3 * 3;
+const STACK_LENIENCE = 3;
 
 export default class Beatmap {
   filepath: string; // Path to .osu file
@@ -84,13 +84,13 @@ export default class Beatmap {
 
         // Reverse stacking
         if (objectN.type === HitObjectTypes.SLIDER) {
-          if (within(objectN.end, objectI.start, STACK_LENIENCE_SQR)) {
+          if (within(objectN.end, objectI.start, STACK_LENIENCE)) {
             const offset = objectI.stackCount - objectN.stackCount + 1;
             for (let j = n + 1; j <= i; j++) {
               const objectJ = this.notes[j];
               if (
                 objectJ.type !== HitObjectTypes.SPINNER &&
-                within(objectN.end, objectJ.start, STACK_LENIENCE_SQR)
+                within(objectN.end, objectJ.start, STACK_LENIENCE)
               ) {
                 objectJ.stackCount -= offset;
               }
@@ -99,7 +99,7 @@ export default class Beatmap {
         }
 
         // Normal stacking
-        if (within(objectI.start, objectN.start, STACK_LENIENCE_SQR)) {
+        if (within(objectI.start, objectN.start, STACK_LENIENCE)) {
           objectN.stackCount = objectI.stackCount + 1;
           objectI = objectN;
         }

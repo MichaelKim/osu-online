@@ -14,6 +14,10 @@ export async function lockPointer(view: HTMLCanvasElement) {
 // Display out of focus error
 export function initLock(view: HTMLCanvasElement) {
   const pointerLockWarning = document.getElementById('lock');
+  if (pointerLockWarning == null) {
+    console.error('Missing lock element');
+    return;
+  }
 
   pointerLockWarning.addEventListener('click', () => lockPointer(view));
 

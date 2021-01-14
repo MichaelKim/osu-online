@@ -1,3 +1,4 @@
+import * as PIXI from 'pixi.js';
 import {
   APPROACH_R,
   getNumberSprites,
@@ -10,13 +11,11 @@ import { Skin } from '../Skin';
 import { BeatmapData } from './BeatmapLoader';
 import { TimingPoint } from './TimingPointLoader';
 
-// TODO: combine x,y into position?
 export interface HitCircleData {
   type: HitObjectTypes.HIT_CIRCLE;
 
   // Metadata
-  x: number;
-  y: number;
+  position: PIXI.Point;
   t: number;
   hitSound: BaseHitSound;
 
@@ -54,8 +53,7 @@ export function parseHitCircle(
 
   return {
     type: HitObjectTypes.HIT_CIRCLE,
-    x,
-    y,
+    position: new PIXI.Point(x, y),
     t,
     hitSound,
     comboIndex,
@@ -70,18 +68,16 @@ export function loadHitCircleSprites(
   skin: Skin,
   size: number
 ): HitCircleSprites {
-  const circleSprite = initSprite(skin.circle, object.x, object.y, size);
+  const circleSprite = initSprite(skin.circle, object.position, size);
   const approachSprite = initSprite(
     skin.approach,
-    object.x,
-    object.y,
+    object.position,
     size * APPROACH_R
   );
   const numberSprites = getNumberSprites(
     skin,
     object.comboNumber,
-    object.x,
-    object.y,
+    object.position,
     size
   );
 

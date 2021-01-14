@@ -36,7 +36,7 @@ class FollowTrail {
       const x = prev.x + dx * step * i;
       const y = prev.y + dy * step * i;
       // TODO: size according to circle size
-      const sprite = initSprite(texture, x, y);
+      const sprite = initSprite(texture, new PIXI.Point(x, y));
       sprite.rotation = angle;
       sprite.alpha = 1;
       sprite.visible = true;

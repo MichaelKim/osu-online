@@ -18,12 +18,11 @@ export type HitObject = HitCircle | Slider | Spinner;
 // Common sprite initialization
 export function initSprite(
   texture: PIXI.Texture,
-  x: number,
-  y: number,
+  position: PIXI.Point,
   size: number = 0
 ) {
   const sprite = new PIXI.Sprite(texture);
-  sprite.position.set(x, y);
+  sprite.position.copyFrom(position);
   if (size > 0) {
     sprite.scale.set(size / texture.width);
   }
@@ -34,13 +33,12 @@ export function initSprite(
 export function getNumberSprites(
   skin: Skin,
   number: number,
-  x: number,
-  y: number,
+  position: PIXI.Point,
   diameter: number
 ) {
   // Add numbers to container centered at (x, y)
   const container = new PIXI.Container();
-  container.position.set(x, y);
+  container.position.copyFrom(position);
 
   const length = Math.floor(Math.log10(number) + 1);
 

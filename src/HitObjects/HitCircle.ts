@@ -10,7 +10,7 @@ import {
 import { TimingPoint } from '../Loader/TimingPointLoader';
 import { Skin } from '../Skin';
 import { arToMS, csToSize } from '../timing';
-import { clerp, clerp01 } from '../util';
+import { clerp, clerp01, within } from '../util';
 
 export default class HitCircle {
   readonly type = HitObjectTypes.HIT_CIRCLE;
@@ -75,7 +75,7 @@ export default class HitCircle {
   }
 
   get start() {
-    return new PIXI.Point(this.o.x, this.o.y);
+    return this.o.position;
   }
 
   get endTime() {
@@ -141,9 +141,6 @@ export default class HitCircle {
   }
 
   hit(position: PIXI.Point) {
-    const dx = position.x - this.o.x;
-    const dy = position.y - this.o.y;
-    const r = this.size / 2;
-    return dx * dx + dy * dy < r * r;
+    return within(position, this.o.position, this.size / 2);
   }
 }

@@ -92,7 +92,7 @@ export default class Slider {
   }
 
   get start() {
-    return new PIXI.Point(this.o.x, this.o.y);
+    return this.o.curve[0];
   }
 
   get end() {
@@ -301,7 +301,6 @@ export default class Slider {
       }
     }
 
-    // TODO
     this.position.copyFrom(position);
 
     return false;

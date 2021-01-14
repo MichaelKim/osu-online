@@ -17,13 +17,12 @@ class HitResult {
 
   constructor(
     texture: PIXI.Texture,
-    x: number,
-    y: number,
+    position: PIXI.Point,
     diameter: number,
     type: HitResultType,
     t: number
   ) {
-    this.sprite = initSprite(texture, x, y, diameter);
+    this.sprite = initSprite(texture, position, diameter);
     this.sprite.alpha = 0;
     this.sprite.visible = true;
     this.type = type;
@@ -49,9 +48,9 @@ class HitResult {
     this.sprite.alpha = 0;
   }
 
-  reset(x: number, y: number, t: number) {
+  reset(position: PIXI.Point, t: number) {
     this.t = t;
-    this.sprite.position.set(x, y);
+    this.sprite.position.copyFrom(position);
     this.sprite.visible = true;
     this.sprite.alpha = 0;
   }
@@ -60,7 +59,7 @@ class HitResult {
 export default class HitResultController {
   skin: Skin;
   stage: PIXI.Container;
-  diameter: number;
+  diameter: number = 0;
 
   free: Record<HitResultType, HitResult[]> = {
     [HitResultType.MISS]: [],
@@ -79,16 +78,15 @@ export default class HitResultController {
     this.diameter = diameter;
   }
 
-  addResult(type: HitResultType, x: number, y: number, t: number) {
+  addResult(type: HitResultType, position: PIXI.Point, t: number) {
     if (this.free[type].length > 0) {
       const result = this.free[type].pop()!;
-      result.reset(x, y, t);
+      result.reset(position, t);
       this.used.push(result);
     } else {
       const result = new HitResult(
         this.skin.hits[type],
-        x,
-        y,
+        position,
         this.diameter,
         type,
         t

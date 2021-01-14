@@ -145,12 +145,7 @@ export default class Beatmap {
     switch (object.type) {
       case HitObjectTypes.HIT_CIRCLE:
         if (time > object.o.t + this.hitWindows[HitResultType.HIT50]) {
-          this.hitResult.addResult(
-            HitResultType.MISS,
-            object.o.x,
-            object.o.y,
-            time
-          );
+          this.hitResult.addResult(HitResultType.MISS, object.o.position, time);
           return true;
         }
         break;
@@ -161,12 +156,7 @@ export default class Beatmap {
           !object.active &&
           time > object.o.t + this.hitWindows[HitResultType.HIT50]
         ) {
-          this.hitResult.addResult(
-            HitResultType.MISS,
-            object.start.x,
-            object.start.y,
-            time
-          );
+          this.hitResult.addResult(HitResultType.MISS, object.start, time);
           return true;
         }
         break;
@@ -270,7 +260,7 @@ export default class Beatmap {
           this.hitSound.playBaseSound(object.o.sampleSet, object.o.hitSound);
 
           const result = this.getHitResult(time, object);
-          this.hitResult.addResult(result, object.o.x, object.o.y, time);
+          this.hitResult.addResult(result, object.o.position, time);
         }
         break;
       case HitObjectTypes.SLIDER:
@@ -280,12 +270,7 @@ export default class Beatmap {
           object.playEdge(0);
 
           const result = this.getHitResult(time, object);
-          this.hitResult.addResult(
-            result,
-            object.start.x,
-            object.start.y,
-            time
-          );
+          this.hitResult.addResult(result, object.start, time);
         }
         break;
     }

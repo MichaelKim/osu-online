@@ -20,9 +20,7 @@ export interface SliderData {
   type: HitObjectTypes.SLIDER;
 
   // Metadata
-  x: number; // Position of the hit circle (initially at points[0])
-  y: number;
-  points: PIXI.Point[]; // Control points
+  points: PIXI.Point[]; // Control points (TODO: this isn't used anywhere outside this)
   t: number;
   hitSound: BaseHitSound;
   sliderType: CurveTypes;
@@ -131,8 +129,6 @@ export function parseSlider(
 
   return {
     type: HitObjectTypes.SLIDER,
-    x,
-    y,
     points,
     t,
     hitSound,
@@ -158,40 +154,33 @@ export function loadSliderSprites(
   size: number
 ): SliderSprites {
   // Load sprites
-  const circleSprite = initSprite(skin.circle, object.x, object.y, size);
+  const circleSprite = initSprite(skin.circle, object.curve[0], size);
   const approachSprite = initSprite(
     skin.approach,
-    object.x,
-    object.y,
+    object.curve[0],
     size * APPROACH_R
   );
   const followSprite = initSprite(
     skin.sliderFollowCircle,
-    object.x,
-    object.y,
+    object.curve[0],
     size * FOLLOW_R
   );
   const numberSprites = getNumberSprites(
     skin,
     object.comboNumber,
-    object.x,
-    object.y,
+    object.curve[0],
     size
   );
 
   const tickSprites = object.ticks.map(t => {
     const index = Math.floor(object.curve.length * t);
     const point = object.curve[index];
-    return initSprite(skin.sliderScorePoint, point.x, point.y);
+    return initSprite(skin.sliderScorePoint, point);
   });
 
   const endPosition = object.curve[object.curve.length - 1];
   // TODO: Should scale with size
-  const reverseSprite = initSprite(
-    skin.reverseArrow,
-    endPosition.x,
-    endPosition.y
-  );
+  const reverseSprite = initSprite(skin.reverseArrow, endPosition);
   const dx = object.points[object.points.length - 2].x - endPosition.x;
   const dy = object.points[object.points.length - 2].y - endPosition.y;
   reverseSprite.rotation = Math.atan2(dy, dx);

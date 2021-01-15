@@ -16,8 +16,6 @@ import { readFile, within } from './util';
 const STACK_LENIENCE = 3;
 
 export default class Beatmap {
-  filepath: string; // Path to .osu file
-
   data: BeatmapData;
 
   notes: HitObject[] = [];
@@ -32,24 +30,16 @@ export default class Beatmap {
   };
 
   // Gameplay
-  hitResult: HitResultController;
-  hitSound: HitSoundController;
-  followPoints: FollowPointController;
   left: number = 0;
   right: number = 0;
   music: HTMLAudioElement;
 
   constructor(
-    filepath: string,
-    hitResult: HitResultController,
-    hitSound: HitSoundController,
-    followPoints: FollowPointController
-  ) {
-    this.filepath = filepath;
-    this.hitResult = hitResult;
-    this.hitSound = hitSound;
-    this.followPoints = followPoints;
-  }
+    private filepath: string, // Path to .osu file
+    private hitResult: HitResultController,
+    private hitSound: HitSoundController,
+    private followPoints: FollowPointController
+  ) {}
 
   async preload() {
     const file = await readFile(this.filepath);

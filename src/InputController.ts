@@ -17,7 +17,7 @@ interface InputEvent {
 
 // Handles cursor and click/tap
 export default class InputController {
-  clock: Clock;
+  // TODO: split cursor from inputcontroller?
   cursor: PIXI.Sprite;
   key1 = '1';
   key2 = '2';
@@ -26,10 +26,8 @@ export default class InputController {
 
   events: InputEvent[] = [];
 
-  constructor(clock: Clock) {
-    // Needs clock to log input event timings
-    this.clock = clock;
-  }
+  // Needs clock to log input event timings
+  constructor(private clock: Clock) {}
 
   loadTexture(skin: Skin) {
     // this.cursor?.destroy();

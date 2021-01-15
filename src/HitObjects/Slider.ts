@@ -39,7 +39,7 @@ export default class Slider {
   s: SliderSprites;
 
   // Gameplay
-  position: PIXI.Point;
+  position: PIXI.Point; // Slider head position
   finished = 0;
   active = false; // Is the slider being followed?
   ticksHit = 0; // Number of slider ticks already hit (per repeat)

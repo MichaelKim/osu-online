@@ -57,8 +57,6 @@ function loadHitCircle(
 }
 
 export class Skin {
-  filepath: string;
-
   // General
   layeredHitSounds: boolean = true;
 
@@ -87,9 +85,7 @@ export class Skin {
   soundLoader: PIXI.Loader;
   sampleSets: Record<SampleSetType, SampleSetData>;
 
-  constructor(filepath: string) {
-    this.filepath = filepath;
-
+  constructor(private filepath: string) {
     this.soundLoader = new PIXI.Loader();
     this.sampleSets = {
       [SampleSetType.NORMAL]: new SampleSetData('normal', this.soundLoader),

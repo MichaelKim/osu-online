@@ -1,11 +1,8 @@
 export default class Clock {
   private startTime: number = 0;
   private requestID: number = 0;
-  private callback: (time: number) => void;
 
-  constructor(callback: (time: number) => void) {
-    this.callback = callback;
-  }
+  constructor(private callback: (time: number) => void) {}
 
   start() {
     this.startTime = performance.now();

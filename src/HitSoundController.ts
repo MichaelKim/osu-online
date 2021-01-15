@@ -46,11 +46,9 @@ function initData(data: SampleSetData) {
 }
 
 export default class HitSoundController {
-  skin: Skin;
   sounds: Record<SampleSetType, Record<HitSoundType, HitSound>>;
 
-  constructor(skin: Skin) {
-    this.skin = skin;
+  constructor(private skin: Skin) {
     this.sounds = {
       [SampleSetType.NORMAL]: initData(skin.sampleSets[SampleSetType.NORMAL]),
       [SampleSetType.SOFT]: initData(skin.sampleSets[SampleSetType.SOFT]),

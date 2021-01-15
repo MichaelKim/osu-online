@@ -3,25 +3,15 @@ import { initSprite } from './HitObjects';
 import { Skin } from './Skin';
 
 class FollowTrail {
-  prev: PIXI.Point;
-  next: PIXI.Point;
-  prevT: number;
-  nextT: number;
-
   points: PIXI.Sprite[] = [];
 
   constructor(
     texture: PIXI.Texture,
-    prev: PIXI.Point,
-    next: PIXI.Point,
-    prevT: number,
-    nextT: number
+    private prev: PIXI.Point,
+    private next: PIXI.Point,
+    private prevT: number,
+    private nextT: number
   ) {
-    this.prev = prev;
-    this.next = next;
-    this.prevT = prevT;
-    this.nextT = nextT;
-
     // Calculate intermediate points
     const dx = next.x - prev.x;
     const dy = next.y - prev.y;

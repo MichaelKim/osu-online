@@ -27,9 +27,6 @@ export function parseHitSample(line: string): Tuple<SampleSetType, 2> {
 type SoundResources = Record<keyof typeof soundAssets, AudioResource>;
 
 export default class SampleSetData {
-  name: string;
-  loader: PIXI.Loader;
-
   hitClap: HTMLAudioElement;
   hitFinish: HTMLAudioElement;
   hitNormal: HTMLAudioElement;
@@ -38,10 +35,7 @@ export default class SampleSetData {
   sliderTick: HTMLAudioElement;
   sliderWhistle: HTMLAudioElement;
 
-  constructor(name: string, loader: PIXI.Loader) {
-    this.name = name;
-    this.loader = loader;
-  }
+  constructor(private name: string, private loader: PIXI.Loader) {}
 
   async load() {
     return new Promise<void>(resolve => {
@@ -49,7 +43,7 @@ export default class SampleSetData {
         name: this.name + name,
         url: `assets/audio/${this.name}-${url}.wav`
       }));
-      this.loader.add(paths).load((_, resources: SoundResources) => {
+      this.loader.add(paths).load((_, resources: Partial<SoundResources>) => {
         // TODO: check for missing / error sounds
         this.hitClap = resources[this.name + 'hitClap'].data;
         this.hitFinish = resources[this.name + 'hitFinish'].data;

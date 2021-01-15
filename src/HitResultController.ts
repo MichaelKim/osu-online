@@ -12,21 +12,17 @@ export enum HitResultType {
 
 class HitResult {
   sprite: PIXI.Sprite;
-  type: HitResultType;
-  t: number;
 
   constructor(
     texture: PIXI.Texture,
     position: PIXI.Point,
     diameter: number,
-    type: HitResultType,
-    t: number
+    public type: HitResultType,
+    private t: number
   ) {
     this.sprite = initSprite(texture, position, diameter);
     this.sprite.alpha = 0;
     this.sprite.visible = true;
-    this.type = type;
-    this.t = t;
   }
 
   update(time: number) {
@@ -57,8 +53,6 @@ class HitResult {
 }
 
 export default class HitResultController {
-  skin: Skin;
-  stage: PIXI.Container;
   diameter: number = 0;
 
   free: Record<HitResultType, HitResult[]> = {
@@ -69,15 +63,13 @@ export default class HitResultController {
   };
   used: HitResult[] = [];
 
-  constructor(stage: PIXI.Container, skin: Skin) {
-    this.skin = skin;
-    this.stage = stage;
-  }
+  constructor(private stage: PIXI.Container, private skin: Skin) {}
 
   loadDiameter(diameter: number) {
     this.diameter = diameter;
   }
 
+  // TODO: position needs to respect stacking
   addResult(type: HitResultType, position: PIXI.Point, t: number) {
     if (this.free[type].length > 0) {
       const result = this.free[type].pop()!;

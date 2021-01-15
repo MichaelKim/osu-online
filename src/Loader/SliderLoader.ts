@@ -35,6 +35,7 @@ export interface SliderData {
   comboNumber: number; // 1-indexed
   sampleSet: SampleSetType; // Sample set override
   additionSet: SampleSetType;
+  stackCount: number;
 
   // Computed
   sliderTime: number; // Without repeats
@@ -141,6 +142,7 @@ export function parseSlider(
     comboNumber,
     sampleSet,
     additionSet,
+    stackCount: 0,
     sliderTime,
     endTime,
     curve,

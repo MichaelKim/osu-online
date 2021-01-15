@@ -1,7 +1,8 @@
-import Beatmap from '../Beatmap';
 import { HitObjectTypes } from '../HitObjects';
 import { BaseHitSound } from '../HitSoundController';
 import { parseHitSample } from '../SampleSet';
+import { Skin } from '../Skin';
+import { BeatmapData } from './BeatmapLoader';
 import { TimingPoint } from './TimingPointLoader';
 
 export interface SpinnerData {
@@ -17,7 +18,7 @@ export interface SpinnerData {
 export function parseSpinner(
   tokens: string[],
   timingPoint: TimingPoint,
-  beatmap: Beatmap
+  beatmap: BeatmapData
 ): SpinnerData {
   // x,y,time,type,hitSound,endTime,hitSample
   const t = parseInt(tokens[2]);
@@ -41,4 +42,14 @@ export function parseSpinner(
     additionSet,
     rotationsNeeded
   };
+}
+
+// TODO
+export interface SpinnerSprites {}
+
+export function loadSpinnerSprites(
+  object: SpinnerData,
+  skin: Skin
+): SpinnerSprites {
+  return {};
 }

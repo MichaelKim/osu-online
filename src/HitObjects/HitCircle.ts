@@ -4,10 +4,8 @@ import { BeatmapData } from '../Loader/BeatmapLoader';
 import {
   HitCircleData,
   HitCircleSprites,
-  loadHitCircleSprites,
-  parseHitCircle
+  loadHitCircleSprites
 } from '../Loader/HitCircleLoader';
-import { TimingPoint } from '../Loader/TimingPointLoader';
 import { Skin } from '../Skin';
 import { arToMS, csToSize } from '../timing';
 import { clerp, clerp01, within } from '../util';
@@ -15,14 +13,10 @@ import { clerp, clerp01, within } from '../util';
 export default class HitCircle {
   readonly type = HitObjectTypes.HIT_CIRCLE;
 
-  // Hit object data
-  o: HitCircleData;
-
   // Computed
   fadeTime: number; // Starts to fade in
   fullTime: number; // Fully opaque
   size: number; // Diameter of hit circle
-  private stack: number = 0;
 
   // Sprites
   container: PIXI.Container;
@@ -31,22 +25,7 @@ export default class HitCircle {
   // Gameplay
   finished = 0;
 
-  constructor(
-    tokens: string[],
-    comboNumber: number,
-    comboIndex: number,
-    beatmap: BeatmapData,
-    timingPoint: TimingPoint,
-    skin: Skin
-  ) {
-    this.o = parseHitCircle(
-      tokens,
-      comboNumber,
-      comboIndex,
-      timingPoint,
-      beatmap
-    );
-
+  constructor(readonly o: HitCircleData, beatmap: BeatmapData, skin: Skin) {
     // Compute timing windows
     [this.fadeTime, this.fullTime] = arToMS(beatmap.ar);
     this.size = csToSize(beatmap.cs);
@@ -61,21 +40,16 @@ export default class HitCircle {
       this.s.numberSprites,
       this.s.approachSprite
     );
-  }
 
-  get stackCount() {
-    return this.stack;
-  }
-
-  set stackCount(stack: number) {
-    // Stack offset
-    this.stack = stack;
-    const offset = -(stack * this.size) / STACK_OFFSET_MULT;
+    const offset = -(this.o.stackCount * this.size) / STACK_OFFSET_MULT;
     this.container.position.set(offset);
   }
 
   get start() {
-    return this.o.position;
+    return new PIXI.Point(
+      this.o.position.x + this.container.x,
+      this.o.position.y + this.container.y
+    );
   }
 
   get endTime() {

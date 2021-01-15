@@ -69,7 +69,6 @@ export default class HitResultController {
     this.diameter = diameter;
   }
 
-  // TODO: position needs to respect stacking
   addResult(type: HitResultType, position: PIXI.Point, t: number) {
     if (this.free[type].length > 0) {
       const result = this.free[type].pop()!;

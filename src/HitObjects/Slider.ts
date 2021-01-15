@@ -13,11 +13,9 @@ import HitSoundController, {
 import { BeatmapData } from '../Loader/BeatmapLoader';
 import {
   loadSliderSprites,
-  parseSlider,
   SliderData,
   SliderSprites
 } from '../Loader/SliderLoader';
-import { TimingPoint } from '../Loader/TimingPointLoader';
 import { Skin } from '../Skin';
 import { arToMS, csToSize } from '../timing';
 import { clerp, clerp01, within } from '../util';
@@ -25,13 +23,10 @@ import { clerp, clerp01, within } from '../util';
 export default class Slider {
   readonly type = HitObjectTypes.SLIDER;
 
-  o: SliderData;
-
   // Computed
   fadeTime: number; // Starts to fade in
   fullTime: number; // Fully opaque
   size: number; // Diameter of hit circle
-  private stack: number = 0;
 
   // Rendering
   container: PIXI.Container;
@@ -44,22 +39,13 @@ export default class Slider {
   active = false; // Is the slider being followed?
   ticksHit = 0; // Number of slider ticks already hit (per repeat)
   repeatsHit = 0; // Number of repeats (incl. slider ends) hit
-  hitSoundController: HitSoundController;
 
   constructor(
-    tokens: string[],
-    comboNumber: number,
-    comboIndex: number,
+    readonly o: SliderData,
     beatmap: BeatmapData,
-    timingPoint: TimingPoint,
     skin: Skin,
-    hitSoundController: HitSoundController
+    private hitSoundController: HitSoundController
   ) {
-    this.o = parseSlider(tokens, comboNumber, comboIndex, timingPoint, beatmap);
-    this.position = this.start;
-
-    this.hitSoundController = hitSoundController;
-
     // Compute timing windows
     [this.fadeTime, this.fullTime] = arToMS(beatmap.ar);
     this.size = csToSize(beatmap.cs);
@@ -78,25 +64,27 @@ export default class Slider {
       this.s.numberSprites,
       this.s.approachSprite
     );
-  }
 
-  get stackCount() {
-    return this.stack;
-  }
-
-  set stackCount(stack: number) {
-    // Stack offset
-    this.stack = stack;
-    const offset = -(stack * this.size) / STACK_OFFSET_MULT;
+    const offset = -(this.o.stackCount * this.size) / STACK_OFFSET_MULT;
     this.container.position.set(offset);
+
+    this.position = this.start;
   }
 
   get start() {
-    return this.o.curve[0];
+    const point = this.o.curve[0];
+    return new PIXI.Point(
+      point.x + this.container.x,
+      point.y + this.container.y
+    );
   }
 
   get end() {
-    return this.o.curve[this.o.curve.length - 1];
+    const point = this.o.curve[this.o.curve.length - 1];
+    return new PIXI.Point(
+      point.x + this.container.x,
+      point.y + this.container.y
+    );
   }
 
   get endTime() {

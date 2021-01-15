@@ -4,14 +4,11 @@ import FollowPointController from './FollowPointController';
 import { HitObject, HitObjectTypes } from './HitObjects';
 import HitResultController, { HitResultType } from './HitResultController';
 import HitSoundController from './HitSoundController';
-import {
-  BeatmapData,
-  parseBeatmap,
-  parseHitObjects
-} from './Loader/BeatmapLoader';
+import { BeatmapData, parseBeatmap } from './Loader/BeatmapLoader';
+import { loadHitObjects } from './Loader/HitObjectLoader';
 import { Skin } from './Skin';
 import { arToMS, odToMS } from './timing';
-import { readFile, within } from './util';
+import { readFile } from './util';
 
 const STACK_LENIENCE = 3;
 
@@ -46,57 +43,6 @@ export default class Beatmap {
     this.data = parseBeatmap(file);
   }
 
-  // Taken from https://gist.github.com/peppy/1167470
-  calcStacking() {
-    const [fadeTime] = arToMS(this.data.ar);
-    // Reverse pass
-    for (let i = this.notes.length - 1; i > 0; i--) {
-      let objectI = this.notes[i];
-
-      // Already done
-      if (objectI.type === HitObjectTypes.SPINNER || objectI.stackCount !== 0) {
-        continue;
-      }
-
-      // Search for any stacking
-      for (let n = i - 1; n >= 0; n--) {
-        const objectN = this.notes[n];
-        if (objectN.type === HitObjectTypes.SPINNER) {
-          continue;
-        }
-
-        if (
-          objectI.o.t - fadeTime * this.data.stackLeniency >
-          objectN.endTime
-        ) {
-          break;
-        }
-
-        // Reverse stacking
-        if (objectN.type === HitObjectTypes.SLIDER) {
-          if (within(objectN.end, objectI.start, STACK_LENIENCE)) {
-            const offset = objectI.stackCount - objectN.stackCount + 1;
-            for (let j = n + 1; j <= i; j++) {
-              const objectJ = this.notes[j];
-              if (
-                objectJ.type !== HitObjectTypes.SPINNER &&
-                within(objectN.end, objectJ.start, STACK_LENIENCE)
-              ) {
-                objectJ.stackCount -= offset;
-              }
-            }
-          }
-        }
-
-        // Normal stacking
-        if (within(objectI.start, objectN.start, STACK_LENIENCE)) {
-          objectN.stackCount = objectI.stackCount + 1;
-          objectI = objectN;
-        }
-      }
-    }
-  }
-
   async loadMusic() {
     if (!this.data.audioFilename) console.error('Missing audio filename');
 
@@ -113,9 +59,12 @@ export default class Beatmap {
     this.left = 0;
     this.right = 0;
 
-    const file = await readFile(this.filepath);
-    this.notes = parseHitObjects(file, this.data, skin, this.hitSound);
-    this.calcStacking();
+    this.notes = await loadHitObjects(
+      this.filepath,
+      this.data,
+      skin,
+      this.hitSound
+    );
     await this.loadMusic();
   }
 
@@ -135,7 +84,7 @@ export default class Beatmap {
     switch (object.type) {
       case HitObjectTypes.HIT_CIRCLE:
         if (time > object.o.t + this.hitWindows[HitResultType.HIT50]) {
-          this.hitResult.addResult(HitResultType.MISS, object.o.position, time);
+          this.hitResult.addResult(HitResultType.MISS, object.start, time);
           return true;
         }
         break;
@@ -250,7 +199,7 @@ export default class Beatmap {
           this.hitSound.playBaseSound(object.o.sampleSet, object.o.hitSound);
 
           const result = this.getHitResult(time, object);
-          this.hitResult.addResult(result, object.o.position, time);
+          this.hitResult.addResult(result, object.start, time);
         }
         break;
       case HitObjectTypes.SLIDER:

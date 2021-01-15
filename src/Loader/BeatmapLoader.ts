@@ -1,14 +1,5 @@
-import { HitObject, HitObjectTypes } from '../HitObjects';
-import HitCircle from '../HitObjects/HitCircle';
-import Slider from '../HitObjects/Slider';
-import HitSoundController from '../HitSoundController';
 import { SampleSetType } from '../SampleSet';
-import { Skin } from '../Skin';
 import { parseTimingPoint, TimingPoint } from './TimingPointLoader';
-
-// export type HitObject = HitCircleData | SliderData | SpinnerData;
-
-export const STACK_LENIENCE_SQR = 3 * 3;
 
 export interface BeatmapData {
   filepath: string; // Path to .osu file
@@ -131,91 +122,4 @@ export function parseBeatmap(file: string[]) {
   }
 
   return b;
-}
-
-export function parseHitObjects(
-  file: string[],
-  beatmap: BeatmapData,
-  skin: Skin,
-  hitSoundController: HitSoundController
-) {
-  let comboNumber = 0;
-  let comboIndex = 0;
-  let timingIndex = -1;
-  let baseBeatLength = 1,
-    beatLength = 1;
-  const notes: HitObject[] = [];
-
-  for (
-    let i = file.indexOf('[HitObjects]') + 1;
-    i < file.length && file[i][0] !== '[' && file[i].length > 0;
-    i++
-  ) {
-    const tokens = file[i].split(',');
-    if (tokens.length < 4) {
-      console.error(`Line ${i} missing tokens`);
-      continue;
-    }
-
-    const type = parseInt(tokens[3]);
-
-    // Calculate combo number
-    if (type & HitObjectTypes.NEW_COMBO) {
-      // New combo
-      comboNumber = 1;
-
-      const skip = (type & HitObjectTypes.COMBO_SKIP) >> 4;
-      comboIndex += skip;
-    } else {
-      comboNumber++;
-    }
-
-    // Update latest point
-    const t = parseInt(tokens[2]);
-    while (
-      timingIndex + 1 < beatmap.timingPoints.length &&
-      beatmap.timingPoints[timingIndex + 1].time <= t
-    ) {
-      timingIndex++;
-      // Calculate beat length
-      if (beatmap.timingPoints[timingIndex].inherited) {
-        beatLength = baseBeatLength * beatmap.timingPoints[timingIndex].mult;
-      } else {
-        baseBeatLength = beatLength =
-          beatmap.timingPoints[timingIndex].beatLength;
-      }
-    }
-    const timingPoint = {
-      ...beatmap.timingPoints[timingIndex - 1],
-      beatLength,
-      inherited: false
-    };
-
-    if (type & HitObjectTypes.HIT_CIRCLE) {
-      const circle = new HitCircle(
-        tokens,
-        comboNumber,
-        comboIndex,
-        beatmap,
-        timingPoint,
-        skin
-      );
-
-      notes.push(circle);
-    } else if (type & HitObjectTypes.SLIDER) {
-      const slider = new Slider(
-        tokens,
-        comboNumber,
-        comboIndex,
-        beatmap,
-        timingPoint,
-        skin,
-        hitSoundController
-      );
-
-      notes.push(slider);
-    }
-  }
-
-  return notes;
 }

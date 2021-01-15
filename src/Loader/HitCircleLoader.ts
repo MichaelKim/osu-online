@@ -24,6 +24,7 @@ export interface HitCircleData {
   comboNumber: number;
   sampleSet: SampleSetType; // Sample set override
   additionSet: SampleSetType;
+  stackCount: number;
 }
 
 export interface HitCircleSprites {
@@ -59,7 +60,8 @@ export function parseHitCircle(
     comboIndex,
     comboNumber,
     sampleSet,
-    additionSet
+    additionSet,
+    stackCount: 0
   };
 }
 

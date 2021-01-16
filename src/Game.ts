@@ -82,17 +82,8 @@ export default class Game {
       this.skin
     );
     this.hitSound = new HitSoundController(this.skin);
-    this.followPoint = new FollowPointController(
-      this.renderer.followStage,
-      this.skin
-    );
 
-    this.beatmap = new Beatmap(
-      filepath,
-      this.hitResult,
-      this.hitSound,
-      this.followPoint
-    );
+    this.beatmap = new Beatmap(filepath, this.hitResult, this.hitSound);
 
     await this.beatmap.preload();
     await this.beatmap.load(this.skin);
@@ -101,6 +92,12 @@ export default class Game {
     for (let i = this.beatmap.notes.length - 1; i >= 0; i--) {
       this.beatmap.notes[i].addToStage(this.renderer.notesStage);
     }
+
+    this.followPoint = new FollowPointController(
+      this.renderer.followStage,
+      this.beatmap.notes,
+      this.skin
+    );
 
     this.hitResult.loadDiameter(csToSize(this.beatmap.data.cs));
   }

@@ -1,6 +1,5 @@
 import * as PIXI from 'pixi.js';
 import * as AudioLoader from './AudioLoader';
-import FollowPointController from './FollowPointController';
 import { HitObject, HitObjectTypes } from './HitObjects';
 import HitResultController, { HitResultType } from './HitResultController';
 import HitSoundController from './HitSoundController';
@@ -34,8 +33,7 @@ export default class Beatmap {
   constructor(
     private filepath: string, // Path to .osu file
     private hitResult: HitResultController,
-    private hitSound: HitSoundController,
-    private followPoints: FollowPointController
+    private hitSound: HitSoundController
   ) {}
 
   async preload() {
@@ -105,42 +103,11 @@ export default class Beatmap {
 
   update(time: number) {
     // Check for new notes
-    if (
+    while (
       this.right < this.notes.length &&
       time > this.notes[this.right].o.t - this.fadeTime
     ) {
       this.notes[this.right].setVisible(true);
-
-      // Follow point trails
-      // TODO: this timing isn't correct
-      // Follow trail should appear for ~1s, fully fading around ~0.5s after the previous hit object ends
-      // This means the trail can appear before the next object begins to fade in
-      const nextObject = this.notes[this.right];
-
-      if (
-        nextObject.type !== HitObjectTypes.SPINNER &&
-        nextObject.o.comboNumber !== 1
-      ) {
-        const prevObject = this.notes[this.right - 1];
-
-        if (prevObject.type === HitObjectTypes.SLIDER) {
-          const prev =
-            prevObject.o.slides % 2 === 0 ? prevObject.start : prevObject.end;
-          this.followPoints.addTrail(
-            prev,
-            nextObject.start,
-            prevObject.endTime,
-            nextObject.o.t
-          );
-        } else if (prevObject.type === HitObjectTypes.HIT_CIRCLE) {
-          this.followPoints.addTrail(
-            prevObject.start,
-            nextObject.start,
-            prevObject.o.t,
-            nextObject.o.t
-          );
-        }
-      }
       this.right++;
     }
 

@@ -20,7 +20,7 @@ export interface SliderData {
   type: HitObjectTypes.SLIDER;
 
   // Metadata
-  points: PIXI.Point[]; // Control points (TODO: this isn't used anywhere outside this)
+  points: PIXI.Point[]; // Control points
   t: number;
   hitSound: BaseHitSound;
   sliderType: CurveTypes;

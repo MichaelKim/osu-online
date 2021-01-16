@@ -1,5 +1,7 @@
 import * as PIXI from 'pixi.js';
 import { APPROACH_R, FADE_OUT_MS, HitObjectTypes, STACK_OFFSET_MULT } from '.';
+import { GameState } from '../Game';
+import { HitResultType } from '../HitResultController';
 import { BeatmapData } from '../Loader/BeatmapLoader';
 import {
   HitCircleData,
@@ -7,7 +9,7 @@ import {
   loadHitCircleSprites
 } from '../Loader/HitCircleLoader';
 import { Skin } from '../Skin';
-import { arToMS, csToSize } from '../timing';
+import { arToMS, csToSize, odToMS } from '../timing';
 import { clerp, clerp01, within } from '../util';
 
 export default class HitCircle {
@@ -16,6 +18,11 @@ export default class HitCircle {
   // Computed
   fadeTime: number; // Starts to fade in
   fullTime: number; // Fully opaque
+  hitWindows: {
+    [HitResultType.HIT300]: number;
+    [HitResultType.HIT100]: number;
+    [HitResultType.HIT50]: number;
+  };
   size: number; // Diameter of hit circle
 
   // Sprites
@@ -25,9 +32,15 @@ export default class HitCircle {
   // Gameplay
   finished = 0;
 
-  constructor(readonly o: HitCircleData, beatmap: BeatmapData, skin: Skin) {
+  constructor(
+    readonly o: HitCircleData,
+    beatmap: BeatmapData,
+    skin: Skin,
+    private gameState: GameState
+  ) {
     // Compute timing windows
     [this.fadeTime, this.fullTime] = arToMS(beatmap.ar);
+    this.hitWindows = odToMS(beatmap.od);
     this.size = csToSize(beatmap.cs);
 
     // Load sprites
@@ -64,7 +77,20 @@ export default class HitCircle {
     this.container.visible = visible;
   }
 
+  get enter() {
+    return this.o.t - this.fadeTime;
+  }
+
   update(time: number) {
+    // Check for miss
+    if (
+      this.finished === 0 &&
+      time > this.o.t + this.hitWindows[HitResultType.HIT50]
+    ) {
+      this.gameState.addResult(HitResultType.MISS, this, time);
+      this.finished = time;
+    }
+
     if (this.finished > 0) {
       // Either hit or missed: Fade out everything
       const alpha = 1 - clerp01(time - this.finished, 0, FADE_OUT_MS);
@@ -114,7 +140,22 @@ export default class HitCircle {
     return false;
   }
 
-  hit(position: PIXI.Point) {
-    return within(position, this.o.position, this.size / 2);
+  getHitResult(time: number) {
+    const dt = Math.abs(time - this.o.t);
+    if (dt <= this.hitWindows[HitResultType.HIT300])
+      return HitResultType.HIT300;
+    if (dt <= this.hitWindows[HitResultType.HIT100])
+      return HitResultType.HIT100;
+    if (dt <= this.hitWindows[HitResultType.HIT50]) return HitResultType.HIT50;
+    return HitResultType.MISS;
+  }
+
+  hit(time: number, position: PIXI.Point) {
+    if (within(position, this.o.position, this.size / 2)) {
+      this.finished = time;
+
+      const result = this.getHitResult(time);
+      this.gameState.addResult(result, this, time);
+    }
   }
 }

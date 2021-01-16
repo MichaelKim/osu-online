@@ -1,29 +1,16 @@
 import * as PIXI from 'pixi.js';
 import * as AudioLoader from './AudioLoader';
+import { GameState } from './Game';
 import { HitObject, HitObjectTypes } from './HitObjects';
-import HitResultController, { HitResultType } from './HitResultController';
-import HitSoundController from './HitSoundController';
 import { BeatmapData, parseBeatmap } from './Loader/BeatmapLoader';
 import { loadHitObjects } from './Loader/HitObjectLoader';
 import { Skin } from './Skin';
-import { arToMS, odToMS } from './timing';
 import { readFile } from './util';
-
-const STACK_LENIENCE = 3;
 
 export default class Beatmap {
   data: BeatmapData;
 
   notes: HitObject[] = [];
-
-  // Computed
-  fadeTime: number; // Starts to fade in
-  fullTime: number; // Fully opaque
-  hitWindows: {
-    [HitResultType.HIT300]: number;
-    [HitResultType.HIT100]: number;
-    [HitResultType.HIT50]: number;
-  };
 
   // Gameplay
   left: number = 0;
@@ -32,8 +19,7 @@ export default class Beatmap {
 
   constructor(
     private filepath: string, // Path to .osu file
-    private hitResult: HitResultController,
-    private hitSound: HitSoundController
+    private gameState: GameState
   ) {}
 
   async preload() {
@@ -50,9 +36,6 @@ export default class Beatmap {
   }
 
   async load(skin: Skin) {
-    [this.fadeTime, this.fullTime] = arToMS(this.data.ar);
-    this.hitWindows = odToMS(this.data.od);
-
     // TODO: extract gameplay logic
     this.left = 0;
     this.right = 0;
@@ -61,7 +44,7 @@ export default class Beatmap {
       this.filepath,
       this.data,
       skin,
-      this.hitSound
+      this.gameState
     );
     await this.loadMusic();
   }
@@ -77,54 +60,14 @@ export default class Beatmap {
     return index;
   }
 
-  isMissed(time: number, index: number) {
-    const object = this.notes[index];
-    switch (object.type) {
-      case HitObjectTypes.HIT_CIRCLE:
-        if (time > object.o.t + this.hitWindows[HitResultType.HIT50]) {
-          this.hitResult.addResult(HitResultType.MISS, object.start, time);
-          return true;
-        }
-        break;
-      case HitObjectTypes.SLIDER:
-        // Ignore active sliders
-        // TODO: fix slider behaviour when missed slider head
-        if (
-          !object.active &&
-          time > object.o.t + this.hitWindows[HitResultType.HIT50]
-        ) {
-          this.hitResult.addResult(HitResultType.MISS, object.start, time);
-          return true;
-        }
-        break;
-    }
-    return false;
-  }
-
   update(time: number) {
     // Check for new notes
     while (
       this.right < this.notes.length &&
-      time > this.notes[this.right].o.t - this.fadeTime
+      time > this.notes[this.right].enter
     ) {
       this.notes[this.right].setVisible(true);
       this.right++;
-    }
-
-    // Check for missed notes
-    let next = this.left;
-    while (next < this.right) {
-      if (this.notes[next].finished > 0) {
-        // Ignore finished notes
-        next++;
-      } else if (this.isMissed(time, next)) {
-        // Found missed note: flag as finished and check for other missed notes
-        this.notes[next].finished = time;
-        next++;
-      } else {
-        // Neither finished nor missed: can stop checking
-        break;
-      }
     }
 
     // Update notes (opacity, size, position, etc.)
@@ -138,16 +81,6 @@ export default class Beatmap {
     }
   }
 
-  getHitResult(time: number, object: HitObject) {
-    const dt = Math.abs(time - object.o.t);
-    if (dt <= this.hitWindows[HitResultType.HIT300])
-      return HitResultType.HIT300;
-    if (dt <= this.hitWindows[HitResultType.HIT100])
-      return HitResultType.HIT100;
-    if (dt <= this.hitWindows[HitResultType.HIT50]) return HitResultType.HIT50;
-    return HitResultType.MISS;
-  }
-
   mousedown(time: number, position: PIXI.Point) {
     // Ignore if no notes are currently visible
     if (this.left >= this.right) return;
@@ -156,30 +89,8 @@ export default class Beatmap {
     const index = this.getNextNote();
     if (index >= this.right) return;
 
-    // Check for hit
-    const object = this.notes[index];
-    switch (object.type) {
-      case HitObjectTypes.HIT_CIRCLE:
-        if (object.hit(position)) {
-          object.finished = time;
-
-          this.hitSound.playBaseSound(object.o.sampleSet, object.o.hitSound);
-
-          const result = this.getHitResult(time, object);
-          this.hitResult.addResult(result, object.start, time);
-        }
-        break;
-      case HitObjectTypes.SLIDER:
-        if (!object.active && object.hit(position)) {
-          object.active = true;
-
-          object.playEdge(0);
-
-          const result = this.getHitResult(time, object);
-          this.hitResult.addResult(result, object.start, time);
-        }
-        break;
-    }
+    // Send hit to hit object
+    this.notes[index].hit(time, position);
   }
 
   mousemove(time: number, position: PIXI.Point) {
@@ -191,14 +102,9 @@ export default class Beatmap {
     if (index >= this.right) return;
 
     const object = this.notes[index];
-    // TODO: handle spinners
-    if (object.type != HitObjectTypes.SLIDER) return;
+    if (object.type === HitObjectTypes.HIT_CIRCLE) return;
 
-    if (!object.active || object.hit(position)) return;
-
-    // Slider break
-    object.active = false;
-    object.finished = time;
+    object.move(time, position);
   }
 
   mouseup(time: number, position: PIXI.Point) {
@@ -210,13 +116,8 @@ export default class Beatmap {
     if (index >= this.right) return;
 
     const object = this.notes[index];
-    // TODO: handle spinners
-    if (object.type != HitObjectTypes.SLIDER) return;
+    if (object.type === HitObjectTypes.HIT_CIRCLE) return;
 
-    if (!object.active) return;
-
-    // Active slider was let go
-    object.active = false;
-    object.finished = time;
+    object.up(time, position);
   }
 }

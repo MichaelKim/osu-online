@@ -107,6 +107,7 @@ export function parseBeatmap(file: string[]) {
       }
       case '[TimingPoints]': {
         for (const line of section()) {
+          // TODO: timing point loading should be deferred too?
           const tokens = line.split(',');
           b.timingPoints.push(parseTimingPoint(tokens));
         }

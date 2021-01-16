@@ -6,10 +6,8 @@ import {
   HitObjectTypes,
   STACK_OFFSET_MULT
 } from '.';
-import HitSoundController, {
-  BaseHitSound,
-  SliderHitSound
-} from '../HitSoundController';
+import { GameState } from '../Game';
+import { HitResultType } from '../HitResultController';
 import { BeatmapData } from '../Loader/BeatmapLoader';
 import {
   loadSliderSprites,
@@ -17,7 +15,7 @@ import {
   SliderSprites
 } from '../Loader/SliderLoader';
 import { Skin } from '../Skin';
-import { arToMS, csToSize } from '../timing';
+import { arToMS, csToSize, odToMS } from '../timing';
 import { clerp, clerp01, within } from '../util';
 
 export default class Slider {
@@ -26,6 +24,11 @@ export default class Slider {
   // Computed
   fadeTime: number; // Starts to fade in
   fullTime: number; // Fully opaque
+  hitWindows: {
+    [HitResultType.HIT300]: number;
+    [HitResultType.HIT100]: number;
+    [HitResultType.HIT50]: number;
+  };
   size: number; // Diameter of hit circle
 
   // Rendering
@@ -44,10 +47,11 @@ export default class Slider {
     readonly o: SliderData,
     beatmap: BeatmapData,
     skin: Skin,
-    private hitSoundController: HitSoundController
+    private gameState: GameState
   ) {
     // Compute timing windows
     [this.fadeTime, this.fullTime] = arToMS(beatmap.ar);
+    this.hitWindows = odToMS(beatmap.od);
     this.size = csToSize(beatmap.cs);
 
     this.s = loadSliderSprites(this.o, skin, this.size);
@@ -97,6 +101,10 @@ export default class Slider {
 
   setVisible(visible: boolean) {
     this.container.visible = visible;
+  }
+
+  get enter() {
+    return this.o.t - this.fadeTime;
   }
 
   // Returns [start, end]
@@ -151,15 +159,17 @@ export default class Slider {
     }
   }
 
-  playEdge(index: number) {
-    const hitSound = this.o.edgeSounds[index] || this.o.hitSound;
-    // [normal, addition]
-    const setIndex = hitSound === BaseHitSound.NORMAL ? 0 : 1;
-    const sampleSet = this.o.edgeSets[index]?.[setIndex] || this.o.sampleSet;
-    this.hitSoundController.playBaseSound(sampleSet, hitSound);
-  }
-
   update(time: number) {
+    // Check for miss
+    if (
+      this.finished === 0 &&
+      !this.active &&
+      time > this.o.t + this.hitWindows[HitResultType.HIT50]
+    ) {
+      this.gameState.addResult(HitResultType.MISS, this, time);
+      this.finished = time;
+    }
+
     if (this.finished > 0) {
       // Fade out everything
       const alpha = 1 - clerp01(time - this.finished, 0, FADE_OUT_MS);
@@ -213,7 +223,7 @@ export default class Slider {
       this.finished = time;
 
       // Play slider end hit sound
-      this.playEdge(this.o.edgeSounds.length - 1);
+      this.gameState.addSliderEdge(this, time, this.o.edgeSounds.length - 1);
 
       return false;
     }
@@ -272,10 +282,7 @@ export default class Slider {
     if (this.active) {
       for (let i = this.ticksHit; i < ticksHitNew; i++) {
         // Number of ticks hit increased: new ticks
-        this.hitSoundController.playSound(
-          this.o.sampleSet,
-          SliderHitSound.SLIDER_TICK
-        );
+        this.gameState.addSliderTick(this, time);
       }
     }
     this.ticksHit = ticksHitNew;
@@ -284,7 +291,7 @@ export default class Slider {
     if (this.active) {
       const currentSlide = Math.floor(progress);
       if (this.repeatsHit !== currentSlide) {
-        this.playEdge(currentSlide);
+        this.gameState.addSliderEdge(this, time, currentSlide);
         this.repeatsHit = currentSlide;
       }
     }
@@ -294,10 +301,43 @@ export default class Slider {
     return false;
   }
 
-  hit(position: PIXI.Point) {
-    // Once active, cursor needs to stay within follow circle
-    const diameter = this.active ? FOLLOW_R * this.size : this.size;
+  getHitResult(time: number) {
+    const dt = Math.abs(time - this.o.t);
+    if (dt <= this.hitWindows[HitResultType.HIT300])
+      return HitResultType.HIT300;
+    if (dt <= this.hitWindows[HitResultType.HIT100])
+      return HitResultType.HIT100;
+    if (dt <= this.hitWindows[HitResultType.HIT50]) return HitResultType.HIT50;
+    return HitResultType.MISS;
+  }
+
+  hit(time: number, position: PIXI.Point) {
     // Hitbox follows the slider head after slider starts
-    return within(position, this.position, diameter / 2);
+    if (!this.active && within(position, this.position, this.size / 2)) {
+      this.active = true;
+
+      const result = this.getHitResult(time);
+      this.gameState.addSliderHead(result, this, time);
+    }
+  }
+
+  move(time: number, position: PIXI.Point) {
+    // Once active, cursor needs to stay within follow circle
+    if (
+      this.active &&
+      !within(position, this.position, (FOLLOW_R * this.size) / 2)
+    ) {
+      // Active slider was left (slider break)
+      this.active = false;
+      this.finished = time;
+    }
+  }
+
+  up(time: number, position: PIXI.Point) {
+    if (this.active) {
+      // Active slider was let go (slider break)
+      this.active = false;
+      this.finished = time;
+    }
   }
 }

@@ -35,7 +35,17 @@ export default class Spinner {
     this.container.visible = visible;
   }
 
+  get enter() {
+    return this.o.t;
+  }
+
   update(time: number) {
     return false;
   }
+
+  hit(time: number, position: PIXI.Point) {}
+
+  move(time: number, position: PIXI.Point) {}
+
+  up(time: number, position: PIXI.Point) {}
 }

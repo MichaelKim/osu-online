@@ -1,8 +1,8 @@
+import { GameState } from '../Game';
 import { HitObject, HitObjectTypes } from '../HitObjects';
 import HitCircle from '../HitObjects/HitCircle';
 import Slider from '../HitObjects/Slider';
 import Spinner from '../HitObjects/Spinner';
-import HitSoundController from '../HitSoundController';
 import { Skin } from '../Skin';
 import { arToMS } from '../timing';
 import { readFile, within } from '../util';
@@ -165,7 +165,7 @@ export async function loadHitObjects(
   filepath: string,
   beatmap: BeatmapData,
   skin: Skin,
-  hitSoundController: HitSoundController
+  gameState: GameState
 ): Promise<HitObject[]> {
   const file = await readFile(filepath);
   const notes = parseHitObjects(file, beatmap);
@@ -173,9 +173,9 @@ export async function loadHitObjects(
   return notes.map(n => {
     switch (n.type) {
       case HitObjectTypes.HIT_CIRCLE:
-        return new HitCircle(n, beatmap, skin);
+        return new HitCircle(n, beatmap, skin, gameState);
       case HitObjectTypes.SLIDER:
-        return new Slider(n, beatmap, skin, hitSoundController);
+        return new Slider(n, beatmap, skin, gameState);
       case HitObjectTypes.SPINNER:
         return new Spinner(n, skin);
     }

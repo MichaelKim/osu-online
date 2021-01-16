@@ -2,12 +2,63 @@ import * as PIXI from 'pixi.js';
 import Beatmap from './Beatmap';
 import Clock from './Clock';
 import FollowPointController from './FollowPointController';
-import HitResultController from './HitResultController';
-import HitSoundController from './HitSoundController';
+import HitCircle from './HitObjects/HitCircle';
+import Slider from './HitObjects/Slider';
+import HitResultController, { HitResultType } from './HitResultController';
+import HitSoundController, {
+  BaseHitSound,
+  SliderHitSound
+} from './HitSoundController';
 import InputController, { InputType } from './InputController';
 import Renderer from './Renderer';
 import { Skin } from './Skin';
 import { csToSize } from './timing';
+
+export class GameState {
+  score: number = 0;
+  hitResult: HitResultController;
+  hitSound: HitSoundController;
+
+  constructor(renderer: Renderer, skin: Skin) {
+    this.hitResult = new HitResultController(renderer.hitResultStage, skin);
+    this.hitSound = new HitSoundController(skin);
+  }
+
+  load(beatmap: Beatmap) {
+    this.hitResult.loadDiameter(csToSize(beatmap.data.cs));
+  }
+
+  addResult(type: HitResultType, object: HitCircle | Slider, time: number) {
+    if (type !== HitResultType.MISS) {
+      this.hitSound.playBaseSound(object.o.sampleSet, object.o.hitSound);
+    }
+    this.hitResult.addResult(type, object.start, time);
+  }
+
+  addSliderHead(type: HitResultType, object: Slider, time: number) {
+    if (type !== HitResultType.MISS) {
+      this.addSliderEdge(object, time, 0);
+    }
+    this.hitResult.addResult(type, object.start, time);
+  }
+
+  addSliderTick(object: Slider, time: number) {
+    this.hitSound.playSound(object.o.sampleSet, SliderHitSound.SLIDER_TICK);
+  }
+
+  addSliderEdge(object: Slider, time: number, index: number) {
+    const hitSound = object.o.edgeSounds[index] || object.o.hitSound;
+    // [normal, addition]
+    const setIndex = hitSound === BaseHitSound.NORMAL ? 0 : 1;
+    const sampleSet =
+      object.o.edgeSets[index]?.[setIndex] || object.o.sampleSet;
+    this.hitSound.playBaseSound(sampleSet, hitSound);
+  }
+
+  update(time: number) {
+    this.hitResult.update(time);
+  }
+}
 
 export default class Game {
   renderer: Renderer;
@@ -17,8 +68,7 @@ export default class Game {
   clock: Clock;
 
   // Based on skin
-  hitResult: HitResultController;
-  hitSound: HitSoundController;
+  gameState: GameState;
   followPoint: FollowPointController;
 
   constructor(view: HTMLCanvasElement) {
@@ -77,15 +127,11 @@ export default class Game {
   }
 
   async loadBeatmap(filepath: string) {
-    this.hitResult = new HitResultController(
-      this.renderer.hitResultStage,
-      this.skin
-    );
-    this.hitSound = new HitSoundController(this.skin);
-
-    this.beatmap = new Beatmap(filepath, this.hitResult, this.hitSound);
+    this.gameState = new GameState(this.renderer, this.skin);
+    this.beatmap = new Beatmap(filepath, this.gameState);
 
     await this.beatmap.preload();
+    this.gameState.load(this.beatmap);
     await this.beatmap.load(this.skin);
 
     // this.renderer.notesStage.removeChildren();
@@ -98,8 +144,6 @@ export default class Game {
       this.beatmap.notes,
       this.skin
     );
-
-    this.hitResult.loadDiameter(csToSize(this.beatmap.data.cs));
   }
 
   play() {
@@ -139,7 +183,7 @@ export default class Game {
     this.input.events = [];
 
     this.beatmap.update(time);
-    this.hitResult.update(time);
+    this.gameState.update(time);
     this.followPoint.update(time);
     this.renderer.render();
   };

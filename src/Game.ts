@@ -1,6 +1,7 @@
 import * as PIXI from 'pixi.js';
 import Beatmap from './Beatmap';
 import Clock from './Clock';
+import Cursor from './Cursor';
 import FollowPointController from './FollowPointController';
 import HitCircle from './HitObjects/HitCircle';
 import Slider from './HitObjects/Slider';
@@ -68,9 +69,10 @@ export default class Game {
   clock: Clock;
 
   // Based on skin
-  beatmap: Beatmap;
-  gameState: GameState;
-  followPoint: FollowPointController;
+  cursor!: Cursor;
+  beatmap!: Beatmap;
+  gameState!: GameState;
+  followPoint!: FollowPointController;
 
   constructor(view: HTMLCanvasElement) {
     this.renderer = new Renderer(view);
@@ -84,9 +86,7 @@ export default class Game {
     await this.renderer.start();
     await this.skin.load(this.renderer.renderer);
 
-    // Setup cursor
-    this.input.loadTexture(this.skin);
-    this.renderer.cursorStage.addChild(this.input.cursor);
+    this.cursor = new Cursor(this.renderer.cursorStage, this.skin);
     this.input.start();
   }
 
@@ -173,6 +173,7 @@ export default class Game {
           );
           break;
         case InputType.MOVE:
+          this.cursor.move(event.position);
           this.beatmap.mousemove(
             time,
             this.renderer.toOsuPixels(event.position)

@@ -1,6 +1,5 @@
 import * as PIXI from 'pixi.js';
 import Clock from './Clock';
-import { Skin } from './Skin';
 import { clamp } from './util';
 
 export enum InputType {
@@ -15,24 +14,21 @@ interface InputEvent {
   position: PIXI.Point;
 }
 
-// Handles cursor and click/tap
+// Handles click / tap
 export default class InputController {
-  // TODO: split cursor from inputcontroller?
-  cursor: PIXI.Sprite;
+  private position: PIXI.Point;
   key1 = '1';
   key2 = '2';
   cursorSensitivity: number = 2;
-  numDown: number = 0; // Number of inputs currently pressing down
-
+  private numDown: number = 0; // Number of inputs currently pressing down
   events: InputEvent[] = [];
 
   // Needs clock to log input event timings
-  constructor(private clock: Clock) {}
-
-  loadTexture(skin: Skin) {
-    // this.cursor?.destroy();
-    this.cursor = new PIXI.Sprite(skin.cursor);
-    this.cursor.position.set(window.innerWidth / 2, window.innerHeight / 2);
+  constructor(private clock: Clock) {
+    this.position = new PIXI.Point(
+      window.innerWidth / 2,
+      window.innerHeight / 2
+    );
   }
 
   start() {
@@ -60,27 +56,27 @@ export default class InputController {
     this.events.push({
       time: this.clock.getTime(),
       type: InputType.DOWN,
-      position: this.cursor.position
+      position: this.position
     });
   };
 
   private onMove = (e: MouseEvent) => {
     const x = clamp(
-      this.cursor.x + e.movementX * this.cursorSensitivity,
+      this.position.x + e.movementX * this.cursorSensitivity,
       0,
       window.innerWidth
     );
     const y = clamp(
-      this.cursor.y + e.movementY * this.cursorSensitivity,
+      this.position.y + e.movementY * this.cursorSensitivity,
       0,
       window.innerHeight
     );
 
-    this.cursor.position.set(x, y);
+    this.position.set(x, y);
     this.events.push({
       time: this.clock.getTime(),
       type: InputType.MOVE,
-      position: this.cursor.position
+      position: this.position
     });
   };
 
@@ -96,7 +92,7 @@ export default class InputController {
       this.events.push({
         time: this.clock.getTime(),
         type: InputType.UP,
-        position: this.cursor.position
+        position: this.position
       });
     }
   };

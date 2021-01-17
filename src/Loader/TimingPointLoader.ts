@@ -34,7 +34,7 @@ export function parseTimingPoint(tokens: string[]): TimingPoint {
   // tokens[1] is either beatLength (positive) or velocity (negative)
   const beatLength = parseFloat(tokens[1]);
   const inherited = beatLength <= 0;
-  const mult = inherited ? 1 : clamp(-beatLength, 10, 1000) / 100;
+  const mult = inherited ? clamp(-beatLength, 10, 1000) / 100 : 1;
 
   return {
     time,

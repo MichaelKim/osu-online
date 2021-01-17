@@ -61,7 +61,7 @@ function parseHitObjects(file: string[], beatmap: BeatmapData) {
       }
     }
     const timingPoint = {
-      ...beatmap.timingPoints[timingIndex - 1],
+      ...beatmap.timingPoints[timingIndex],
       beatLength,
       inherited: false
     };

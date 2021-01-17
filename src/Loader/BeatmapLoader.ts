@@ -1,4 +1,5 @@
 import { SampleSetType } from '../SampleSet';
+import { readFile } from '../util';
 import { parseTimingPoint, TimingPoint } from './TimingPointLoader';
 
 export interface BeatmapData {
@@ -67,8 +68,9 @@ function switchcase<T = string>(cases: Record<string, (value: T) => void>) {
   return (key: string, value: T) => cases[key]?.(value);
 }
 
-export function parseBeatmap(file: string[]) {
-  const b: BeatmapData = { ...DEFAULTS };
+export async function parseBeatmap(filepath: string) {
+  const file = await readFile(filepath);
+  const b: BeatmapData = { ...DEFAULTS, filepath };
 
   const parseGeneral = switchcase({
     AudioFilename: value => (b.audioFilename = value),

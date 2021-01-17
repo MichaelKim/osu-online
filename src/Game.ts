@@ -10,6 +10,7 @@ import HitSoundController, {
   SliderHitSound
 } from './HitSoundController';
 import InputController, { InputType } from './InputController';
+import { BeatmapData } from './Loader/BeatmapLoader';
 import Renderer from './Renderer';
 import { Skin } from './Skin';
 import { csToSize } from './timing';
@@ -64,10 +65,10 @@ export default class Game {
   renderer: Renderer;
   input: InputController;
   skin: Skin;
-  beatmap: Beatmap;
   clock: Clock;
 
   // Based on skin
+  beatmap: Beatmap;
   gameState: GameState;
   followPoint: FollowPointController;
 
@@ -126,11 +127,10 @@ export default class Game {
     });
   }
 
-  async loadBeatmap(filepath: string) {
+  async loadBeatmap(data: BeatmapData) {
     this.gameState = new GameState(this.renderer, this.skin);
-    this.beatmap = new Beatmap(filepath, this.gameState);
+    this.beatmap = new Beatmap(data, this.gameState);
 
-    await this.beatmap.preload();
     this.gameState.load(this.beatmap);
     await this.beatmap.load(this.skin);
 

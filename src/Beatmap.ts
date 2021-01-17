@@ -2,14 +2,11 @@ import * as PIXI from 'pixi.js';
 import * as AudioLoader from './AudioLoader';
 import { GameState } from './Game';
 import { HitObject, HitObjectTypes } from './HitObjects';
-import { BeatmapData, parseBeatmap } from './Loader/BeatmapLoader';
+import { BeatmapData } from './Loader/BeatmapLoader';
 import { loadHitObjects } from './Loader/HitObjectLoader';
 import { Skin } from './Skin';
-import { readFile } from './util';
 
 export default class Beatmap {
-  data: BeatmapData;
-
   notes: HitObject[] = [];
 
   // Gameplay
@@ -17,15 +14,7 @@ export default class Beatmap {
   right: number = 0;
   music: HTMLAudioElement;
 
-  constructor(
-    private filepath: string, // Path to .osu file
-    private gameState: GameState
-  ) {}
-
-  async preload() {
-    const file = await readFile(this.filepath);
-    this.data = parseBeatmap(file);
-  }
+  constructor(readonly data: BeatmapData, private gameState: GameState) {}
 
   async loadMusic() {
     if (!this.data.audioFilename) console.error('Missing audio filename');
@@ -36,12 +25,8 @@ export default class Beatmap {
   }
 
   async load(skin: Skin) {
-    // TODO: extract gameplay logic
-    this.left = 0;
-    this.right = 0;
-
     this.notes = await loadHitObjects(
-      this.filepath,
+      this.data.filepath,
       this.data,
       skin,
       this.gameState

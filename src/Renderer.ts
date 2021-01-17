@@ -74,7 +74,7 @@ export default class Renderer {
 
   // Converts real pixels to osu!pixels
   toOsuPixels(point: PIXI.Point) {
-    return this.gameStage.toLocal(point, null, null, true);
+    return this.gameStage.toLocal(point, undefined, undefined, true);
   }
 
   // getBounds() {

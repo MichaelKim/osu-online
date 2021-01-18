@@ -16,7 +16,7 @@ import {
 } from '../Loader/SliderLoader';
 import { Skin } from '../Skin';
 import { arToMS, csToSize, odToMS } from '../timing';
-import { clerp, clerp01, within } from '../util';
+import { clamp, clerp, clerp01, within } from '../util';
 
 export default class Slider {
   readonly type = HitObjectTypes.SLIDER;
@@ -233,7 +233,11 @@ export default class Slider {
     const forwards = Math.floor(progress) % 2 === 0; // Sliding direction
     const delta = forwards ? progress % 1 : 1 - (progress % 1);
     // TODO: use pointAt
-    const curveIndex = Math.floor(this.o.curve.length * delta);
+    const curveIndex = clamp(
+      Math.floor(this.o.curve.length * delta),
+      0,
+      this.o.curve.length - 1
+    );
     const position = this.o.curve[curveIndex];
 
     const alpha =

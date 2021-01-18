@@ -39,9 +39,9 @@ export default class Game {
     this.view.style.display = 'block';
     initLock(this.view, paused => {
       if (paused) {
-        this.audio.current?.pause();
+        this.audio.pause();
       } else {
-        this.audio.current?.play();
+        this.audio.resume();
       }
     });
     await lockPointer(this.view);

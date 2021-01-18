@@ -18,7 +18,7 @@ export default class Clock {
   };
 
   getTime() {
-    return this.audio.getTime() * 1000;
+    return this.audio.getTime();
   }
 
   stop() {

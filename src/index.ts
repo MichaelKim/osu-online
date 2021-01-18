@@ -1,3 +1,4 @@
+import 'pixi-sound';
 import Game from './Game';
 import { parseBeatmap } from './Loader/BeatmapLoader';
 import initStart from './start';

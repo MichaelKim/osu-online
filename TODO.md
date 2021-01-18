@@ -3,6 +3,3 @@
 - spinners
 - hit object colors
 - 50k, 100k, 300g, 300k
-- change audio / hitsound to update
-  - hitSound.queueSound(\_\_\_)
-  - hitSound.update(t)

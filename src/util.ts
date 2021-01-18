@@ -61,3 +61,9 @@ export async function readFile(filepath: string) {
   const text = await res.text();
   return text.split('\n').map(l => l.trim());
 }
+
+export async function loader<K extends string>(loader: PIXI.Loader) {
+  return new Promise<Partial<Record<K, PIXI.LoaderResource>>>(resolve =>
+    loader.load((_, res) => resolve(res))
+  );
+}

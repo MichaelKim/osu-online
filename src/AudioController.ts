@@ -1,7 +1,7 @@
 import * as AudioLoader from './AudioLoader';
 
 export default class AudioController {
-  private current?: HTMLAudioElement;
+  current?: HTMLAudioElement;
 
   async load(filename: string) {
     if (!filename) {

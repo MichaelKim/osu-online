@@ -7,6 +7,7 @@ import FollowPointController from './FollowPointController';
 import GameState from './GameState';
 import InputController, { InputType } from './InputController';
 import { BeatmapData } from './Loader/BeatmapLoader';
+import { initLock, lockPointer } from './lock';
 import Renderer from './Renderer';
 import { Skin } from './Skin';
 
@@ -23,7 +24,7 @@ export default class Game {
   gameState!: GameState;
   followPoint!: FollowPointController;
 
-  constructor(view: HTMLCanvasElement) {
+  constructor(private view: HTMLCanvasElement) {
     this.renderer = new Renderer(view);
     // TODO: what about switching skins?
     this.skin = new Skin('assets/skin.ini');
@@ -34,6 +35,17 @@ export default class Game {
 
   async init() {
     await this.renderer.start();
+
+    this.view.style.display = 'block';
+    initLock(this.view, paused => {
+      if (paused) {
+        this.audio.current?.pause();
+      } else {
+        this.audio.current?.play();
+      }
+    });
+    await lockPointer(this.view);
+
     await this.skin.load(this.renderer.renderer);
 
     this.cursor = new Cursor(this.renderer.cursorStage, this.skin);

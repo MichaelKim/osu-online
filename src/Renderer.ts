@@ -1,5 +1,4 @@
 import * as PIXI from 'pixi.js';
-import { initLock, lockPointer } from './lock';
 
 export default class Renderer {
   renderer: PIXI.Renderer;
@@ -41,10 +40,7 @@ export default class Renderer {
   }
 
   async start() {
-    this.renderer.view.style.display = 'block';
     window.addEventListener('resize', this.resize);
-    initLock(this.renderer.view);
-    await lockPointer(this.renderer.view);
     this.resize();
   }
 

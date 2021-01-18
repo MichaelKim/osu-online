@@ -1,3 +1,4 @@
+// @ts-nocheck
 import * as PIXI from 'pixi.js';
 import { HitResultType } from './HitResultController';
 import SampleSetData, { SampleSetType } from './SampleSet';
@@ -82,15 +83,13 @@ export class Skin {
   hits: Record<HitResultType, PIXI.Texture>;
 
   // Sounds
-  soundLoader: PIXI.Loader;
   sampleSets: Record<SampleSetType, SampleSetData>;
 
   constructor(private filepath: string) {
-    this.soundLoader = new PIXI.Loader();
     this.sampleSets = {
-      [SampleSetType.NORMAL]: new SampleSetData('normal', this.soundLoader),
-      [SampleSetType.SOFT]: new SampleSetData('soft', this.soundLoader),
-      [SampleSetType.DRUM]: new SampleSetData('drum', this.soundLoader)
+      [SampleSetType.NORMAL]: new SampleSetData('normal'),
+      [SampleSetType.SOFT]: new SampleSetData('soft'),
+      [SampleSetType.DRUM]: new SampleSetData('drum')
     };
   }
 

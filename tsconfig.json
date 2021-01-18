@@ -5,6 +5,7 @@
     "isolatedModules": true,
     "lib": ["ES2019", "DOM"],
     "target": "ES6",
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "strict": true
   }
 }

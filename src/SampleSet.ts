@@ -1,3 +1,4 @@
+// @ts-nocheck
 import * as PIXI from 'pixi.js';
 import { AudioResource } from './AudioLoader';
 import { Tuple } from './util';
@@ -27,6 +28,8 @@ export function parseHitSample(line: string): Tuple<SampleSetType, 2> {
 type SoundResources = Record<keyof typeof soundAssets, AudioResource>;
 
 export default class SampleSetData {
+  private loader: PIXI.Loader;
+
   hitClap: HTMLAudioElement;
   hitFinish: HTMLAudioElement;
   hitNormal: HTMLAudioElement;
@@ -35,23 +38,25 @@ export default class SampleSetData {
   sliderTick: HTMLAudioElement;
   sliderWhistle: HTMLAudioElement;
 
-  constructor(private name: string, private loader: PIXI.Loader) {}
+  constructor(private name: string) {
+    this.loader = new PIXI.Loader();
+  }
 
   async load() {
     return new Promise<void>(resolve => {
       const paths = Object.entries(soundAssets).map(([name, url]) => ({
-        name: this.name + name,
+        name,
         url: `assets/audio/${this.name}-${url}.wav`
       }));
       this.loader.add(paths).load((_, resources: Partial<SoundResources>) => {
         // TODO: check for missing / error sounds
-        this.hitClap = resources[this.name + 'hitClap'].data;
-        this.hitFinish = resources[this.name + 'hitFinish'].data;
-        this.hitNormal = resources[this.name + 'hitNormal'].data;
-        this.hitWhistle = resources[this.name + 'hitWhistle'].data;
-        this.sliderSlide = resources[this.name + 'sliderSlide'].data;
-        this.sliderTick = resources[this.name + 'sliderTick'].data;
-        this.sliderWhistle = resources[this.name + 'sliderWhistle'].data;
+        this.hitClap = resources['hitClap'].data;
+        this.hitFinish = resources['hitFinish'].data;
+        this.hitNormal = resources['hitNormal'].data;
+        this.hitWhistle = resources['hitWhistle'].data;
+        this.sliderSlide = resources['sliderSlide'].data;
+        this.sliderTick = resources['sliderTick'].data;
+        this.sliderWhistle = resources['sliderWhistle'].data;
         resolve();
       });
     });

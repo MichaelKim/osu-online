@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js';
-import * as AudioLoader from './AudioLoader';
+import AudioController from './AudioController';
 import GameState from './GameState';
 import { HitObject, HitObjectTypes } from './HitObjects';
 import { BeatmapData } from './Loader/BeatmapLoader';
@@ -12,30 +12,26 @@ export default class Beatmap {
   // Gameplay
   left: number = 0;
   right: number = 0;
-  music: HTMLAudioElement;
 
-  constructor(readonly data: BeatmapData, private gameState: GameState) {}
+  constructor(
+    readonly data: BeatmapData,
+    private audio: AudioController,
+    private gameState: GameState
+  ) {}
 
-  async loadMusic() {
-    if (!this.data.audioFilename) console.error('Missing audio filename');
+  async load(stage: PIXI.Container, skin: Skin) {
+    this.notes = await loadHitObjects(this.data, skin, this.gameState);
 
-    // TODO: extract audio playback
-    const res = await AudioLoader.load('beatmaps/' + this.data.audioFilename);
-    this.music = res.data;
-  }
+    // stage.removeChildren();
+    for (let i = this.notes.length - 1; i >= 0; i--) {
+      this.notes[i].addToStage(stage);
+    }
 
-  async load(skin: Skin) {
-    this.notes = await loadHitObjects(
-      this.data.filepath,
-      this.data,
-      skin,
-      this.gameState
-    );
-    await this.loadMusic();
+    await this.audio.load(this.data.audioFilename);
   }
 
   play() {
-    this.music.play();
+    this.audio.play();
   }
 
   // Returns index of earliest unfinished hit object

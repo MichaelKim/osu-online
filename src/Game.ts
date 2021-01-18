@@ -1,4 +1,5 @@
 import * as PIXI from 'pixi.js';
+import AudioController from './AudioController';
 import Beatmap from './Beatmap';
 import Clock from './Clock';
 import Cursor from './Cursor';
@@ -14,9 +15,10 @@ export default class Game {
   input: InputController;
   skin: Skin;
   clock: Clock;
+  audio: AudioController;
 
   // Based on skin
-  cursor!: Cursor;
+  cursor!: Cursor; // TODO: is there a better way than using !
   beatmap!: Beatmap;
   gameState!: GameState;
   followPoint!: FollowPointController;
@@ -25,7 +27,8 @@ export default class Game {
     this.renderer = new Renderer(view);
     // TODO: what about switching skins?
     this.skin = new Skin('assets/skin.ini');
-    this.clock = new Clock(this.update);
+    this.audio = new AudioController();
+    this.clock = new Clock(this.audio, this.update);
     this.input = new InputController(this.clock);
   }
 
@@ -76,15 +79,10 @@ export default class Game {
 
   async loadBeatmap(data: BeatmapData) {
     this.gameState = new GameState(this.renderer, this.skin);
-    this.beatmap = new Beatmap(data, this.gameState);
+    this.beatmap = new Beatmap(data, this.audio, this.gameState);
 
     this.gameState.load(this.beatmap);
-    await this.beatmap.load(this.skin);
-
-    // this.renderer.notesStage.removeChildren();
-    for (let i = this.beatmap.notes.length - 1; i >= 0; i--) {
-      this.beatmap.notes[i].addToStage(this.renderer.notesStage);
-    }
+    await this.beatmap.load(this.renderer.notesStage, this.skin);
 
     this.followPoint = new FollowPointController(
       this.renderer.followStage,

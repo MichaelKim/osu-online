@@ -1,22 +1,24 @@
+import AudioController from './AudioController';
+
 export default class Clock {
-  private startTime: number = 0;
   private requestID: number = 0;
 
-  constructor(private callback: (time: number) => void) {}
+  constructor(
+    private audio: AudioController,
+    private callback: (time: number) => void
+  ) {}
 
   start() {
-    this.startTime = performance.now();
     this.requestID = window.requestAnimationFrame(this.update);
   }
 
-  // TODO: sync with audio
-  private update = (time: number) => {
-    this.callback(time - this.startTime);
+  private update = () => {
+    this.callback(this.getTime());
     this.requestID = window.requestAnimationFrame(this.update);
   };
 
   getTime() {
-    return performance.now() - this.startTime;
+    return this.audio.getTime() * 1000;
   }
 
   stop() {

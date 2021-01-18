@@ -162,12 +162,11 @@ function calcStacking(beatmap: BeatmapData, notes: HitObjectData[]) {
 }
 
 export async function loadHitObjects(
-  filepath: string,
   beatmap: BeatmapData,
   skin: Skin,
   gameState: GameState
 ): Promise<HitObject[]> {
-  const file = await readFile(filepath);
+  const file = await readFile(beatmap.filepath);
   const notes = parseHitObjects(file, beatmap);
   calcStacking(beatmap, notes);
   return notes.map(n => {

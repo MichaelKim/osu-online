@@ -9,7 +9,7 @@ import { readFile, within } from '../util';
 import { BeatmapData } from './BeatmapLoader';
 import { HitCircleData, parseHitCircle } from './HitCircleLoader';
 import { parseSlider, SliderData } from './SliderLoader';
-import { SpinnerData } from './SpinnerLoader';
+import { parseSpinner, SpinnerData } from './SpinnerLoader';
 
 type HitObjectData = HitCircleData | SliderData | SpinnerData;
 
@@ -67,25 +67,15 @@ function parseHitObjects(file: string[], beatmap: BeatmapData) {
     };
 
     if (type & HitObjectTypes.HIT_CIRCLE) {
-      const circle = parseHitCircle(
-        tokens,
-        comboNumber,
-        comboIndex,
-        timingPoint,
-        beatmap
+      notes.push(
+        parseHitCircle(tokens, comboNumber, comboIndex, timingPoint, beatmap)
       );
-
-      notes.push(circle);
     } else if (type & HitObjectTypes.SLIDER) {
-      const slider = parseSlider(
-        tokens,
-        comboNumber,
-        comboIndex,
-        timingPoint,
-        beatmap
+      notes.push(
+        parseSlider(tokens, comboNumber, comboIndex, timingPoint, beatmap)
       );
-
-      notes.push(slider);
+    } else if (type & HitObjectTypes.SPINNER) {
+      notes.push(parseSpinner(tokens, timingPoint, beatmap));
     }
   }
 

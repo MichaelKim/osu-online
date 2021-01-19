@@ -2,7 +2,7 @@
 import * as PIXI from 'pixi.js';
 import { HitResultType } from './HitResultController';
 import SampleSetData, { SampleSetType } from './SampleSet';
-import { parseKeyValue, readFile, Tuple } from './util';
+import { loader, parseKeyValue, readFile, Tuple } from './util';
 
 // Filepaths to each asset
 const assets = {
@@ -28,7 +28,12 @@ const assets = {
   hit50: 'hit50.png',
   hit100: 'hit100.png',
   hit300: 'hit300.png',
-  followPoint: 'followpoint.png'
+  followPoint: 'followpoint.png',
+  spinnerBottom: 'spinner-bottom.png',
+  spinnerGlow: 'spinner-glow.png',
+  spinnerMiddle: 'spinner-middle.png',
+  spinnerMiddle2: 'spinner-middle2.png',
+  spinnerTop: 'spinner-top.png'
 };
 
 type Resources = Record<keyof typeof assets, PIXI.LoaderResource>;
@@ -40,8 +45,6 @@ function loadHitCircle(
 ) {
   const circle = new PIXI.Sprite(circleTexture);
   const overlay = new PIXI.Sprite(overlayTexture);
-  circle.anchor.set(0.5);
-  overlay.anchor.set(0.5);
 
   const width = Math.max(circle.width, overlay.width);
   const height = Math.max(circle.height, overlay.height);
@@ -72,13 +75,17 @@ export class Skin {
   followPoint: PIXI.Texture;
   // Numbers
   numbers: Tuple<PIXI.Texture, 10>;
-
   // Slider
   sliderb: PIXI.Texture;
   sliderFollowCircle: PIXI.Texture;
   sliderScorePoint: PIXI.Texture;
   reverseArrow: PIXI.Texture;
-
+  // Spinner
+  spinnerBottom: PIXI.Texture;
+  spinnerGlow: PIXI.Texture;
+  spinnerMiddle: PIXI.Texture;
+  spinnerMiddle2: PIXI.Texture;
+  spinnerTop: PIXI.Texture;
   // Hits
   hits: Record<HitResultType, PIXI.Texture>;
 
@@ -131,63 +138,57 @@ export class Skin {
     await this.sampleSets[SampleSetType.SOFT].load();
   }
 
-  loadTextures(renderer: PIXI.Renderer) {
-    const paths = Object.entries(assets).map(([name, url]) => ({
-      name,
-      url: 'assets/' + url
-    }));
+  async loadTextures(renderer: PIXI.Renderer) {
+    for (const [name, url] of Object.entries(assets)) {
+      PIXI.Loader.shared.add(name, 'assets/' + url);
+    }
 
-    return new Promise<void>(resolve => {
-      PIXI.Loader.shared.add(paths).load((_, resources: Partial<Resources>) => {
-        // TODO: check for missing / error texture
-        this.cursor = resources.cursor.texture;
-        this.approach = resources.approach.texture;
-        this.circle = loadHitCircle(
-          renderer,
-          resources.circle.texture,
-          resources.overlay.texture
-        );
-        this.followPoint = resources.followPoint.texture;
-        this.numbers = [
-          resources.default0.texture,
-          resources.default1.texture,
-          resources.default2.texture,
-          resources.default3.texture,
-          resources.default4.texture,
-          resources.default5.texture,
-          resources.default6.texture,
-          resources.default7.texture,
-          resources.default8.texture,
-          resources.default9.texture
-        ];
-        this.sliderb = resources.sliderb.texture;
-        this.sliderFollowCircle = resources.sliderFollowCircle.texture;
-        this.sliderScorePoint = resources.sliderScorePoint.texture;
-        this.reverseArrow = resources.reverseArrow.texture;
-        this.hits = {
-          [HitResultType.MISS]: resources.hit0.texture,
-          [HitResultType.HIT50]: resources.hit50.texture,
-          [HitResultType.HIT100]: resources.hit100.texture,
-          [HitResultType.HIT300]: resources.hit300.texture
-        };
+    const resources: Partial<Resources> = await loader(
+      PIXI.Loader.shared.use(
+        (resource: PIXI.LoaderResource, next: () => void) => {
+          // Center textures
+          resource.texture.defaultAnchor.set(0.5);
+          next();
+        }
+      )
+    );
 
-        // Center textures
-        this.cursor.defaultAnchor.set(0.5);
-        this.approach.defaultAnchor.set(0.5);
-        this.followPoint.defaultAnchor.set(0.5);
-        this.numbers.forEach(n => n.defaultAnchor.set(0.5));
-        this.sliderb.defaultAnchor.set(0.5);
-        this.sliderFollowCircle.defaultAnchor.set(0.5);
-        this.sliderScorePoint.defaultAnchor.set(0.5);
-        this.reverseArrow.defaultAnchor.set(0.5);
-        this.hits[HitResultType.MISS].defaultAnchor.set(0.5);
-        this.hits[HitResultType.HIT50].defaultAnchor.set(0.5);
-        this.hits[HitResultType.HIT100].defaultAnchor.set(0.5);
-        this.hits[HitResultType.HIT300].defaultAnchor.set(0.5);
-
-        resolve();
-      });
-    });
+    // TODO: check for missing / error texture
+    this.cursor = resources.cursor.texture;
+    this.approach = resources.approach.texture;
+    this.circle = loadHitCircle(
+      renderer,
+      resources.circle.texture,
+      resources.overlay.texture
+    );
+    this.followPoint = resources.followPoint.texture;
+    this.numbers = [
+      resources.default0.texture,
+      resources.default1.texture,
+      resources.default2.texture,
+      resources.default3.texture,
+      resources.default4.texture,
+      resources.default5.texture,
+      resources.default6.texture,
+      resources.default7.texture,
+      resources.default8.texture,
+      resources.default9.texture
+    ];
+    this.sliderb = resources.sliderb.texture;
+    this.sliderFollowCircle = resources.sliderFollowCircle.texture;
+    this.sliderScorePoint = resources.sliderScorePoint.texture;
+    this.reverseArrow = resources.reverseArrow.texture;
+    this.hits = {
+      [HitResultType.MISS]: resources.hit0.texture,
+      [HitResultType.HIT50]: resources.hit50.texture,
+      [HitResultType.HIT100]: resources.hit100.texture,
+      [HitResultType.HIT300]: resources.hit300.texture
+    };
+    this.spinnerBottom = resources.spinnerBottom.texture;
+    this.spinnerGlow = resources.spinnerGlow.texture;
+    this.spinnerMiddle = resources.spinnerMiddle.texture;
+    this.spinnerMiddle2 = resources.spinnerMiddle2.texture;
+    this.spinnerTop = resources.spinnerTop.texture;
   }
 
   async load(renderer: PIXI.Renderer) {

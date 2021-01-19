@@ -1,4 +1,5 @@
-import { HitObjectTypes } from '../HitObjects';
+import * as PIXI from 'pixi.js';
+import { HitObjectTypes, initSprite } from '../HitObjects';
 import { BaseHitSound } from '../HitSoundController';
 import { parseHitSample } from '../SampleSet';
 import { Skin } from '../Skin';
@@ -6,6 +7,7 @@ import { BeatmapData } from './BeatmapLoader';
 import { TimingPoint } from './TimingPointLoader';
 
 export interface SpinnerData {
+  position: PIXI.Point;
   type: HitObjectTypes.SPINNER;
   t: number;
   hitSound: number;
@@ -34,6 +36,7 @@ export function parseSpinner(
   const rotationsNeeded = (spinsPerMinute * (endTime - t)) / 60000;
 
   return {
+    position: new PIXI.Point(256, 192),
     type: HitObjectTypes.SPINNER,
     t,
     hitSound,
@@ -44,12 +47,29 @@ export function parseSpinner(
   };
 }
 
-// TODO
-export interface SpinnerSprites {}
+export interface SpinnerSprites {
+  bottomSprite: PIXI.Sprite;
+  glowSprite: PIXI.Sprite;
+  middleSprite: PIXI.Sprite;
+  middle2Sprite: PIXI.Sprite;
+  topSprite: PIXI.Sprite;
+}
 
 export function loadSpinnerSprites(
   object: SpinnerData,
   skin: Skin
 ): SpinnerSprites {
-  return {};
+  const bottomSprite = initSprite(skin.spinnerBottom, object.position);
+  const glowSprite = initSprite(skin.spinnerGlow, object.position);
+  const middleSprite = initSprite(skin.spinnerMiddle, object.position);
+  const middle2Sprite = initSprite(skin.spinnerMiddle2, object.position);
+  const topSprite = initSprite(skin.spinnerTop, object.position);
+
+  return {
+    bottomSprite,
+    glowSprite,
+    middleSprite,
+    middle2Sprite,
+    topSprite
+  };
 }

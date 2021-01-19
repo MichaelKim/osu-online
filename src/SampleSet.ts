@@ -28,9 +28,7 @@ export function parseHitSample(line: string): Tuple<SampleSetType, 2> {
   return [parseInt(sampleTokens[0]), parseInt(sampleTokens[1])];
 }
 
-type SoundResources = Partial<
-  Record<keyof typeof soundAssets, PIXI.LoaderResource>
->;
+type SoundResources = Record<keyof typeof soundAssets, PIXI.LoaderResource>;
 
 export default class SampleSetData {
   private loader: PIXI.Loader = new PIXI.Loader();
@@ -44,7 +42,7 @@ export default class SampleSetData {
       this.loader.add(name, `assets/audio/${this.name}-${url}.wav`);
     }
 
-    const resources: SoundResources = await loader(this.loader);
+    const resources: Partial<SoundResources> = await loader(this.loader);
     this.sounds[BaseHitSound.CLAP] = resources['hitClap']?.sound;
     this.sounds[BaseHitSound.FINISH] = resources['hitFinish']?.sound;
     this.sounds[BaseHitSound.NORMAL] = resources['hitNormal']?.sound;

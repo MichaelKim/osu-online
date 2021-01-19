@@ -59,11 +59,17 @@ export function loadSpinnerSprites(
   object: SpinnerData,
   skin: Skin
 ): SpinnerSprites {
-  const bottomSprite = initSprite(skin.spinnerBottom, object.position);
-  const glowSprite = initSprite(skin.spinnerGlow, object.position);
-  const middleSprite = initSprite(skin.spinnerMiddle, object.position);
-  const middle2Sprite = initSprite(skin.spinnerMiddle2, object.position);
-  const topSprite = initSprite(skin.spinnerTop, object.position);
+  const bottomSprite = initSprite(skin.spinnerBottom);
+  const glowSprite = initSprite(skin.spinnerGlow);
+  const middleSprite = initSprite(skin.spinnerMiddle);
+  const middle2Sprite = initSprite(skin.spinnerMiddle2);
+  const topSprite = initSprite(skin.spinnerTop);
+
+  bottomSprite.scale.set(0.5);
+  glowSprite.scale.set(0.5);
+  middleSprite.scale.set(0.5);
+  middle2Sprite.scale.set(0.5);
+  topSprite.scale.set(0.5);
 
   return {
     bottomSprite,

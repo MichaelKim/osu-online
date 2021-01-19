@@ -18,7 +18,7 @@ export type HitObject = HitCircle | Slider | Spinner;
 // Common sprite initialization
 export function initSprite(
   texture: PIXI.Texture,
-  position: PIXI.Point,
+  position: PIXI.Point = new PIXI.Point(),
   size: number = 0
 ) {
   const sprite = new PIXI.Sprite(texture);

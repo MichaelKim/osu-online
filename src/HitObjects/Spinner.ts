@@ -46,13 +46,14 @@ export default class Spinner {
     this.s = loadSpinnerSprites(this.o, skin);
     this.container.visible = false;
     this.container.addChild(
-      // this.s.glowSprite,
+      this.s.glowSprite,
       this.s.bottomSprite,
       this.s.topSprite,
       this.s.middle2Sprite,
-      this.s.middleSprite,
-      this.text
+      this.s.middleSprite
     );
+    this.container.position.copyFrom(this.o.position);
+
     this.text.anchor.set(0.5);
     this.text.position.set(256, 356);
 
@@ -67,7 +68,7 @@ export default class Spinner {
   }
 
   addToStage(stage: PIXI.Container) {
-    stage.addChild(this.container);
+    stage.addChild(this.container, this.text);
   }
 
   setVisible(visible: boolean) {
@@ -135,6 +136,7 @@ export default class Spinner {
       if (Math.floor(newRotations) > this.rotations) {
         if (newRotations > this.o.rotationsNeeded) {
           console.log('bonus rotation');
+          // TODO: flash spinner-glow
         } else {
           console.log('new rotation');
         }
@@ -143,12 +145,20 @@ export default class Spinner {
       this.rotations = newRotations;
     }
 
+    // Rotate sprites
     this.s.bottomSprite.rotation = this.drawnAngle / 7;
     this.s.topSprite.rotation = this.drawnAngle / 2;
     this.s.middle2Sprite.rotation = this.drawnAngle;
-    const progress =
-      clamp(1 - this.rotations / this.o.rotationsNeeded, 0, 1) * 255;
-    this.s.middleSprite.tint = 0xff0000 | (progress << 8) | progress;
+
+    const progress = clamp(this.rotations / this.o.rotationsNeeded, 0, 1);
+
+    // Ease out from 1x to 1.25x
+    const scale = 1 - 0.25 * progress * (progress - 2);
+    this.container.scale.set(scale);
+
+    // Tint middle sprite to red
+    const red = (1 - progress) * 255;
+    this.s.middleSprite.tint = 0xff0000 | (red << 8) | red;
 
     this.text.text = `${this.drawnRPM} RPM`;
 

@@ -73,6 +73,7 @@ export default class Spinner {
 
   setVisible(visible: boolean) {
     this.container.visible = visible;
+    this.text.visible = visible;
   }
 
   get enter() {
@@ -85,6 +86,7 @@ export default class Spinner {
       this.finished = this.o.endTime;
       const alpha = 1 - clerp01(time - this.o.endTime, 0, SPINNER_FADE_OUT_MS);
       this.container.alpha = alpha;
+      this.text.alpha = alpha;
 
       return time > this.o.endTime + SPINNER_FADE_OUT_MS;
     }
@@ -98,10 +100,17 @@ export default class Spinner {
     if (time < this.o.t) {
       const alpha = clerp01(time - this.o.t - 150, 0, 150);
       this.container.alpha = alpha;
+      this.text.alpha = alpha;
       return false;
     }
 
     this.container.alpha = 1;
+    this.text.alpha = 1;
+
+    // Update elapsed time
+    this.deltaTimeOverflow += time - this.lastTime;
+    this.lastTime = time;
+
     while (this.deltaTimeOverflow >= DELTA_UPDATE_TIME) {
       // Calculate angle moved
       const deltaAngle = clamp(

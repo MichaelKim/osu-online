@@ -5,7 +5,9 @@ export default class AudioController {
   private loader: PIXI.Loader = new PIXI.Loader();
   private sounds: Record<string, PIXI.sound.Sound> = {};
 
-  private startTime: number = 0;
+  private elapsedTime: number = 0; // Offset due to resuming
+  private resumeTime: number = 0; // When the audio was last resumed
+  private pausedTime: number = Infinity; // When the audio was paused (Infinity if currently playing)
   private current?: PIXI.sound.Sound;
 
   async load(filename: string) {
@@ -39,22 +41,36 @@ export default class AudioController {
       return;
     }
 
-    this.startTime = this.current.context.audioContext.currentTime * 1000;
+    this.resumeTime = this.getCurrentTime() + 70;
     this.current.play();
   }
 
-  getTime() {
+  private getCurrentTime() {
     if (this.current == null) return 0;
+    return this.current.context.audioContext.currentTime * 1000;
+  }
+
+  getTime() {
     return (
-      this.current.context.audioContext.currentTime * 1000 - this.startTime
+      Math.min(this.getCurrentTime(), this.pausedTime) -
+      this.resumeTime +
+      this.elapsedTime
     );
   }
 
   pause() {
     this.current?.pause();
+    if (this.pausedTime === Infinity) {
+      this.pausedTime = this.getCurrentTime();
+    }
   }
 
   resume() {
-    this.current?.play();
+    this.current?.resume();
+    if (this.pausedTime !== Infinity) {
+      this.elapsedTime += this.pausedTime - this.resumeTime;
+      this.resumeTime = this.getCurrentTime();
+      this.pausedTime = Infinity;
+    }
   }
 }

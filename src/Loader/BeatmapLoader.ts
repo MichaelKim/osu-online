@@ -19,6 +19,9 @@ export interface BeatmapData {
   sliderMultiplier: number;
   sliderTickRate: number;
 
+  // [Colours]
+  colors: number[];
+
   // Computed
   timingPoints: TimingPoint[];
 }
@@ -32,6 +35,7 @@ const DEFAULTS: BeatmapData = {
   sliderMultiplier: 1.4,
   sliderTickRate: 1,
   timingPoints: [],
+  colors: [],
 
   filepath: '',
   audioFilename: '',
@@ -114,6 +118,17 @@ export async function parseBeatmap(filepath: string) {
           b.timingPoints.push(parseTimingPoint(tokens));
         }
         break;
+      }
+      case '[Colours]': {
+        for (const line of section()) {
+          const [key, value] = parseKeyValue(line);
+          if (key.startsWith('Combo')) {
+            const [comboR, comboG, comboB] = value
+              .split(',')
+              .map(c => parseInt(c));
+            b.colors.push((comboR << 16) | (comboG << 8) | comboB);
+          }
+        }
       }
       case '[HitObjects]': {
         // Parse hit objects later

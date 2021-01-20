@@ -3,6 +3,7 @@ import {
   APPROACH_R,
   getNumberSprites,
   HitObjectTypes,
+  initCircleSprite,
   initSprite
 } from '../HitObjects';
 import { BaseHitSound } from '../HitSoundController';
@@ -20,15 +21,15 @@ export interface HitCircleData {
   hitSound: BaseHitSound;
 
   // Beatmap
-  comboIndex: number; // Combo color index
   comboNumber: number;
+  comboColor: number; // Combo color index
   sampleSet: SampleSetType; // Sample set override
   additionSet: SampleSetType;
   stackCount: number;
 }
 
 export interface HitCircleSprites {
-  circleSprite: PIXI.Sprite;
+  circleSprite: PIXI.Container;
   approachSprite: PIXI.Sprite;
   numberSprites: PIXI.Container;
 }
@@ -57,8 +58,8 @@ export function parseHitCircle(
     position: new PIXI.Point(x, y),
     t,
     hitSound,
-    comboIndex,
     comboNumber,
+    comboColor: beatmap.colors[comboIndex],
     sampleSet,
     additionSet,
     stackCount: 0
@@ -70,7 +71,12 @@ export function loadHitCircleSprites(
   skin: Skin,
   size: number
 ): HitCircleSprites {
-  const circleSprite = initSprite(skin.circle, object.position, size);
+  const circleSprite = initCircleSprite(
+    skin,
+    object.comboColor,
+    object.position,
+    size
+  );
   const approachSprite = initSprite(
     skin.approach,
     object.position,
@@ -82,6 +88,8 @@ export function loadHitCircleSprites(
     object.position,
     size
   );
+
+  approachSprite.tint = object.comboColor;
 
   return {
     circleSprite,

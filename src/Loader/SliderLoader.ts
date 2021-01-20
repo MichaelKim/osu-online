@@ -5,6 +5,7 @@ import {
   FOLLOW_R,
   getNumberSprites,
   HitObjectTypes,
+  initCircleSprite,
   initSprite
 } from '../HitObjects';
 import { BaseHitSound } from '../HitSoundController';
@@ -31,8 +32,8 @@ export interface SliderData {
   edgeSets: EdgeSet[];
 
   // Beatmap
-  comboIndex: number; // Combo color index
   comboNumber: number; // 1-indexed
+  comboColor: number;
   sampleSet: SampleSetType; // Sample set override
   additionSet: SampleSetType;
   stackCount: number;
@@ -46,7 +47,7 @@ export interface SliderData {
 
 export interface SliderSprites {
   tickSprites: PIXI.Sprite[];
-  circleSprite: PIXI.Sprite;
+  circleSprite: PIXI.Container;
   approachSprite: PIXI.Sprite;
   numberSprites: PIXI.Container;
   followSprite: PIXI.Sprite;
@@ -138,8 +139,8 @@ export function parseSlider(
     length,
     edgeSounds,
     edgeSets,
-    comboIndex,
     comboNumber,
+    comboColor: beatmap.colors[comboIndex],
     sampleSet,
     additionSet,
     stackCount: 0,
@@ -156,7 +157,12 @@ export function loadSliderSprites(
   size: number
 ): SliderSprites {
   // Load sprites
-  const circleSprite = initSprite(skin.circle, object.curve[0], size);
+  const circleSprite = initCircleSprite(
+    skin,
+    object.comboColor,
+    object.curve[0],
+    size
+  );
   const approachSprite = initSprite(
     skin.approach,
     object.curve[0],
@@ -173,6 +179,8 @@ export function loadSliderSprites(
     object.curve[0],
     size
   );
+
+  approachSprite.tint = object.comboColor;
 
   const tickSprites = object.ticks.map(t => {
     const index = Math.floor(object.curve.length * t);

@@ -38,28 +38,6 @@ const assets = {
 
 type Resources = Record<keyof typeof assets, PIXI.LoaderResource>;
 
-function loadHitCircle(
-  renderer: PIXI.Renderer,
-  circleTexture: PIXI.Texture,
-  overlayTexture: PIXI.Texture
-) {
-  const circle = new PIXI.Sprite(circleTexture);
-  const overlay = new PIXI.Sprite(overlayTexture);
-
-  const width = Math.max(circle.width, overlay.width);
-  const height = Math.max(circle.height, overlay.height);
-  circle.position.set(width / 2, height / 2);
-  overlay.position.set(width / 2, height / 2);
-
-  const texture = PIXI.RenderTexture.create({ width, height });
-  texture.defaultAnchor.set(0.5);
-
-  renderer.render(circle, texture);
-  renderer.render(overlay, texture, false);
-
-  return texture;
-}
-
 export class Skin {
   // General
   layeredHitSounds: boolean = true;
@@ -71,6 +49,7 @@ export class Skin {
   cursor: PIXI.Texture;
   // Hit circle
   circle: PIXI.Texture;
+  overlay: PIXI.Texture;
   approach: PIXI.Texture;
   followPoint: PIXI.Texture;
   // Numbers
@@ -156,11 +135,8 @@ export class Skin {
     // TODO: check for missing / error texture
     this.cursor = resources.cursor.texture;
     this.approach = resources.approach.texture;
-    this.circle = loadHitCircle(
-      renderer,
-      resources.circle.texture,
-      resources.overlay.texture
-    );
+    this.circle = resources.circle.texture;
+    this.overlay = resources.overlay.texture;
     this.followPoint = resources.followPoint.texture;
     this.numbers = [
       resources.default0.texture,

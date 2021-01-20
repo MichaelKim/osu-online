@@ -15,6 +15,29 @@ export const enum HitObjectTypes {
 
 export type HitObject = HitCircle | Slider | Spinner;
 
+// Initialize hit circle sprite
+export function initCircleSprite(
+  skin: Skin,
+  color: number,
+  position: PIXI.Point,
+  size: number
+) {
+  const circle = new PIXI.Sprite(skin.circle);
+  circle.tint = color;
+
+  const overlay = new PIXI.Sprite(skin.overlay);
+
+  const width = Math.max(circle.width, overlay.width);
+  circle.scale.set(size / width);
+  overlay.scale.set(size / width);
+
+  const circleSprite = new PIXI.Container();
+  circleSprite.position.copyFrom(position);
+  circleSprite.addChild(circle, overlay);
+
+  return circleSprite;
+}
+
 // Common sprite initialization
 export function initSprite(
   texture: PIXI.Texture,

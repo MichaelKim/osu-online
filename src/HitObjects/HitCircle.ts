@@ -102,7 +102,7 @@ export default class HitCircle {
       // Expand hit circle
       const size =
         this.size * clerp(time - this.finished, 0, FADE_OUT_MS, 1, 1.2);
-      this.s.circleSprite.scale.set(size / this.s.circleSprite.texture.width);
+      this.s.circleSprite.scale.set(size / this.s.circleSprite.width);
 
       return time > this.finished + FADE_OUT_MS;
     }

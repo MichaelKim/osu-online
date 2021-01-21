@@ -2,7 +2,7 @@ import * as PIXI from 'pixi.js';
 import { HitObjectTypes, initSprite } from '../HitObjects';
 import { BaseHitSound } from '../HitSoundController';
 import { parseHitSample } from '../SampleSet';
-import { Skin } from '../Skin';
+import Skin from '../Skin';
 import { BeatmapData } from './BeatmapLoader';
 import { TimingPoint } from './TimingPointLoader';
 

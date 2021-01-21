@@ -4,7 +4,7 @@ import GameState from './GameState';
 import { HitObject, HitObjectTypes } from './HitObjects';
 import { BeatmapData } from './Loader/BeatmapLoader';
 import { loadHitObjects } from './Loader/HitObjectLoader';
-import { Skin } from './Skin';
+import Skin from './Skin';
 
 export default class Beatmap {
   notes: HitObject[] = [];

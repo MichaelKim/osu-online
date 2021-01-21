@@ -9,7 +9,7 @@ import InputController, { InputType } from './InputController';
 import { BeatmapData } from './Loader/BeatmapLoader';
 import { initLock, lockPointer } from './lock';
 import Renderer from './Renderer';
-import { Skin } from './Skin';
+import Skin from './Skin';
 
 export default class Game {
   renderer: Renderer;

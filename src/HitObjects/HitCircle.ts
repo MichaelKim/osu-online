@@ -8,7 +8,7 @@ import {
   HitCircleSprites,
   loadHitCircleSprites
 } from '../Loader/HitCircleLoader';
-import { Skin } from '../Skin';
+import Skin from '../Skin';
 import { arToMS, csToSize, odToMS } from '../timing';
 import { clerp, clerp01, within } from '../util';
 

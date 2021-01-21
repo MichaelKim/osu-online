@@ -38,7 +38,7 @@ const assets = {
 
 type Resources = Record<keyof typeof assets, PIXI.LoaderResource>;
 
-export class Skin {
+export default class Skin {
   // General
   layeredHitSounds: boolean = true;
 

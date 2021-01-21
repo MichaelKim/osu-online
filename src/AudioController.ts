@@ -41,7 +41,7 @@ export default class AudioController {
       return;
     }
 
-    this.resumeTime = this.getCurrentTime() + 70;
+    this.resumeTime = this.getCurrentTime();
     this.current.play();
   }
 

@@ -1,6 +1,6 @@
 import * as PIXI from 'pixi.js';
 import { initSprite } from './HitObjects';
-import { Skin } from './Skin';
+import Skin from './Skin';
 import { clerp01 } from './util';
 
 export enum HitResultType {

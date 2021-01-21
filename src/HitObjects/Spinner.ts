@@ -5,7 +5,7 @@ import {
   SpinnerData,
   SpinnerSprites
 } from '../Loader/SpinnerLoader';
-import { Skin } from '../Skin';
+import Skin from '../Skin';
 import { clamp, clerp, clerp01 } from '../util';
 
 const SPINNER_FADE_OUT_MS = 150;

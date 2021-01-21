@@ -10,7 +10,7 @@ import {
 } from '../HitObjects';
 import { BaseHitSound } from '../HitSoundController';
 import { parseHitSample, SampleSetType } from '../SampleSet';
-import { Skin } from '../Skin';
+import Skin from '../Skin';
 import { Tuple } from '../util';
 import { BeatmapData } from './BeatmapLoader';
 import { TimingPoint } from './TimingPointLoader';

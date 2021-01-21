@@ -7,7 +7,7 @@ import HitSoundController, {
   SliderHitSound
 } from './HitSoundController';
 import Renderer from './Renderer';
-import { Skin } from './Skin';
+import Skin from './Skin';
 import { csToSize } from './timing';
 
 export default class GameState {

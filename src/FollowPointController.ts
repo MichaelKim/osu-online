@@ -1,6 +1,6 @@
 import * as PIXI from 'pixi.js';
 import { HitObject, HitObjectTypes, initSprite } from './HitObjects';
-import { Skin } from './Skin';
+import Skin from './Skin';
 import { clerp01 } from './util';
 
 const POINT_FADE = 375; // Follow point fade in/out duration in ms

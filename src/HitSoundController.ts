@@ -1,5 +1,5 @@
 import { SampleSetType } from './SampleSet';
-import { Skin } from './Skin';
+import Skin from './Skin';
 
 export enum BaseHitSound {
   NORMAL = 1 << 0,

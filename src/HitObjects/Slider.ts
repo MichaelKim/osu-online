@@ -14,7 +14,7 @@ import {
   SliderData,
   SliderSprites
 } from '../Loader/SliderLoader';
-import { Skin } from '../Skin';
+import Skin from '../Skin';
 import { arToMS, csToSize, odToMS } from '../timing';
 import { clamp, clerp, clerp01, within } from '../util';
 

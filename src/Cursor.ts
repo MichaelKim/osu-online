@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js';
-import { Skin } from './Skin';
+import Skin from './Skin';
 
 export default class Cursor {
   private cursor: PIXI.Sprite;

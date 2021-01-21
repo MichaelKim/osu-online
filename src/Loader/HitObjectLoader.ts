@@ -3,7 +3,7 @@ import { HitObject, HitObjectTypes } from '../HitObjects';
 import HitCircle from '../HitObjects/HitCircle';
 import Slider from '../HitObjects/Slider';
 import Spinner from '../HitObjects/Spinner';
-import { Skin } from '../Skin';
+import Skin from '../Skin';
 import { arToMS } from '../timing';
 import { readFile, within } from '../util';
 import { BeatmapData } from './BeatmapLoader';

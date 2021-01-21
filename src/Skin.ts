@@ -1,4 +1,3 @@
-// @ts-nocheck
 import * as PIXI from 'pixi.js';
 import { HitResultType } from './HitResultController';
 import SampleSetData, { SampleSetType } from './SampleSet';
@@ -46,40 +45,38 @@ export default class Skin {
   hitCircleOverlap: number = -2;
 
   // Textures
-  cursor: PIXI.Texture;
+  cursor?: PIXI.Texture;
   // Hit circle
-  circle: PIXI.Texture;
-  overlay: PIXI.Texture;
-  approach: PIXI.Texture;
-  followPoint: PIXI.Texture;
+  circle?: PIXI.Texture;
+  overlay?: PIXI.Texture;
+  approach?: PIXI.Texture;
+  followPoint?: PIXI.Texture;
   // Numbers
-  numbers: Tuple<PIXI.Texture, 10>;
+  numbers: Partial<Tuple<PIXI.Texture, 10>> = [];
   // Slider
-  sliderb: PIXI.Texture;
-  sliderFollowCircle: PIXI.Texture;
-  sliderScorePoint: PIXI.Texture;
-  reverseArrow: PIXI.Texture;
+  sliderb?: PIXI.Texture;
+  sliderFollowCircle?: PIXI.Texture;
+  sliderScorePoint?: PIXI.Texture;
+  reverseArrow?: PIXI.Texture;
   // Spinner
-  spinnerBottom: PIXI.Texture;
-  spinnerGlow: PIXI.Texture;
-  spinnerMiddle: PIXI.Texture;
-  spinnerMiddle2: PIXI.Texture;
-  spinnerTop: PIXI.Texture;
+  spinnerBottom?: PIXI.Texture;
+  spinnerGlow?: PIXI.Texture;
+  spinnerMiddle?: PIXI.Texture;
+  spinnerMiddle2?: PIXI.Texture;
+  spinnerTop?: PIXI.Texture;
   // Hits
-  hits: Record<HitResultType, PIXI.Texture>;
+  hits: Partial<Record<HitResultType, PIXI.Texture>> = {};
 
   // Sounds
-  sampleSets: Record<SampleSetType, SampleSetData>;
+  sampleSets: Record<SampleSetType, SampleSetData> = {
+    [SampleSetType.NORMAL]: new SampleSetData('normal'),
+    [SampleSetType.SOFT]: new SampleSetData('soft'),
+    [SampleSetType.DRUM]: new SampleSetData('drum')
+  };
 
-  constructor(private filepath: string) {
-    this.sampleSets = {
-      [SampleSetType.NORMAL]: new SampleSetData('normal'),
-      [SampleSetType.SOFT]: new SampleSetData('soft'),
-      [SampleSetType.DRUM]: new SampleSetData('drum')
-    };
-  }
+  constructor(private filepath: string) {}
 
-  async parseFile() {
+  private async parseFile() {
     const file = await readFile(this.filepath);
     let i = 0;
     while (i < file.length) {
@@ -111,13 +108,13 @@ export default class Skin {
     }
   }
 
-  async loadSounds() {
+  private async loadSounds() {
     await this.sampleSets[SampleSetType.NORMAL].load();
     await this.sampleSets[SampleSetType.DRUM].load();
     await this.sampleSets[SampleSetType.SOFT].load();
   }
 
-  async loadTextures(renderer: PIXI.Renderer) {
+  private async loadTextures() {
     for (const [name, url] of Object.entries(assets)) {
       PIXI.Loader.shared.add(name, 'assets/' + url);
     }
@@ -133,43 +130,43 @@ export default class Skin {
     );
 
     // TODO: check for missing / error texture
-    this.cursor = resources.cursor.texture;
-    this.approach = resources.approach.texture;
-    this.circle = resources.circle.texture;
-    this.overlay = resources.overlay.texture;
-    this.followPoint = resources.followPoint.texture;
+    this.cursor = resources.cursor?.texture;
+    this.approach = resources.approach?.texture;
+    this.circle = resources.circle?.texture;
+    this.overlay = resources.overlay?.texture;
+    this.followPoint = resources.followPoint?.texture;
     this.numbers = [
-      resources.default0.texture,
-      resources.default1.texture,
-      resources.default2.texture,
-      resources.default3.texture,
-      resources.default4.texture,
-      resources.default5.texture,
-      resources.default6.texture,
-      resources.default7.texture,
-      resources.default8.texture,
-      resources.default9.texture
+      resources.default0?.texture,
+      resources.default1?.texture,
+      resources.default2?.texture,
+      resources.default3?.texture,
+      resources.default4?.texture,
+      resources.default5?.texture,
+      resources.default6?.texture,
+      resources.default7?.texture,
+      resources.default8?.texture,
+      resources.default9?.texture
     ];
-    this.sliderb = resources.sliderb.texture;
-    this.sliderFollowCircle = resources.sliderFollowCircle.texture;
-    this.sliderScorePoint = resources.sliderScorePoint.texture;
-    this.reverseArrow = resources.reverseArrow.texture;
+    this.sliderb = resources.sliderb?.texture;
+    this.sliderFollowCircle = resources.sliderFollowCircle?.texture;
+    this.sliderScorePoint = resources.sliderScorePoint?.texture;
+    this.reverseArrow = resources.reverseArrow?.texture;
     this.hits = {
-      [HitResultType.MISS]: resources.hit0.texture,
-      [HitResultType.HIT50]: resources.hit50.texture,
-      [HitResultType.HIT100]: resources.hit100.texture,
-      [HitResultType.HIT300]: resources.hit300.texture
+      [HitResultType.MISS]: resources.hit0?.texture,
+      [HitResultType.HIT50]: resources.hit50?.texture,
+      [HitResultType.HIT100]: resources.hit100?.texture,
+      [HitResultType.HIT300]: resources.hit300?.texture
     };
-    this.spinnerBottom = resources.spinnerBottom.texture;
-    this.spinnerGlow = resources.spinnerGlow.texture;
-    this.spinnerMiddle = resources.spinnerMiddle.texture;
-    this.spinnerMiddle2 = resources.spinnerMiddle2.texture;
-    this.spinnerTop = resources.spinnerTop.texture;
+    this.spinnerBottom = resources.spinnerBottom?.texture;
+    this.spinnerGlow = resources.spinnerGlow?.texture;
+    this.spinnerMiddle = resources.spinnerMiddle?.texture;
+    this.spinnerMiddle2 = resources.spinnerMiddle2?.texture;
+    this.spinnerTop = resources.spinnerTop?.texture;
   }
 
-  async load(renderer: PIXI.Renderer) {
+  async load() {
     await Promise.all([
-      this.loadTextures(renderer),
+      this.loadTextures(),
       this.loadSounds(),
       this.parseFile()
     ]);

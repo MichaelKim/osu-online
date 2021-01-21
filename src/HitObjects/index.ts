@@ -40,14 +40,14 @@ export function initCircleSprite(
 
 // Common sprite initialization
 export function initSprite(
-  texture: PIXI.Texture,
+  texture?: PIXI.Texture,
   position: PIXI.Point = new PIXI.Point(),
   size: number = 0
 ) {
   const sprite = new PIXI.Sprite(texture);
   sprite.position.copyFrom(position);
   if (size > 0) {
-    sprite.scale.set(size / texture.width);
+    sprite.scale.set(size / sprite.texture.width);
   }
   return sprite;
 }
@@ -67,7 +67,7 @@ export function getNumberSprites(
 
   // TODO: assuming each digit has the same size
   const scale = diameter / 160;
-  const width = (skin.numbers[0].width - skin.hitCircleOverlap) * scale;
+  const width = (skin.numbers[0]?.width ?? 0 - skin.hitCircleOverlap) * scale;
   let digitX = ((length - 1) * width) / 2;
   while (number > 0) {
     const sprite = new PIXI.Sprite(skin.numbers[number % 10]);

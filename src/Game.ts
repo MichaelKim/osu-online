@@ -46,7 +46,7 @@ export default class Game {
     });
     await lockPointer(this.view);
 
-    await this.skin.load(this.renderer.renderer);
+    await this.skin.load();
 
     this.cursor = new Cursor(this.renderer.cursorStage, this.skin);
     this.input.start();

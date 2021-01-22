@@ -33,7 +33,7 @@ export interface SliderData {
 
   // Beatmap
   comboNumber: number; // 1-indexed
-  comboColor: number;
+  comboIndex: number; // Combo color index
   sampleSet: SampleSetType; // Sample set override
   additionSet: SampleSetType;
   stackCount: number;
@@ -140,7 +140,7 @@ export function parseSlider(
     edgeSounds,
     edgeSets,
     comboNumber,
-    comboColor: beatmap.colors[comboIndex],
+    comboIndex,
     sampleSet,
     additionSet,
     stackCount: 0,
@@ -153,13 +153,17 @@ export function parseSlider(
 
 export function loadSliderSprites(
   object: SliderData,
+  beatmap: BeatmapData,
   skin: Skin,
   size: number
 ): SliderSprites {
+  const comboColors = beatmap.colors.length > 0 ? beatmap.colors : skin.colors;
+  const comboColor = comboColors[object.comboIndex % comboColors.length];
+
   // Load sprites
   const circleSprite = initCircleSprite(
     skin,
-    object.comboColor,
+    comboColor,
     object.curve[0],
     size
   );
@@ -180,7 +184,7 @@ export function loadSliderSprites(
     size
   );
 
-  approachSprite.tint = object.comboColor;
+  approachSprite.tint = comboColor;
 
   const tickSprites = object.ticks.map(t => {
     const index = Math.floor(object.curve.length * t);

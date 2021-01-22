@@ -54,7 +54,7 @@ export default class Slider {
     this.hitWindows = odToMS(beatmap.od);
     this.size = csToSize(beatmap.cs);
 
-    this.s = loadSliderSprites(this.o, skin, this.size);
+    this.s = loadSliderSprites(this.o, beatmap, skin, this.size);
     this.graphics = new PIXI.Graphics();
 
     this.container = new PIXI.Container();

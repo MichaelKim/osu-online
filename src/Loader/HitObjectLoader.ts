@@ -42,8 +42,7 @@ function parseHitObjects(file: string[], beatmap: BeatmapData) {
       const skip = (type & HitObjectTypes.COMBO_SKIP) >> 4;
       // LAZER: doesn't ignore spinners
       const isSpinner = type & HitObjectTypes.SPINNER;
-      comboIndex =
-        (comboIndex + skip + (isSpinner ? 0 : 1)) % beatmap.colors.length;
+      comboIndex += skip + (isSpinner ? 0 : 1);
     } else {
       comboNumber++;
     }

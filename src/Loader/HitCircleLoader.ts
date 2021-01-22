@@ -22,7 +22,7 @@ export interface HitCircleData {
 
   // Beatmap
   comboNumber: number;
-  comboColor: number; // Combo color index
+  comboIndex: number; // Combo color index
   sampleSet: SampleSetType; // Sample set override
   additionSet: SampleSetType;
   stackCount: number;
@@ -59,7 +59,7 @@ export function parseHitCircle(
     t,
     hitSound,
     comboNumber,
-    comboColor: beatmap.colors[comboIndex],
+    comboIndex,
     sampleSet,
     additionSet,
     stackCount: 0
@@ -68,12 +68,16 @@ export function parseHitCircle(
 
 export function loadHitCircleSprites(
   object: HitCircleData,
+  beatmap: BeatmapData,
   skin: Skin,
   size: number
 ): HitCircleSprites {
+  const comboColors = beatmap.colors.length > 0 ? beatmap.colors : skin.colors;
+  const comboColor = comboColors[object.comboIndex % comboColors.length];
+
   const circleSprite = initCircleSprite(
     skin,
-    object.comboColor,
+    comboColor,
     object.position,
     size
   );
@@ -89,7 +93,7 @@ export function loadHitCircleSprites(
     size
   );
 
-  approachSprite.tint = object.comboColor;
+  approachSprite.tint = comboColor;
 
   return {
     circleSprite,

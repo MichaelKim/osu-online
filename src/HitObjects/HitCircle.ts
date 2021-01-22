@@ -44,7 +44,7 @@ export default class HitCircle {
     this.size = csToSize(beatmap.cs);
 
     // Load sprites
-    this.s = loadHitCircleSprites(this.o, skin, this.size);
+    this.s = loadHitCircleSprites(this.o, beatmap, skin, this.size);
 
     this.container = new PIXI.Container();
     this.container.visible = false;

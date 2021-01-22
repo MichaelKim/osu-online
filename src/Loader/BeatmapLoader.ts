@@ -1,5 +1,5 @@
 import { SampleSetType } from '../SampleSet';
-import { readFile } from '../util';
+import { getSections, parseColor, parseKeyValue, readFile } from '../util';
 import { parseTimingPoint, TimingPoint } from './TimingPointLoader';
 
 export interface BeatmapData {
@@ -43,31 +43,7 @@ const DEFAULTS: BeatmapData = {
   od: 5
 };
 
-type Gen<T> = Generator<T, void, void>;
-
-function* getSections(
-  file: string[]
-): Gen<[string, () => Generator<string, void, void>]> {
-  for (let i = 0; i < file.length; i++) {
-    function* parseSection() {
-      i++;
-      while (i < file.length && file[i][0] !== '[' && file[i].length > 0) {
-        yield file[i];
-        i++;
-      }
-    }
-
-    yield [file[i], parseSection];
-  }
-}
-
-function parseKeyValue(line: string): [string, string] {
-  const split = line.indexOf(':');
-  const key = line.slice(0, split).trim();
-  const value = line.slice(split + 1).trim();
-  return [key, value];
-}
-
+// Alternative to switch-case
 function switchcase<T = string>(cases: Record<string, (value: T) => void>) {
   return (key: string, value: T) => cases[key]?.(value);
 }
@@ -122,11 +98,17 @@ export async function parseBeatmap(filepath: string) {
       case '[Colours]': {
         for (const line of section()) {
           const [key, value] = parseKeyValue(line);
-          if (key.startsWith('Combo')) {
-            const [comboR, comboG, comboB] = value
-              .split(',')
-              .map(c => parseInt(c));
-            b.colors.push((comboR << 16) | (comboG << 8) | comboB);
+          switch (key) {
+            case 'Combo1':
+            case 'Combo2':
+            case 'Combo3':
+            case 'Combo4':
+            case 'Combo5':
+            case 'Combo6':
+            case 'Combo7':
+            case 'Combo8':
+              b.colors.push(parseColor(value));
+              break;
           }
         }
       }

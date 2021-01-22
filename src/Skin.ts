@@ -1,7 +1,14 @@
 import * as PIXI from 'pixi.js';
 import { HitResultType } from './HitResultController';
 import SampleSetData, { SampleSetType } from './SampleSet';
-import { loader, parseKeyValue, readFile, Tuple } from './util';
+import {
+  getSections,
+  loader,
+  parseColor,
+  parseKeyValue,
+  readFile,
+  Tuple
+} from './util';
 
 // Filepaths to each asset
 const assets = {
@@ -38,10 +45,19 @@ const assets = {
 type Resources = Record<keyof typeof assets, PIXI.LoaderResource>;
 
 export default class Skin {
-  // General
+  // [General]
   layeredHitSounds: boolean = true;
 
-  // Fonts
+  // [Colours]
+  colors: number[] = [
+    // LAZER: "Combo1" is the last combo color
+    parseColor('255,192,0'),
+    parseColor('0,202,0'),
+    parseColor('18,124,255'),
+    parseColor('242,24,57')
+  ];
+
+  // [Fonts]
   hitCircleOverlap: number = -2;
 
   // Textures
@@ -78,12 +94,12 @@ export default class Skin {
 
   private async parseFile() {
     const file = await readFile(this.filepath);
-    let i = 0;
-    while (i < file.length) {
-      switch (file[i++]) {
+
+    for (const [name, section] of getSections(file)) {
+      switch (name) {
         case '[General]': {
-          while (i < file.length && file[i][0] !== '[') {
-            const [key, value] = parseKeyValue(file[i++]);
+          for (const line of section()) {
+            const [key, value] = parseKeyValue(line);
             switch (key) {
               case 'LayeredHitSounds': {
                 this.layeredHitSounds = parseInt(value) === 1;
@@ -91,10 +107,34 @@ export default class Skin {
               }
             }
           }
+          break;
+        }
+        case '[Colours]': {
+          const skinColours = [];
+          for (const line of section()) {
+            const [key, value] = parseKeyValue(line);
+            switch (key) {
+              case 'Combo1':
+              case 'Combo2':
+              case 'Combo3':
+              case 'Combo4':
+              case 'Combo5':
+              case 'Combo6':
+              case 'Combo7':
+              case 'Combo8':
+                skinColours.push(parseColor(value));
+                break;
+            }
+          }
+          if (skinColours.length > 0) {
+            // Override default
+            this.colors = skinColours;
+          }
+          break;
         }
         case '[Fonts]': {
-          while (i < file.length && file[i][0] !== '[') {
-            const [key, value] = parseKeyValue(file[i++]);
+          for (const line of section()) {
+            const [key, value] = parseKeyValue(line);
             switch (key) {
               case 'HitCircleOverlap': {
                 this.hitCircleOverlap = parseInt(value);

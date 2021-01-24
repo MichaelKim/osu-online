@@ -6,7 +6,8 @@ import {
   getNumberSprites,
   HitObjectTypes,
   initCircleSprite,
-  initSprite
+  initSprite,
+  STACK_OFFSET_MULT
 } from '../HitObjects';
 import { BaseHitSound } from '../HitSoundController';
 import { parseHitSample, SampleSetType } from '../SampleSet';
@@ -46,6 +47,8 @@ export interface SliderData {
 }
 
 export interface SliderSprites {
+  container: PIXI.Container;
+  graphics: PIXI.Graphics;
   tickSprites: PIXI.Sprite[];
   circleSprite: PIXI.Container;
   approachSprite: PIXI.Sprite;
@@ -199,7 +202,28 @@ export function loadSliderSprites(
   const dy = object.points[object.points.length - 2].y - endPosition.y;
   reverseSprite.rotation = Math.atan2(dy, dx);
 
+  const graphics = new PIXI.Graphics();
+
+  // For convenient alpha, visibility, etc.
+  const container = new PIXI.Container();
+  container.visible = false;
+  container.addChild(
+    graphics,
+    ...tickSprites,
+    reverseSprite,
+    circleSprite,
+    followSprite,
+    numberSprites,
+    approachSprite
+  );
+
+  // Hit object stacking
+  const offset = -(object.stackCount * size) / STACK_OFFSET_MULT;
+  container.position.set(offset);
+
   return {
+    container,
+    graphics,
     circleSprite,
     approachSprite,
     followSprite,

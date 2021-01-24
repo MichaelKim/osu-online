@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js';
-import { APPROACH_R, FADE_OUT_MS, HitObjectTypes, STACK_OFFSET_MULT } from '.';
+import { APPROACH_R, FADE_OUT_MS, HitObjectTypes } from '.';
 import GameState from '../GameState';
 import { HitResultType } from '../HitResultController';
 import { BeatmapData } from '../Loader/BeatmapLoader';
@@ -26,7 +26,6 @@ export default class HitCircle {
   size: number; // Diameter of hit circle
 
   // Sprites
-  container: PIXI.Container;
   s: HitCircleSprites;
 
   // Gameplay
@@ -45,23 +44,12 @@ export default class HitCircle {
 
     // Load sprites
     this.s = loadHitCircleSprites(this.o, beatmap, skin, this.size);
-
-    this.container = new PIXI.Container();
-    this.container.visible = false;
-    this.container.addChild(
-      this.s.circleSprite,
-      this.s.numberSprites,
-      this.s.approachSprite
-    );
-
-    const offset = -(this.o.stackCount * this.size) / STACK_OFFSET_MULT;
-    this.container.position.set(offset);
   }
 
   get start() {
     return new PIXI.Point(
-      this.o.position.x + this.container.x,
-      this.o.position.y + this.container.y
+      this.o.position.x + this.s.container.x,
+      this.o.position.y + this.s.container.y
     );
   }
 
@@ -70,11 +58,11 @@ export default class HitCircle {
   }
 
   addToStage(stage: PIXI.Container) {
-    stage.addChild(this.container);
+    stage.addChild(this.s.container);
   }
 
   setVisible(visible: boolean) {
-    this.container.visible = visible;
+    this.s.container.visible = visible;
   }
 
   get enter() {
@@ -94,7 +82,7 @@ export default class HitCircle {
     if (this.finished > 0) {
       // Either hit or missed: Fade out everything
       const alpha = 1 - clerp01(time - this.finished, 0, FADE_OUT_MS);
-      this.container.alpha = alpha;
+      this.s.container.alpha = alpha;
 
       this.s.numberSprites.alpha = 0;
       this.s.approachSprite.alpha = 0;
@@ -120,7 +108,7 @@ export default class HitCircle {
         this.o.t - this.fadeTime,
         this.o.t - this.fullTime
       );
-      this.container.alpha = alpha;
+      this.s.container.alpha = alpha;
 
       // Update approach circle sizes
       const size =
@@ -133,7 +121,7 @@ export default class HitCircle {
     }
 
     // Waiting for hit
-    this.container.alpha = 1;
+    this.s.container.alpha = 1;
     this.s.approachSprite.scale.set(
       this.size / this.s.approachSprite.texture.width
     );

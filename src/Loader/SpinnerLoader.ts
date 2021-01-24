@@ -48,6 +48,7 @@ export function parseSpinner(
 }
 
 export interface SpinnerSprites {
+  container: PIXI.Container;
   bottomSprite: PIXI.Sprite;
   glowSprite: PIXI.Sprite;
   middleSprite: PIXI.Sprite;
@@ -71,7 +72,20 @@ export function loadSpinnerSprites(
   middle2Sprite.scale.set(0.5);
   topSprite.scale.set(0.5);
 
+  // For convenient alpha, visibility, etc.
+  const container = new PIXI.Container();
+  container.visible = false;
+  container.position.copyFrom(object.position);
+  container.addChild(
+    glowSprite,
+    bottomSprite,
+    topSprite,
+    middle2Sprite,
+    middleSprite
+  );
+
   return {
+    container,
     bottomSprite,
     glowSprite,
     middleSprite,

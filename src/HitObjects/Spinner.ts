@@ -17,7 +17,6 @@ export default class Spinner {
   readonly type = HitObjectTypes.SPINNER;
 
   // Sprites
-  private container: PIXI.Container = new PIXI.Container();
   private s: SpinnerSprites;
 
   // Gameplay
@@ -44,15 +43,6 @@ export default class Spinner {
 
   constructor(readonly o: SpinnerData, skin: Skin) {
     this.s = loadSpinnerSprites(this.o, skin);
-    this.container.visible = false;
-    this.container.addChild(
-      this.s.glowSprite,
-      this.s.bottomSprite,
-      this.s.topSprite,
-      this.s.middle2Sprite,
-      this.s.middleSprite
-    );
-    this.container.position.copyFrom(this.o.position);
 
     this.text.anchor.set(0.5);
     this.text.position.set(256, 356);
@@ -68,11 +58,11 @@ export default class Spinner {
   }
 
   addToStage(stage: PIXI.Container) {
-    stage.addChild(this.container, this.text);
+    stage.addChild(this.s.container, this.text);
   }
 
   setVisible(visible: boolean) {
-    this.container.visible = visible;
+    this.s.container.visible = visible;
     this.text.visible = visible;
   }
 
@@ -85,7 +75,7 @@ export default class Spinner {
     if (time > this.o.endTime) {
       this.finished = this.o.endTime;
       const alpha = 1 - clerp01(time - this.o.endTime, 0, SPINNER_FADE_OUT_MS);
-      this.container.alpha = alpha;
+      this.s.container.alpha = alpha;
       this.text.alpha = alpha;
 
       return time > this.o.endTime + SPINNER_FADE_OUT_MS;
@@ -99,12 +89,12 @@ export default class Spinner {
     // Fade in
     if (time < this.o.t) {
       const alpha = clerp01(time - this.o.t - 150, 0, 150);
-      this.container.alpha = alpha;
+      this.s.container.alpha = alpha;
       this.text.alpha = alpha;
       return false;
     }
 
-    this.container.alpha = 1;
+    this.s.container.alpha = 1;
     this.text.alpha = 1;
 
     // Update elapsed time
@@ -163,7 +153,7 @@ export default class Spinner {
 
     // Ease out from 1x to 1.25x
     const scale = 1 - 0.25 * progress * (progress - 2);
-    this.container.scale.set(scale);
+    this.s.container.scale.set(scale);
 
     // Tint middle sprite to red
     const red = (1 - progress) * 255;

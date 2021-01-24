@@ -4,7 +4,8 @@ import {
   getNumberSprites,
   HitObjectTypes,
   initCircleSprite,
-  initSprite
+  initSprite,
+  STACK_OFFSET_MULT
 } from '../HitObjects';
 import { BaseHitSound } from '../HitSoundController';
 import { parseHitSample, SampleSetType } from '../SampleSet';
@@ -29,6 +30,7 @@ export interface HitCircleData {
 }
 
 export interface HitCircleSprites {
+  container: PIXI.Container;
   circleSprite: PIXI.Container;
   approachSprite: PIXI.Sprite;
   numberSprites: PIXI.Container;
@@ -95,7 +97,17 @@ export function loadHitCircleSprites(
 
   approachSprite.tint = comboColor;
 
+  // For convenient alpha, visibility, etc.
+  const container = new PIXI.Container();
+  container.visible = false;
+  container.addChild(circleSprite, numberSprites, approachSprite);
+
+  // Hit object stacking
+  const offset = -(object.stackCount * size) / STACK_OFFSET_MULT;
+  container.position.set(offset);
+
   return {
+    container,
     circleSprite,
     approachSprite,
     numberSprites

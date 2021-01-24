@@ -1,11 +1,5 @@
 import * as PIXI from 'pixi.js';
-import {
-  APPROACH_R,
-  FADE_OUT_MS,
-  FOLLOW_R,
-  HitObjectTypes,
-  STACK_OFFSET_MULT
-} from '.';
+import { APPROACH_R, FADE_OUT_MS, FOLLOW_R, HitObjectTypes } from '.';
 import GameState from '../GameState';
 import { HitResultType } from '../HitResultController';
 import { BeatmapData } from '../Loader/BeatmapLoader';
@@ -32,8 +26,6 @@ export default class Slider {
   size: number; // Diameter of hit circle
 
   // Rendering
-  container: PIXI.Container;
-  graphics: PIXI.Graphics;
   s: SliderSprites;
 
   // Gameplay
@@ -55,22 +47,6 @@ export default class Slider {
     this.size = csToSize(beatmap.cs);
 
     this.s = loadSliderSprites(this.o, beatmap, skin, this.size);
-    this.graphics = new PIXI.Graphics();
-
-    this.container = new PIXI.Container();
-    this.container.visible = false;
-    this.container.addChild(
-      this.graphics,
-      ...this.s.tickSprites,
-      this.s.reverseSprite,
-      this.s.circleSprite,
-      this.s.followSprite,
-      this.s.numberSprites,
-      this.s.approachSprite
-    );
-
-    const offset = -(this.o.stackCount * this.size) / STACK_OFFSET_MULT;
-    this.container.position.set(offset);
 
     this.position = this.start;
   }
@@ -78,16 +54,16 @@ export default class Slider {
   get start() {
     const point = this.o.curve[0];
     return new PIXI.Point(
-      point.x + this.container.x,
-      point.y + this.container.y
+      point.x + this.s.container.x,
+      point.y + this.s.container.y
     );
   }
 
   get end() {
     const point = this.o.curve[this.o.curve.length - 1];
     return new PIXI.Point(
-      point.x + this.container.x,
-      point.y + this.container.y
+      point.x + this.s.container.x,
+      point.y + this.s.container.y
     );
   }
 
@@ -96,11 +72,11 @@ export default class Slider {
   }
 
   addToStage(stage: PIXI.Container) {
-    stage.addChild(this.container);
+    stage.addChild(this.s.container);
   }
 
   setVisible(visible: boolean) {
-    this.container.visible = visible;
+    this.s.container.visible = visible;
   }
 
   get enter() {
@@ -148,14 +124,14 @@ export default class Slider {
     const startIndex = Math.floor(this.o.curve.length * start);
     const endIndex = Math.floor(this.o.curve.length * end);
 
-    this.graphics.clear();
-    this.graphics.lineStyle(5, 0xffffff);
-    this.graphics.moveTo(
+    this.s.graphics.clear();
+    this.s.graphics.lineStyle(5, 0xffffff);
+    this.s.graphics.moveTo(
       this.o.curve[startIndex].x,
       this.o.curve[startIndex].y
     );
     for (let i = startIndex + 1; i < endIndex; i++) {
-      this.graphics.lineTo(this.o.curve[i].x, this.o.curve[i].y);
+      this.s.graphics.lineTo(this.o.curve[i].x, this.o.curve[i].y);
     }
   }
 
@@ -173,7 +149,7 @@ export default class Slider {
     if (this.finished > 0) {
       // Fade out everything
       const alpha = 1 - clerp01(time - this.finished, 0, FADE_OUT_MS);
-      this.container.alpha = alpha;
+      this.s.container.alpha = alpha;
 
       return time > this.finished + FADE_OUT_MS;
     }
@@ -192,7 +168,7 @@ export default class Slider {
         this.o.t - this.fadeTime,
         this.o.t - this.fullTime
       );
-      this.container.alpha = alpha;
+      this.s.container.alpha = alpha;
 
       // Slider
       this.s.followSprite.alpha = 0;
@@ -242,7 +218,7 @@ export default class Slider {
 
     const alpha =
       1 - clerp01(time - this.o.t, 0, this.fadeTime - this.fullTime);
-    this.container.alpha = 1;
+    this.s.container.alpha = 1;
 
     // Fade out hit circle, combo number, approach circle
     // TODO: these might actually instantly fade out once hit

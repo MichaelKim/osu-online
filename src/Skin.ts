@@ -56,6 +56,8 @@ export default class Skin {
     parseColor('18,124,255'),
     parseColor('242,24,57')
   ];
+  sliderBorder: number = parseColor('255,255,255');
+  sliderTrackOverride: number = 0;
 
   // [Fonts]
   hitCircleOverlap: number = -2;
@@ -123,6 +125,12 @@ export default class Skin {
               case 'Combo7':
               case 'Combo8':
                 skinColours.push(parseColor(value));
+                break;
+              case 'SliderBorder':
+                this.sliderBorder = parseColor(value);
+                break;
+              case 'SliderTrackOverride':
+                this.sliderTrackOverride = parseColor(value);
                 break;
             }
           }

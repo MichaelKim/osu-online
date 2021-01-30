@@ -86,6 +86,7 @@ export function parseKeyValue(line: string): [string, string] {
 // Parse "r,g,b" colors
 export function parseColor(rgb: string) {
   const [r, g, b] = rgb.split(',').map(c => parseInt(c));
+  // return PIXI.utils.rgb2hex([r, g, b]);
   return (r << 16) | (g << 8) | b;
 }
 

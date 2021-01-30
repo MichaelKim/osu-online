@@ -12,6 +12,81 @@ import Skin from '../Skin';
 import { arToMS, csToSize, odToMS } from '../timing';
 import { clamp, clerp, clerp01, within } from '../util';
 
+function createSliderTexture(skin: Skin, color: number) {
+  // Construct slider body texture
+  const borderwidth = 0.128;
+  const innerPortion = 1 - borderwidth;
+  const edgeOpacity = 0.8;
+  const centerOpacity = 0.3;
+  const blurrate = 0.015;
+  const width = 200;
+  const buffer = new Uint8Array(width * 4 * 2); // 200 pixels * 4 values (rgba)
+  const trackColor = skin.sliderTrackOverride || color;
+  const borderColor = skin.sliderBorder;
+  const [borderR, borderG, borderB] = PIXI.utils.hex2rgb(borderColor);
+  const borderA = 1;
+  const [trackR, trackG, trackB] = PIXI.utils.hex2rgb(trackColor);
+  const trackA = 1;
+
+  // console.log(PIXI.utils.hex2string(borderColor));
+  // console.log(PIXI.utils.hex2string(trackColor));
+
+  for (let i = 0; i < width; i++) {
+    const position = i / width;
+    let R: number, G: number, B: number, A: number;
+    if (position >= innerPortion) {
+      // draw border color
+      R = borderR;
+      G = borderG;
+      B = borderB;
+      A = borderA;
+    } // draw inner color
+    else {
+      R = trackR;
+      G = trackG;
+      B = trackB;
+      // TODO: tune this to make opacity transition smoother at center
+      A =
+        trackA *
+        (((edgeOpacity - centerOpacity) * position) / innerPortion +
+          centerOpacity);
+    }
+    // pre-multiply alpha
+    R *= A;
+    G *= A;
+    B *= A;
+    // blur at edge for "antialiasing" without supersampling
+    if (1 - position < blurrate) {
+      // outer edge
+      R *= (1 - position) / blurrate;
+      G *= (1 - position) / blurrate;
+      B *= (1 - position) / blurrate;
+      A *= (1 - position) / blurrate;
+    }
+    if (innerPortion - position > 0 && innerPortion - position < blurrate) {
+      const mu = (innerPortion - position) / blurrate;
+      R = mu * R + (1 - mu) * borderR * borderA;
+      G = mu * G + (1 - mu) * borderG * borderA;
+      B = mu * B + (1 - mu) * borderB * borderA;
+      A = mu * trackA + (1 - mu) * borderA;
+    }
+    buffer[i * 4] = R * 255;
+    buffer[i * 4 + 1] = G * 255;
+    buffer[i * 4 + 2] = B * 255;
+    buffer[i * 4 + 3] = A * 255;
+
+    const j = width - i - 1;
+    buffer[j * 4] = R * 255;
+    buffer[j * 4 + 1] = G * 255;
+    buffer[j * 4 + 2] = B * 255;
+    buffer[j * 4 + 3] = A * 255;
+    // console.log(R * 255, buffer[i * 4]);
+    // console.log(R, G, B, A);
+  }
+  // debugger;
+  return PIXI.Texture.fromBuffer(buffer, 1, width * 2);
+}
+
 export default class Slider {
   readonly type = HitObjectTypes.SLIDER;
 
@@ -27,6 +102,7 @@ export default class Slider {
 
   // Rendering
   s: SliderSprites;
+  rope: PIXI.SimpleRope;
 
   // Gameplay
   position: PIXI.Point; // Slider head position
@@ -49,6 +125,26 @@ export default class Slider {
     this.s = loadSliderSprites(this.o, beatmap, skin, this.size);
 
     this.position = this.start;
+
+    // Slider body
+    const texture = createSliderTexture(skin, this.s.approachSprite.tint);
+    const test = new PIXI.Sprite(texture);
+    test.width = 200;
+    test.height = 200;
+    this.rope = new PIXI.SimpleRope(
+      texture,
+      this.o.curve,
+      (2 * this.size) / 400
+    );
+    const angle = Math.atan2(
+      this.o.curve[1].y - this.o.curve[0].y,
+      this.o.curve[1].x - this.o.curve[0].x
+    );
+    this.rope.position.set(
+      -(Math.sin(angle) * this.size) / 2,
+      (Math.cos(angle) * this.size) / 2
+    );
+    this.s.container.addChild(this.rope);
   }
 
   get start() {

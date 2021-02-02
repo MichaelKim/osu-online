@@ -8,10 +8,10 @@ initStart().then(init);
 async function init() {
   const game = new Game(document.getElementsByTagName('canvas')[0]);
   await game.init();
-  // game.loadTest();
 
   const beatmapData = await parseBeatmap(
     'beatmaps/LeaF - Wizdomiot (Asahina Momoko) [Hard].osu'
+    // "beatmaps/Hatsune Miku - Rubik's Cube (rui) [5x5x5].osu"
     // 'beatmaps/Jesus-P - Death Should Not Have Taken Thee! (cheesiest) [Beginner].osu'
   );
 

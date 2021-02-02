@@ -1,4 +1,3 @@
-import * as PIXI from 'pixi.js';
 import AudioController from './AudioController';
 import Beatmap from './Beatmap';
 import Clock from './Clock';
@@ -50,43 +49,6 @@ export default class Game {
 
     this.cursor = new Cursor(this.renderer.cursorStage, this.skin);
     this.input.start();
-  }
-
-  loadTest() {
-    const container = new PIXI.Container();
-
-    this.renderer.stage.addChildAt(container, 0);
-
-    // Create a 5x5 grid of bunnies
-    for (let i = 0; i < 25; i++) {
-      const bunny = new PIXI.Sprite(this.skin.cursor);
-      bunny.anchor.set(0);
-      bunny.x = (i % 5) * 40;
-      bunny.y = Math.floor(i / 5) * 40;
-      container.addChild(bunny);
-    }
-
-    // Move container to the center
-    container.x = this.renderer.renderer.screen.width / 2;
-    container.y = this.renderer.renderer.screen.height / 2;
-
-    // Center bunny sprite in local container coordinates
-    container.pivot.x = container.width / 2;
-    container.pivot.y = container.height / 2;
-
-    // Listen for animate update
-    const ticker = new PIXI.Ticker();
-    ticker.add(delta => {
-      // rotate the container!
-      // use delta to create frame-independent transform
-      container.rotation -= 0.01 * delta;
-    }, PIXI.UPDATE_PRIORITY.LOW);
-    ticker.start();
-
-    window.addEventListener('resize', () => {
-      container.x = window.innerWidth / 2;
-      container.y = window.innerHeight / 2;
-    });
   }
 
   async loadBeatmap(data: BeatmapData) {

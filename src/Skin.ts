@@ -57,7 +57,7 @@ export default class Skin {
     parseColor('242,24,57')
   ];
   sliderBorder: number = parseColor('255,255,255');
-  sliderTrackOverride: number = 0;
+  sliderTrackOverride?: number;
 
   // [Fonts]
   hitCircleOverlap: number = -2;

@@ -61,17 +61,14 @@ export async function readFile(filepath: string) {
 
 // Generator that returns sections
 type Gen<T> = Generator<T, void, void>;
-export function* getSections(file: string[]): Gen<[string, () => Gen<string>]> {
-  for (let i = 0; i < file.length; i++) {
+export function* getSections(file: string[]): Gen<[string, Gen<string>]> {
+  for (let i = 0; i < file.length; ) {
     function* parseSection() {
-      i++;
-      while (i < file.length && file[i][0] !== '[' && file[i].length > 0) {
-        yield file[i];
-        i++;
+      while (i < file.length && file[i][0] !== '[') {
+        yield file[i++];
       }
     }
-
-    yield [file[i], parseSection];
+    yield [file[i++], parseSection()];
   }
 }
 

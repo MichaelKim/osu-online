@@ -74,21 +74,21 @@ export async function parseBeatmap(filepath: string) {
   for (const [name, section] of getSections(file)) {
     switch (name) {
       case '[General]': {
-        for (const line of section()) {
+        for (const line of section) {
           const [key, value] = parseKeyValue(line);
           parseGeneral(key, value);
         }
         break;
       }
       case '[Difficulty]': {
-        for (const line of section()) {
+        for (const line of section) {
           const [key, value] = parseKeyValue(line);
           parseDifficulty(key, value);
         }
         break;
       }
       case '[TimingPoints]': {
-        for (const line of section()) {
+        for (const line of section) {
           // TODO: timing point loading should be deferred too?
           const tokens = line.split(',');
           b.timingPoints.push(parseTimingPoint(tokens));
@@ -96,7 +96,7 @@ export async function parseBeatmap(filepath: string) {
         break;
       }
       case '[Colours]': {
-        for (const line of section()) {
+        for (const line of section) {
           const [key, value] = parseKeyValue(line);
           switch (key) {
             case 'Combo1':
@@ -114,7 +114,7 @@ export async function parseBeatmap(filepath: string) {
       }
       case '[HitObjects]': {
         // Parse hit objects later
-        for (const _ of section()) {
+        for (const _ of section) {
         }
         break;
       }

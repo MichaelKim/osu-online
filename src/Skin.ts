@@ -100,7 +100,7 @@ export default class Skin {
     for (const [name, section] of getSections(file)) {
       switch (name) {
         case '[General]': {
-          for (const line of section()) {
+          for (const line of section) {
             const [key, value] = parseKeyValue(line);
             switch (key) {
               case 'LayeredHitSounds': {
@@ -113,7 +113,7 @@ export default class Skin {
         }
         case '[Colours]': {
           const skinColours = [];
-          for (const line of section()) {
+          for (const line of section) {
             const [key, value] = parseKeyValue(line);
             switch (key) {
               case 'Combo1':
@@ -141,7 +141,7 @@ export default class Skin {
           break;
         }
         case '[Fonts]': {
-          for (const line of section()) {
+          for (const line of section) {
             const [key, value] = parseKeyValue(line);
             switch (key) {
               case 'HitCircleOverlap': {

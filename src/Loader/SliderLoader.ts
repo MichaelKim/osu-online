@@ -12,7 +12,7 @@ import {
 import { BaseHitSound } from '../HitSoundController';
 import { parseHitSample, SampleSetType } from '../SampleSet';
 import Skin from '../Skin';
-import { Tuple } from '../util';
+import { clamp, clerp01, lerp, Tuple } from '../util';
 import { BeatmapData } from './BeatmapLoader';
 import { TimingPoint } from './TimingPointLoader';
 
@@ -48,7 +48,7 @@ export interface SliderData {
 
 export interface SliderSprites {
   container: PIXI.Container;
-  graphics: PIXI.Graphics;
+  mesh: PIXI.Mesh;
   tickSprites: PIXI.Sprite[];
   circleSprite: PIXI.Container;
   approachSprite: PIXI.Sprite;
@@ -154,6 +154,239 @@ export function parseSlider(
   };
 }
 
+// vertex shader source
+const vertexSrc = `
+    attribute vec2 position;
+    attribute float tex_position;
+    
+    uniform mat3 translationMatrix;
+    uniform mat3 projectionMatrix;
+
+    varying float tex_pos;
+    void main() {
+        tex_pos = tex_position;
+        gl_Position = vec4((projectionMatrix * translationMatrix * vec3(position, 1.0)).xy, -tex_position, 1.0);
+    }`;
+
+// fragment shader source
+const fragmentSrc = `
+    uniform sampler2D uSampler;
+
+    varying float tex_pos;
+    void main() {
+        gl_FragColor = texture2D(uSampler, vec2(tex_pos, 0.0));
+    }`;
+
+const program = PIXI.Program.from(vertexSrc, fragmentSrc);
+
+// Custom mesh that clears the depth buffer before drawing
+class CustomMesh extends PIXI.Mesh {
+  protected _render(renderer: PIXI.Renderer): void {
+    // TODO: batching?
+    this._renderDefault(renderer);
+  }
+
+  protected _renderDefault(renderer: PIXI.Renderer): void {
+    const shader = this.shader;
+
+    // @ts-expect-error
+    shader.alpha = this.worldAlpha;
+    // @ts-expect-error
+    shader.update?.();
+
+    renderer.batch.flush();
+    // @ts-expect-error
+    if (shader.program.uniformData.translationMatrix) {
+      shader.uniforms.translationMatrix = this.transform.worldTransform.toArray(
+        true
+      );
+    }
+
+    renderer.shader.bind(shader);
+    // Clear depth buffer before drawing
+    // renderer.gl.clearDepth(1);
+    renderer.gl.clear(renderer.gl.DEPTH_BUFFER_BIT);
+    renderer.gl.colorMask(false, false, false, false);
+
+    renderer.state.set(this.state);
+
+    renderer.geometry.bind(this.geometry, shader);
+    renderer.geometry.draw(
+      this.drawMode,
+      this.size,
+      this.start,
+      this.geometry.instanceCount
+    );
+
+    renderer.gl.depthFunc(renderer.gl.EQUAL);
+    renderer.gl.colorMask(true, true, true, true);
+
+    renderer.geometry.draw(
+      this.drawMode,
+      this.size,
+      this.start,
+      this.geometry.instanceCount
+    );
+
+    renderer.gl.depthFunc(renderer.gl.LESS);
+  }
+}
+
+function darken(r: number, g: number, b: number, amount: number) {
+  const scale = 1 / (1 + amount);
+  return [
+    clamp(r * scale, 0, 1),
+    clamp(g * scale, 0, 1),
+    clamp(b * scale, 0, 1)
+  ];
+}
+
+function lighten(r: number, g: number, b: number, amount: number) {
+  return [
+    clamp(r * (1 + 0.25 * amount) + 0.5 * amount, 0, 1),
+    clamp(g * (1 + 0.25 * amount) + 0.5 * amount, 0, 1),
+    clamp(b * (1 + 0.25 * amount) + 0.5 * amount, 0, 1)
+  ];
+}
+
+function createLegacySliderTexture(skin: Skin, color: number) {
+  // osu!stable sliders have
+  // - a shadow portion past the slider border
+  // - change color to create a gradient (constant alpha)
+  const SHADOW_PORTION = 5 / 64; // Hit circles hitboxes are 128x128, but the sprite is 118x118
+  const BORDER_PORTION = SHADOW_PORTION + 0.128 * 0.77;
+  const BLUR_RATE = 0.03;
+
+  const borderColor = skin.sliderBorder;
+  const [borderR, borderG, borderB] = PIXI.utils.hex2rgb(borderColor);
+  const trackColor = skin.sliderTrackOverride ?? color;
+  const [trackR, trackG, trackB] = PIXI.utils.hex2rgb(trackColor);
+
+  const WIDTH = 200;
+  const buffer = new Uint8Array(WIDTH * 4); // 200 pixels * 4 values (rgba)
+
+  function getColor(position: number) {
+    if (position <= SHADOW_PORTION) {
+      return [0, 0, 0, (0.25 * position) / SHADOW_PORTION];
+    }
+    if (position <= BORDER_PORTION) {
+      return [borderR, borderG, borderB, 1];
+    }
+
+    const [outerR, outerG, outerB] = darken(trackR, trackG, trackB, 0.1);
+    const [innerR, innerG, innerB] = lighten(trackR, trackG, trackB, 0.5);
+    const t = clerp01(position, BORDER_PORTION, 1);
+    const r = lerp(t, 0, 1, outerR, innerR);
+    const g = lerp(t, 0, 1, outerG, innerG);
+    const b = lerp(t, 0, 1, outerB, innerB);
+    return [r, g, b, 0.7];
+  }
+
+  for (let i = 0; i < WIDTH; i++) {
+    const position = i / WIDTH;
+    let [r, g, b, a] = getColor(position);
+
+    // Premultiply alpha
+    r *= a;
+    g *= a;
+    b *= a;
+
+    // "Antialiasing"
+    if (
+      position - SHADOW_PORTION > 0 &&
+      position - SHADOW_PORTION < BLUR_RATE
+    ) {
+      // Blur outer edge
+      const t = (position - SHADOW_PORTION) / BLUR_RATE;
+      const [sr, sg, sb, sa] = getColor(SHADOW_PORTION);
+      r = lerp(t, 0, 1, sr, r);
+      g = lerp(t, 0, 1, sg, g);
+      b = lerp(t, 0, 1, sb, b);
+      a = lerp(t, 0, 1, sa, a);
+    } else if (
+      position - BORDER_PORTION > 0 &&
+      position - BORDER_PORTION < BLUR_RATE
+    ) {
+      // Blur inner edge
+      const t = (position - BORDER_PORTION) / BLUR_RATE;
+      const [br, bg, bb, ba] = getColor(BORDER_PORTION);
+      r = lerp(t, 0, 1, br, r);
+      g = lerp(t, 0, 1, bg, g);
+      b = lerp(t, 0, 1, bb, b);
+      a = lerp(t, 0, 1, ba, a);
+    }
+
+    buffer[i * 4] = r * 255;
+    buffer[i * 4 + 1] = g * 255;
+    buffer[i * 4 + 2] = b * 255;
+    buffer[i * 4 + 3] = a * 255;
+  }
+  return PIXI.Texture.fromBuffer(buffer, WIDTH, 1);
+}
+
+function createSliderTexture(skin: Skin, color: number) {
+  // osu!lazer sliders
+  // - have no shadow portion
+  // - change alpha to create a gradient (constant rgb)
+  const BORDER_PORTION = 0.128;
+  const EDGE_OPACITY = 0.8;
+  const CENTER_OPACITY = 0.3;
+  const BLUR_RATE = 0.03;
+
+  const WIDTH = 200;
+  const buffer = new Uint8Array(WIDTH * 4); // 200 pixels * 4 values (rgba)
+
+  const borderColor = skin.sliderBorder;
+  const [borderR, borderG, borderB] = PIXI.utils.hex2rgb(borderColor);
+  const trackColor = skin.sliderTrackOverride ?? color;
+  const [trackR, trackG, trackB] = PIXI.utils.hex2rgb(trackColor);
+
+  function getColor(position: number) {
+    if (position <= BORDER_PORTION) {
+      return [borderR, borderG, borderB, 1];
+    }
+
+    const t = lerp(position, BORDER_PORTION, 1, EDGE_OPACITY, CENTER_OPACITY);
+    return [trackR, trackG, trackB, t];
+  }
+
+  for (let i = 0; i < WIDTH; i++) {
+    const position = i / WIDTH;
+    let [r, g, b, a] = getColor(position);
+
+    // Premultiply alpha
+    r *= a;
+    g *= a;
+    b *= a;
+
+    // "Antialiasing"
+    if (position < BLUR_RATE) {
+      // Blur outer edge
+      r *= position / BLUR_RATE;
+      g *= position / BLUR_RATE;
+      b *= position / BLUR_RATE;
+      a *= position / BLUR_RATE;
+    } else if (
+      position - BORDER_PORTION > 0 &&
+      position - BORDER_PORTION < BLUR_RATE
+    ) {
+      // Blur inner edge
+      const t = (position - BORDER_PORTION) / BLUR_RATE;
+      const [br, bg, bb, ba] = getColor(BORDER_PORTION);
+      r = lerp(t, 0, 1, br, r);
+      g = lerp(t, 0, 1, bg, g);
+      b = lerp(t, 0, 1, bb, b);
+      a = lerp(t, 0, 1, ba, a);
+    }
+
+    buffer[i * 4] = r * 255;
+    buffer[i * 4 + 1] = g * 255;
+    buffer[i * 4 + 2] = b * 255;
+    buffer[i * 4 + 3] = a * 255;
+  }
+  return PIXI.Texture.fromBuffer(buffer, WIDTH, 1);
+}
+
 export function loadSliderSprites(
   object: SliderData,
   beatmap: BeatmapData,
@@ -202,13 +435,29 @@ export function loadSliderSprites(
   const dy = object.points[object.points.length - 2].y - endPosition.y;
   reverseSprite.rotation = Math.atan2(dy, dx);
 
-  const graphics = new PIXI.Graphics();
+  // Slider mesh
+  // TODO: use one shader per skin (generate for all combo colors)
+  const shader = new PIXI.MeshMaterial(
+    createLegacySliderTexture(skin, comboColor),
+    {
+      program
+    }
+  );
+  const geometry = new PIXI.Geometry();
+  geometry.addAttribute('position', [], 2);
+  geometry.addAttribute('tex_position', [], 1);
+
+  const state = new PIXI.State();
+  state.depthTest = true;
+  state.blend = true;
+
+  const mesh = new CustomMesh(geometry, shader, state);
 
   // For convenient alpha, visibility, etc.
   const container = new PIXI.Container();
   container.visible = false;
   container.addChild(
-    graphics,
+    mesh,
     ...tickSprites,
     reverseSprite,
     circleSprite,
@@ -223,7 +472,7 @@ export function loadSliderSprites(
 
   return {
     container,
-    graphics,
+    mesh,
     circleSprite,
     approachSprite,
     followSprite,

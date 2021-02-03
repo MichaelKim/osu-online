@@ -12,80 +12,8 @@ import Skin from '../Skin';
 import { arToMS, csToSize, odToMS } from '../timing';
 import { clamp, clerp, clerp01, within } from '../util';
 
-function createSliderTexture(skin: Skin, color: number) {
-  // Construct slider body texture
-  const borderwidth = 0.128;
-  const innerPortion = 1 - borderwidth;
-  const edgeOpacity = 0.8;
-  const centerOpacity = 0.3;
-  const blurrate = 0.015;
-  const width = 200;
-  const buffer = new Uint8Array(width * 4 * 2); // 200 pixels * 4 values (rgba)
-  const trackColor = skin.sliderTrackOverride || color;
-  const borderColor = skin.sliderBorder;
-  const [borderR, borderG, borderB] = PIXI.utils.hex2rgb(borderColor);
-  const borderA = 1;
-  const [trackR, trackG, trackB] = PIXI.utils.hex2rgb(trackColor);
-  const trackA = 1;
-
-  // console.log(PIXI.utils.hex2string(borderColor));
-  // console.log(PIXI.utils.hex2string(trackColor));
-
-  for (let i = 0; i < width; i++) {
-    const position = i / width;
-    let R: number, G: number, B: number, A: number;
-    if (position >= innerPortion) {
-      // draw border color
-      R = borderR;
-      G = borderG;
-      B = borderB;
-      A = borderA;
-    } // draw inner color
-    else {
-      R = trackR;
-      G = trackG;
-      B = trackB;
-      // TODO: tune this to make opacity transition smoother at center
-      A =
-        trackA *
-        (((edgeOpacity - centerOpacity) * position) / innerPortion +
-          centerOpacity);
-    }
-    // pre-multiply alpha
-    R *= A;
-    G *= A;
-    B *= A;
-    // blur at edge for "antialiasing" without supersampling
-    if (1 - position < blurrate) {
-      // outer edge
-      R *= (1 - position) / blurrate;
-      G *= (1 - position) / blurrate;
-      B *= (1 - position) / blurrate;
-      A *= (1 - position) / blurrate;
-    }
-    if (innerPortion - position > 0 && innerPortion - position < blurrate) {
-      const mu = (innerPortion - position) / blurrate;
-      R = mu * R + (1 - mu) * borderR * borderA;
-      G = mu * G + (1 - mu) * borderG * borderA;
-      B = mu * B + (1 - mu) * borderB * borderA;
-      A = mu * trackA + (1 - mu) * borderA;
-    }
-    buffer[i * 4] = R * 255;
-    buffer[i * 4 + 1] = G * 255;
-    buffer[i * 4 + 2] = B * 255;
-    buffer[i * 4 + 3] = A * 255;
-
-    const j = width - i - 1;
-    buffer[j * 4] = R * 255;
-    buffer[j * 4 + 1] = G * 255;
-    buffer[j * 4 + 2] = B * 255;
-    buffer[j * 4 + 3] = A * 255;
-    // console.log(R * 255, buffer[i * 4]);
-    // console.log(R, G, B, A);
-  }
-  // debugger;
-  return PIXI.Texture.fromBuffer(buffer, 1, width * 2);
-}
+// Semi-circle
+const MAX_RES = 24;
 
 export default class Slider {
   readonly type = HitObjectTypes.SLIDER;
@@ -102,7 +30,6 @@ export default class Slider {
 
   // Rendering
   s: SliderSprites;
-  rope: PIXI.SimpleRope;
 
   // Gameplay
   position: PIXI.Point; // Slider head position
@@ -125,26 +52,6 @@ export default class Slider {
     this.s = loadSliderSprites(this.o, beatmap, skin, this.size);
 
     this.position = this.start;
-
-    // Slider body
-    const texture = createSliderTexture(skin, this.s.approachSprite.tint);
-    const test = new PIXI.Sprite(texture);
-    test.width = 200;
-    test.height = 200;
-    this.rope = new PIXI.SimpleRope(
-      texture,
-      this.o.curve,
-      (2 * this.size) / 400
-    );
-    const angle = Math.atan2(
-      this.o.curve[1].y - this.o.curve[0].y,
-      this.o.curve[1].x - this.o.curve[0].x
-    );
-    this.rope.position.set(
-      -(Math.sin(angle) * this.size) / 2,
-      (Math.cos(angle) * this.size) / 2
-    );
-    this.s.container.addChild(this.rope);
   }
 
   get start() {
@@ -179,7 +86,7 @@ export default class Slider {
     return this.o.t - this.fadeTime;
   }
 
-  // Returns [start, end]
+  // Returns [start, end)
   calcIndices(time: number) {
     // One less slide
     const outTime = this.o.endTime - this.o.sliderTime;
@@ -213,22 +120,119 @@ export default class Slider {
     return [0, 0];
   }
 
+  updateCap(center: PIXI.Point, theta: number) {
+    const points: PIXI.Point[] = [];
+    const texturePoints: number[] = [];
+
+    for (let i = 0; i < MAX_RES; i++) {
+      // Each triangle is composed of the center,
+      // and the two points along the circumference (starting from 0, step to PI - step, PI)
+      const t1 = theta + (i * Math.PI) / MAX_RES;
+      const p1 = new PIXI.Point(
+        (Math.cos(t1) * this.size) / 2 + center.x,
+        (Math.sin(t1) * this.size) / 2 + center.y
+      );
+
+      const t2 = theta + ((i + 1) * Math.PI) / MAX_RES;
+      const p2 = new PIXI.Point(
+        (Math.cos(t2) * this.size) / 2 + center.x,
+        (Math.sin(t2) * this.size) / 2 + center.y
+      );
+
+      points.push(center, p1, p2);
+      texturePoints.push(1, 0, 0);
+    }
+    return { points, texturePoints };
+  }
+
   updateSlider(time: number) {
+    const vertices: PIXI.Point[] = [];
+    const textureVertices: number[] = [];
+
     const [start, end] = this.calcIndices(time);
 
     // TODO: change to curve pointAt
-    const startIndex = Math.floor(this.o.curve.length * start);
-    const endIndex = Math.floor(this.o.curve.length * end);
+    const startIndex =
+      start === 1
+        ? this.o.curve.length - 1
+        : Math.floor(this.o.curve.length * start);
+    const endIndex =
+      end === 1
+        ? this.o.curve.length - 1
+        : Math.floor(this.o.curve.length * end);
 
-    this.s.graphics.clear();
-    this.s.graphics.lineStyle(5, 0xffffff);
-    this.s.graphics.moveTo(
-      this.o.curve[startIndex].x,
-      this.o.curve[startIndex].y
+    // Draw head
+    const startAngle =
+      startIndex === this.o.curve.length - 1
+        ? 0
+        : Math.atan2(
+            this.o.curve[startIndex + 1].y - this.o.curve[startIndex].y,
+            this.o.curve[startIndex + 1].x - this.o.curve[startIndex].x
+          );
+    const startCap = this.updateCap(
+      this.o.curve[startIndex],
+      startAngle + Math.PI / 2
     );
-    for (let i = startIndex + 1; i < endIndex; i++) {
-      this.s.graphics.lineTo(this.o.curve[i].x, this.o.curve[i].y);
+    vertices.push(...startCap.points);
+    textureVertices.push(...startCap.texturePoints);
+
+    // Draw quads
+    // For each pair of points in the curve
+    for (let i = startIndex; i < endIndex; i++) {
+      const p1 = this.o.curve[i];
+      const p2 = this.o.curve[i + 1];
+      const dx = p2.x - p1.x;
+      const dy = p2.y - p1.y;
+      const length = Math.hypot(dx, dy);
+      // Find the tangent to the line segment
+      const norm = new PIXI.Point(-dy / length, dx / length);
+
+      // Extend length radius past each point along the tangent
+      const v1 = new PIXI.Point(
+        p1.x - (norm.x * this.size) / 2,
+        p1.y - (norm.y * this.size) / 2
+      );
+      const v2 = new PIXI.Point(
+        p1.x + (norm.x * this.size) / 2,
+        p1.y + (norm.y * this.size) / 2
+      );
+      const v3 = new PIXI.Point(
+        p2.x - (norm.x * this.size) / 2,
+        p2.y - (norm.y * this.size) / 2
+      );
+      const v4 = new PIXI.Point(
+        p2.x + (norm.x * this.size) / 2,
+        p2.y + (norm.y * this.size) / 2
+      );
+
+      // The four points form a quad
+      // Splitting along the line yields two quads
+      // Each quad is drawn as two triangles
+      vertices.push(v1, p1, v3);
+      textureVertices.push(0, 1, 0);
+      vertices.push(p1, v3, p2);
+      textureVertices.push(1, 0, 1);
+
+      vertices.push(p1, v2, v4);
+      textureVertices.push(1, 0, 0);
+      vertices.push(p1, p2, v4);
+      textureVertices.push(1, 1, 0);
+
+      // Draw cap
+      const cap = this.updateCap(p2, Math.atan2(dy, dx) - Math.PI / 2);
+      vertices.push(...cap.points);
+      textureVertices.push(...cap.texturePoints);
     }
+
+    // TODO: use index buffers to remote duplicate vertices
+    // Add vertices
+    this.s.mesh.geometry
+      .getBuffer('position')
+      .update(new Float32Array(vertices.flatMap(v => [v.x, v.y])));
+    // Add texture coords
+    this.s.mesh.geometry
+      .getBuffer('tex_position')
+      .update(new Float32Array(textureVertices));
   }
 
   update(time: number) {

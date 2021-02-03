@@ -1,5 +1,3 @@
-- sliders
-  - draw body
 - 50k, 100k, 300g, 300k
 - hit result layer order
 - connect spinner to gamestate

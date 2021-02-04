@@ -388,6 +388,24 @@ export default class Slider {
 
         const currentSlide = Math.floor(progress);
         this.gameState.addSliderEdge(this, time, currentSlide);
+
+        // Update reverse arrow
+        if (progress + 1 < this.o.slides) {
+          // Still slides remaining
+          if (forwards) {
+            this.s.reverseSprite.position.copyFrom(
+              this.o.curve[this.o.curve.length - 1]
+            );
+            this.s.reverseSprite.rotation =
+              Math.PI + this.lines[this.lines.length - 1].angle;
+          } else {
+            this.s.reverseSprite.position.copyFrom(this.o.curve[0]);
+            this.s.reverseSprite.rotation = this.lines[0].angle;
+          }
+        } else {
+          // TODO: fade out
+          this.s.reverseSprite.alpha = 0;
+        }
       }
     }
 

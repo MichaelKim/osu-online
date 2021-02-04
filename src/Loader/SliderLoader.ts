@@ -431,8 +431,8 @@ export function loadSliderSprites(
   const endPosition = object.curve[object.curve.length - 1];
   // TODO: Should scale with size
   const reverseSprite = initSprite(skin.reverseArrow, endPosition);
-  const dx = object.points[object.points.length - 2].x - endPosition.x;
-  const dy = object.points[object.points.length - 2].y - endPosition.y;
+  const dx = object.curve[object.curve.length - 2].x - endPosition.x;
+  const dy = object.curve[object.curve.length - 2].y - endPosition.y;
   reverseSprite.rotation = Math.atan2(dy, dx);
 
   // Slider mesh

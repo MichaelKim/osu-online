@@ -10,10 +10,17 @@ import {
 } from '../Loader/SliderLoader';
 import Skin from '../Skin';
 import { arToMS, csToSize, odToMS } from '../timing';
-import { clerp, clerp01, within } from '../util';
+import { clerp, clerp01, Tuple, within } from '../util';
 
 // Semi-circle
 const MAX_RES = 24;
+
+type Line = Readonly<{
+  start: PIXI.Point;
+  end: PIXI.Point;
+  offset: PIXI.Point;
+  angle: number;
+}>;
 
 export default class Slider {
   readonly type = HitObjectTypes.SLIDER;
@@ -30,6 +37,7 @@ export default class Slider {
 
   // Rendering
   s: SliderSprites;
+  lines: Line[] = [];
 
   // Gameplay
   position: PIXI.Point; // Slider head position
@@ -52,6 +60,28 @@ export default class Slider {
     this.s = loadSliderSprites(this.o, beatmap, skin, this.size);
 
     this.position = this.start;
+
+    for (let i = 0; i < this.o.curve.length - 1; i++) {
+      // For each pair of points in the curve
+      const p1 = this.o.curve[i];
+      const p2 = this.o.curve[i + 1];
+      const dx = p2.x - p1.x;
+      const dy = p2.y - p1.y;
+      const length = Math.hypot(dx, dy);
+
+      // Find the offset tangent to the line segment
+      const offset = new PIXI.Point(
+        ((-dy / length) * this.size) / 2,
+        ((dx / length) * this.size) / 2
+      );
+
+      this.lines.push({
+        start: p1,
+        end: p2,
+        offset,
+        angle: Math.atan2(dy, dx)
+      });
+    }
   }
 
   get start() {
@@ -126,33 +156,23 @@ export default class Slider {
   }
 
   private pointAt(t: number) {
-    // Estimate index ([0, 1] => [0, curve.length - 1])
-    const position = (this.o.curve.length - 1) * t;
-    const index = t === 1 ? this.o.curve.length - 2 : Math.floor(position);
+    const position = this.lines.length * t; // [0, 1] => [0, curve.length - 1]
+    // Line segment index
+    const index = t === 1 ? this.lines.length - 1 : Math.floor(position); // [0, curve.length - 2]
 
     // Interpolate point
     const startT = position - index; // [0, 1]
     const point = new PIXI.Point(
-      this.o.curve[index].x * (1 - startT) + this.o.curve[index + 1].x * startT,
-      this.o.curve[index].y * (1 - startT) + this.o.curve[index + 1].y * startT
+      this.lines[index].start.x * (1 - startT) +
+        this.lines[index].end.x * startT,
+      this.lines[index].start.y * (1 - startT) +
+        this.lines[index].end.y * startT
     );
 
     return {
       point,
       index
     };
-  }
-
-  // Returns list of curve points from start to end
-  private getPoints(startT: number, endT: number) {
-    const start = this.pointAt(startT);
-    const end = this.pointAt(endT);
-
-    return [
-      start.point,
-      ...this.o.curve.slice(start.index + 1, end.index + 1),
-      end.point
-    ];
   }
 
   private updateCap(center: PIXI.Point, theta: number) {
@@ -181,43 +201,38 @@ export default class Slider {
     const vertices: number[] = [];
     const textureVertices: number[] = [];
 
+    // Slider end positions
     const [startT, endT] = this.calcIndices(time);
-    const curve = this.getPoints(startT, endT);
+    const start = this.pointAt(startT);
+    const end = this.pointAt(endT);
 
     // Draw head
-    const startAngle = Math.atan2(
-      curve[1].y - curve[0].y,
-      curve[1].x - curve[0].x
-    );
-    const startCap = this.updateCap(curve[0], startAngle + Math.PI / 2);
+    const startAngle = this.lines[start.index].angle;
+    const startCap = this.updateCap(start.point, startAngle + Math.PI / 2);
     vertices.push(...startCap.points);
     textureVertices.push(...startCap.texturePoints);
 
     // Draw quads
-    for (let i = 0; i < curve.length - 1; i++) {
+    for (let i = start.index; i < end.index + 1; i++) {
       // For each pair of points in the curve
-      const p1 = curve[i];
-      const p2 = curve[i + 1];
-      const dx = p2.x - p1.x;
-      const dy = p2.y - p1.y;
-      const length = Math.hypot(dx, dy);
+      const p1 = i === start.index ? start.point : this.lines[i].start;
+      const p2 = i === end.index ? end.point : this.lines[i].end;
 
       // Find the tangent to the line segment
-      const tx = -dy / length;
-      const ty = dx / length;
+      const offset = this.lines[i].offset;
 
       // Extend length radius past each point along the tangent
-      const v1x = p1.x - (tx * this.size) / 2;
-      const v1y = p1.y - (ty * this.size) / 2;
+      const v1x = p1.x - offset.x;
+      const v1y = p1.y - offset.y;
 
-      const v2x = p1.x + (tx * this.size) / 2;
-      const v2y = p1.y + (ty * this.size) / 2;
+      const v2x = p1.x + offset.x;
+      const v2y = p1.y + offset.y;
 
-      const v3x = p2.x - (tx * this.size) / 2;
-      const v3y = p2.y - (ty * this.size) / 2;
+      const v3x = p2.x - offset.x;
+      const v3y = p2.y - offset.y;
 
-      const v4x = p2.x + (tx * this.size) / 2;
-      const v4y = p2.y + (ty * this.size) / 2;
+      const v4x = p2.x + offset.x;
+      const v4y = p2.y + offset.y;
 
       // The four points form a quad
       // Splitting along the line yields two quads
@@ -234,12 +249,12 @@ export default class Slider {
 
       // Draw cap
       // TODO: possible optimization? draw only the outer edge instead of entire semi-circle
-      const cap = this.updateCap(p2, Math.atan2(dy, dx) - Math.PI / 2);
+      const cap = this.updateCap(p2, this.lines[i].angle - Math.PI / 2);
       vertices.push(...cap.points);
       textureVertices.push(...cap.texturePoints);
     }
 
-    // TODO: use index buffers to remote duplicate vertices
+    // TODO: possible optimization? use index buffers to remote duplicate vertices
     // Add vertices
     this.s.mesh.geometry
       .getBuffer('position')

@@ -22,6 +22,12 @@ type Line = Readonly<{
   angle: number;
 }>;
 
+enum State {
+  NONE,
+  DOWN, // Cursor down, not in slider
+  ACTIVE // Cursor down, slider active
+}
+
 export default class Slider {
   readonly type = HitObjectTypes.SLIDER;
 
@@ -42,9 +48,10 @@ export default class Slider {
   // Gameplay
   position: PIXI.Point; // Slider head position
   finished = 0;
-  active = false; // Is the slider being followed?
-  ticksHit = 0; // Number of slider ticks already hit (per repeat)
-  repeatsHit = 0; // Number of repeats (incl. slider ends) hit
+  headHit: boolean = false; // Is the slider head hit?
+  state: State = State.NONE;
+  lastTicks = 0; // Number of ticks passed (per repeat) last frame
+  lastForwards: boolean = true; // Slider direction last frame
 
   constructor(
     readonly o: SliderData,
@@ -266,14 +273,14 @@ export default class Slider {
   }
 
   update(time: number) {
-    // Check for miss
-    if (
-      this.finished === 0 &&
-      !this.active &&
-      time > this.o.t + this.hitWindows[HitResultType.HIT50]
-    ) {
-      this.gameState.addResult(HitResultType.MISS, this, time);
+    if (time > this.o.endTime && this.finished === 0) {
       this.finished = time;
+
+      // Check if slider is finished
+      if (this.state === State.ACTIVE) {
+        // Play slider end hit sound
+        this.gameState.addSliderEdge(this, time, this.o.edgeSounds.length - 1);
+      }
     }
 
     if (this.finished > 0) {
@@ -325,17 +332,6 @@ export default class Slider {
       return false;
     }
 
-    // Slider active
-    // Check if slider is finished
-    if (this.active && time > this.o.endTime) {
-      this.finished = time;
-
-      // Play slider end hit sound
-      this.gameState.addSliderEdge(this, time, this.o.edgeSounds.length - 1);
-
-      return false;
-    }
-
     // Update slider ball
     const progress = (time - this.o.t) / this.o.sliderTime; // Current repeat
     const forwards = Math.floor(progress) % 2 === 0; // Sliding direction
@@ -365,14 +361,8 @@ export default class Slider {
     this.s.followSprite.scale.set(size / this.s.followSprite.texture.width);
 
     // Update slider ticks
-    let tickStart = 0,
-      tickEnd = 1;
-    if (forwards) {
-      tickStart = delta;
-    } else {
-      tickEnd = delta;
-    }
-    let ticksHitNew = 0;
+    const [tickStart, tickEnd] = forwards ? [delta, 1] : [0, delta];
+    let ticks = 0;
     for (let i = 0; i < this.o.ticks.length; i++) {
       // TODO: ticks are evenly spaced, so [0, end] -> [length - end, 1] is more efficient
       if (this.o.ticks[i] > tickStart && this.o.ticks[i] < tickEnd) {
@@ -380,34 +370,35 @@ export default class Slider {
         this.s.tickSprites[i].alpha = 1;
       } else {
         this.s.tickSprites[i].alpha = 0;
-        ticksHitNew++;
+        ticks++;
       }
     }
 
-    // Play tick hit sound
-    if (this.active) {
-      for (let i = this.ticksHit; i < ticksHitNew; i++) {
+    if (this.state === State.ACTIVE) {
+      // Play tick hit sound
+      for (let i = this.lastTicks; i < ticks; i++) {
         // Number of ticks hit increased: new ticks
         this.gameState.addSliderTick(this, time);
       }
-    }
-    this.ticksHit = ticksHitNew;
 
-    // Play slider end hit sound
-    if (this.active) {
-      const currentSlide = Math.floor(progress);
-      if (this.repeatsHit !== currentSlide) {
+      // Play slider end hit sound
+      if (this.lastForwards !== forwards) {
+        // Switched direction
+        this.lastForwards = forwards;
+
+        const currentSlide = Math.floor(progress);
         this.gameState.addSliderEdge(this, time, currentSlide);
-        this.repeatsHit = currentSlide;
       }
     }
 
     this.position.copyFrom(position);
+    this.lastTicks = ticks;
+    this.lastForwards = forwards;
 
     return false;
   }
 
-  getHitResult(time: number) {
+  private getHitResult(time: number) {
     const dt = Math.abs(time - this.o.t);
     if (dt <= this.hitWindows[HitResultType.HIT300])
       return HitResultType.HIT300;
@@ -419,31 +410,38 @@ export default class Slider {
 
   hit(time: number, position: PIXI.Point) {
     // Hitbox follows the slider head after slider starts
-    if (!this.active && within(position, this.position, this.size / 2)) {
-      this.active = true;
+    if (this.state !== State.ACTIVE) {
+      if (within(position, this.position, this.size / 2)) {
+        this.state = State.ACTIVE;
 
-      const result = this.getHitResult(time);
-      this.gameState.addSliderHead(result, this, time);
+        const result = this.getHitResult(time);
+        if (!this.headHit && result !== HitResultType.MISS) {
+          // Slider head hit
+          this.headHit = true;
+          this.gameState.addSliderHead(result, this, time);
+        }
+      }
+    } else {
+      this.state = State.DOWN;
     }
   }
 
   move(time: number, position: PIXI.Point) {
-    // Once active, cursor needs to stay within follow circle
-    if (
-      this.active &&
+    if (this.state === State.DOWN) {
+      if (within(position, this.position, this.size / 2)) {
+        // Re-enter slider
+        this.state = State.ACTIVE;
+      }
+    } else if (
+      this.state === State.ACTIVE &&
       !within(position, this.position, (FOLLOW_R * this.size) / 2)
     ) {
-      // Active slider was left (slider break)
-      this.active = false;
-      this.finished = time;
+      // Leave slider
+      this.state = State.DOWN;
     }
   }
 
   up(time: number, position: PIXI.Point) {
-    if (this.active) {
-      // Active slider was let go (slider break)
-      this.active = false;
-      this.finished = time;
-    }
+    this.state = State.NONE;
   }
 }

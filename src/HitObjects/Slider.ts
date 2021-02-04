@@ -10,7 +10,7 @@ import {
 } from '../Loader/SliderLoader';
 import Skin from '../Skin';
 import { arToMS, csToSize, odToMS } from '../timing';
-import { clamp, clerp, clerp01, within } from '../util';
+import { clerp, clerp01, within } from '../util';
 
 // Semi-circle
 const MAX_RES = 24;
@@ -86,8 +86,8 @@ export default class Slider {
     return this.o.t - this.fadeTime;
   }
 
-  // Returns [start, end)
-  calcIndices(time: number) {
+  // Returns [start, end]
+  private calcIndices(time: number) {
     // One less slide
     const outTime = this.o.endTime - this.o.sliderTime;
 
@@ -117,108 +117,123 @@ export default class Slider {
     }
 
     // Slider finished
+    if (this.o.slides % 2) {
+      // Odd number of slides: finishes at end
+      return [1, 1];
+    }
+    // Even number of slides: finishes at start
     return [0, 0];
   }
 
-  updateCap(center: PIXI.Point, theta: number) {
-    const points: PIXI.Point[] = [];
+  private pointAt(t: number) {
+    // Estimate index ([0, 1] => [0, curve.length - 1])
+    const position = (this.o.curve.length - 1) * t;
+    const index = t === 1 ? this.o.curve.length - 2 : Math.floor(position);
+
+    // Interpolate point
+    const startT = position - index; // [0, 1]
+    const point = new PIXI.Point(
+      this.o.curve[index].x * (1 - startT) + this.o.curve[index + 1].x * startT,
+      this.o.curve[index].y * (1 - startT) + this.o.curve[index + 1].y * startT
+    );
+
+    return {
+      point,
+      index
+    };
+  }
+
+  // Returns list of curve points from start to end
+  private getPoints(startT: number, endT: number) {
+    const start = this.pointAt(startT);
+    const end = this.pointAt(endT);
+
+    return [
+      start.point,
+      ...this.o.curve.slice(start.index + 1, end.index + 1),
+      end.point
+    ];
+  }
+
+  private updateCap(center: PIXI.Point, theta: number) {
+    const points: number[] = [];
     const texturePoints: number[] = [];
 
     for (let i = 0; i < MAX_RES; i++) {
       // Each triangle is composed of the center,
       // and the two points along the circumference (starting from 0, step to PI - step, PI)
       const t1 = theta + (i * Math.PI) / MAX_RES;
-      const p1 = new PIXI.Point(
-        (Math.cos(t1) * this.size) / 2 + center.x,
-        (Math.sin(t1) * this.size) / 2 + center.y
-      );
+      const p1x = (Math.cos(t1) * this.size) / 2 + center.x;
+      const p1y = (Math.sin(t1) * this.size) / 2 + center.y;
 
       const t2 = theta + ((i + 1) * Math.PI) / MAX_RES;
-      const p2 = new PIXI.Point(
-        (Math.cos(t2) * this.size) / 2 + center.x,
-        (Math.sin(t2) * this.size) / 2 + center.y
-      );
+      const p2x = (Math.cos(t2) * this.size) / 2 + center.x;
+      const p2y = (Math.sin(t2) * this.size) / 2 + center.y;
 
-      points.push(center, p1, p2);
+      points.push(center.x, center.y, p1x, p1y, p2x, p2y);
       texturePoints.push(1, 0, 0);
     }
+
     return { points, texturePoints };
   }
 
-  updateSlider(time: number) {
-    const vertices: PIXI.Point[] = [];
+  private updateSlider(time: number) {
+    const vertices: number[] = [];
     const textureVertices: number[] = [];
 
-    const [start, end] = this.calcIndices(time);
-
-    // TODO: change to curve pointAt
-    const startIndex =
-      start === 1
-        ? this.o.curve.length - 1
-        : Math.floor(this.o.curve.length * start);
-    const endIndex =
-      end === 1
-        ? this.o.curve.length - 1
-        : Math.floor(this.o.curve.length * end);
+    const [startT, endT] = this.calcIndices(time);
+    const curve = this.getPoints(startT, endT);
 
     // Draw head
-    const startAngle =
-      startIndex === this.o.curve.length - 1
-        ? 0
-        : Math.atan2(
-            this.o.curve[startIndex + 1].y - this.o.curve[startIndex].y,
-            this.o.curve[startIndex + 1].x - this.o.curve[startIndex].x
-          );
-    const startCap = this.updateCap(
-      this.o.curve[startIndex],
-      startAngle + Math.PI / 2
+    const startAngle = Math.atan2(
+      curve[1].y - curve[0].y,
+      curve[1].x - curve[0].x
     );
+    const startCap = this.updateCap(curve[0], startAngle + Math.PI / 2);
     vertices.push(...startCap.points);
     textureVertices.push(...startCap.texturePoints);
 
     // Draw quads
-    // For each pair of points in the curve
-    for (let i = startIndex; i < endIndex; i++) {
-      const p1 = this.o.curve[i];
-      const p2 = this.o.curve[i + 1];
+    for (let i = 0; i < curve.length - 1; i++) {
+      // For each pair of points in the curve
+      const p1 = curve[i];
+      const p2 = curve[i + 1];
       const dx = p2.x - p1.x;
       const dy = p2.y - p1.y;
       const length = Math.hypot(dx, dy);
+
       // Find the tangent to the line segment
-      const norm = new PIXI.Point(-dy / length, dx / length);
+      const tx = -dy / length;
+      const ty = dx / length;
 
       // Extend length radius past each point along the tangent
-      const v1 = new PIXI.Point(
-        p1.x - (norm.x * this.size) / 2,
-        p1.y - (norm.y * this.size) / 2
-      );
-      const v2 = new PIXI.Point(
-        p1.x + (norm.x * this.size) / 2,
-        p1.y + (norm.y * this.size) / 2
-      );
-      const v3 = new PIXI.Point(
-        p2.x - (norm.x * this.size) / 2,
-        p2.y - (norm.y * this.size) / 2
-      );
-      const v4 = new PIXI.Point(
-        p2.x + (norm.x * this.size) / 2,
-        p2.y + (norm.y * this.size) / 2
-      );
+      const v1x = p1.x - (tx * this.size) / 2;
+      const v1y = p1.y - (ty * this.size) / 2;
+
+      const v2x = p1.x + (tx * this.size) / 2;
+      const v2y = p1.y + (ty * this.size) / 2;
+
+      const v3x = p2.x - (tx * this.size) / 2;
+      const v3y = p2.y - (ty * this.size) / 2;
+
+      const v4x = p2.x + (tx * this.size) / 2;
+      const v4y = p2.y + (ty * this.size) / 2;
 
       // The four points form a quad
       // Splitting along the line yields two quads
       // Each quad is drawn as two triangles
-      vertices.push(v1, p1, v3);
+      vertices.push(v1x, v1y, p1.x, p1.y, v3x, v3y);
       textureVertices.push(0, 1, 0);
-      vertices.push(p1, v3, p2);
+      vertices.push(p1.x, p1.y, v3x, v3y, p2.x, p2.y);
       textureVertices.push(1, 0, 1);
 
-      vertices.push(p1, v2, v4);
+      vertices.push(p1.x, p1.y, v2x, v2y, v4x, v4y);
       textureVertices.push(1, 0, 0);
-      vertices.push(p1, p2, v4);
+      vertices.push(p1.x, p1.y, p2.x, p2.y, v4x, v4y);
       textureVertices.push(1, 1, 0);
 
       // Draw cap
+      // TODO: possible optimization? draw only the outer edge instead of entire semi-circle
       const cap = this.updateCap(p2, Math.atan2(dy, dx) - Math.PI / 2);
       vertices.push(...cap.points);
       textureVertices.push(...cap.texturePoints);
@@ -228,7 +243,7 @@ export default class Slider {
     // Add vertices
     this.s.mesh.geometry
       .getBuffer('position')
-      .update(new Float32Array(vertices.flatMap(v => [v.x, v.y])));
+      .update(new Float32Array(vertices));
     // Add texture coords
     this.s.mesh.geometry
       .getBuffer('tex_position')
@@ -250,6 +265,8 @@ export default class Slider {
       // Fade out everything
       const alpha = 1 - clerp01(time - this.finished, 0, FADE_OUT_MS);
       this.s.container.alpha = alpha;
+
+      this.updateSlider(time);
 
       return time > this.finished + FADE_OUT_MS;
     }
@@ -307,14 +324,8 @@ export default class Slider {
     // Update slider ball
     const progress = (time - this.o.t) / this.o.sliderTime; // Current repeat
     const forwards = Math.floor(progress) % 2 === 0; // Sliding direction
-    const delta = forwards ? progress % 1 : 1 - (progress % 1);
-    // TODO: use pointAt
-    const curveIndex = clamp(
-      Math.floor(this.o.curve.length * delta),
-      0,
-      this.o.curve.length - 1
-    );
-    const position = this.o.curve[curveIndex];
+    const delta = forwards ? progress % 1 : 1 - (progress % 1); // [0, 1]
+    const position = this.pointAt(delta).point;
 
     const alpha =
       1 - clerp01(time - this.o.t, 0, this.fadeTime - this.fullTime);

@@ -46,6 +46,7 @@ type Resources = Record<keyof typeof assets, PIXI.LoaderResource>;
 
 export default class Skin {
   // [General]
+  allowSliderBallTint: boolean = false;
   layeredHitSounds: boolean = true;
 
   // [Colours]
@@ -103,6 +104,10 @@ export default class Skin {
           for (const line of section) {
             const [key, value] = parseKeyValue(line);
             switch (key) {
+              case 'AllowSliderBallTint': {
+                this.allowSliderBallTint = parseInt(value) === 1;
+                break;
+              }
               case 'LayeredHitSounds': {
                 this.layeredHitSounds = parseInt(value) === 1;
                 break;

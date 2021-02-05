@@ -426,6 +426,9 @@ export function loadSliderSprites(
 
   const ballSprite = initSprite(skin.sliderb, object.curve[0]);
   ballSprite.scale.set(size / 128);
+  if (skin.allowSliderBallTint) {
+    ballSprite.tint = comboColor;
+  }
 
   const tickSprites = object.ticks.map(t => {
     const index = Math.floor(object.curve.length * t);

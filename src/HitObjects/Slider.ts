@@ -273,6 +273,13 @@ export default class Slider {
   }
 
   update(time: number) {
+    // Not visible yet
+    if (time < this.enter) {
+      return false;
+    }
+
+    this.updateSlider(time);
+
     if (time > this.o.endTime && this.finished === 0) {
       this.finished = time;
 
@@ -288,17 +295,10 @@ export default class Slider {
       const alpha = 1 - clerp01(time - this.finished, 0, FADE_OUT_MS);
       this.s.container.alpha = alpha;
 
-      this.updateSlider(time);
-
       return time > this.finished + FADE_OUT_MS;
     }
 
-    // Not visible yet
-    if (time < this.o.t - this.fadeTime) {
-      return false;
-    }
-
-    this.updateSlider(time);
+    this.s.reverseSprites.update(time);
 
     // Fade in
     if (time < this.o.t) {
@@ -311,7 +311,6 @@ export default class Slider {
 
       // Slider
       this.s.followSprite.alpha = 0;
-      this.s.reverseSprite.alpha = 0;
 
       // Update approach circle sizes
       const size =
@@ -320,15 +319,6 @@ export default class Slider {
       this.s.approachSprite.scale.set(
         size / this.s.approachSprite.texture.width
       );
-
-      // Reverse arrow
-      if (this.o.slides > 1) {
-        this.s.reverseSprite.alpha = clerp01(
-          time,
-          this.o.t - this.fullTime,
-          this.o.t - this.fullTime + 100
-        );
-      }
       return false;
     }
 
@@ -380,32 +370,14 @@ export default class Slider {
         // Number of ticks hit increased: new ticks
         this.gameState.addSliderTick(this, time);
       }
+    }
 
-      // Play slider end hit sound
-      if (this.lastForwards !== forwards) {
-        // Switched direction
-        this.lastForwards = forwards;
-
+    // Play slider end hit sound
+    if (this.lastForwards !== forwards) {
+      // Switched direction
+      if (this.state === State.ACTIVE) {
         const currentSlide = Math.floor(progress);
         this.gameState.addSliderEdge(this, time, currentSlide);
-
-        // Update reverse arrow
-        if (progress + 1 < this.o.slides) {
-          // Still slides remaining
-          if (forwards) {
-            this.s.reverseSprite.position.copyFrom(
-              this.o.curve[this.o.curve.length - 1]
-            );
-            this.s.reverseSprite.rotation =
-              Math.PI + this.lines[this.lines.length - 1].angle;
-          } else {
-            this.s.reverseSprite.position.copyFrom(this.o.curve[0]);
-            this.s.reverseSprite.rotation = this.lines[0].angle;
-          }
-        } else {
-          // TODO: fade out
-          this.s.reverseSprite.alpha = 0;
-        }
       }
     }
 

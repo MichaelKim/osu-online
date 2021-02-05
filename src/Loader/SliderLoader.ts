@@ -12,6 +12,7 @@ import {
 import { BaseHitSound } from '../HitSoundController';
 import { parseHitSample, SampleSetType } from '../SampleSet';
 import Skin from '../Skin';
+import ReverseArrow from '../Sprites/ReverseArrow';
 import { clamp, clerp01, lerp, Tuple } from '../util';
 import { BeatmapData } from './BeatmapLoader';
 import { TimingPoint } from './TimingPointLoader';
@@ -54,7 +55,7 @@ export interface SliderSprites {
   approachSprite: PIXI.Sprite;
   numberSprites: PIXI.Container;
   followSprite: PIXI.Sprite;
-  reverseSprite: PIXI.Sprite;
+  reverseSprites: ReverseArrow;
 }
 
 export function parseSlider(
@@ -428,12 +429,8 @@ export function loadSliderSprites(
     return initSprite(skin.sliderScorePoint, point);
   });
 
-  const endPosition = object.curve[object.curve.length - 1];
-  // TODO: Should scale with size
-  const reverseSprite = initSprite(skin.reverseArrow, endPosition);
-  const dx = object.curve[object.curve.length - 2].x - endPosition.x;
-  const dy = object.curve[object.curve.length - 2].y - endPosition.y;
-  reverseSprite.rotation = Math.atan2(dy, dx);
+  // Reverse arrows
+  const reverseSprites = new ReverseArrow(skin.reverseArrow, object, beatmap);
 
   // Slider mesh
   // TODO: use one shader per skin (generate for all combo colors)
@@ -459,7 +456,8 @@ export function loadSliderSprites(
   container.addChild(
     mesh,
     ...tickSprites,
-    reverseSprite,
+    reverseSprites.start,
+    reverseSprites.end,
     circleSprite,
     followSprite,
     numberSprites,
@@ -478,6 +476,6 @@ export function loadSliderSprites(
     followSprite,
     numberSprites,
     tickSprites,
-    reverseSprite
+    reverseSprites
   };
 }

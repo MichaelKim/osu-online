@@ -89,7 +89,7 @@ export const APPROACH_R = 2.5;
 export const FOLLOW_R = 2.4;
 
 // Duration for fading out hit objects
-export const FADE_OUT_MS = 100;
+export const FADE_OUT_MS = 250;
 
 // Stack offset (fraction of circle diameter)
 export const STACK_OFFSET_MULT = 20;

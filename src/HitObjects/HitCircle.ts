@@ -70,6 +70,11 @@ export default class HitCircle {
   }
 
   update(time: number) {
+    // Not visible yet
+    if (time < this.o.t - this.fadeTime) {
+      return false;
+    }
+
     // Check for miss
     if (
       this.finished === 0 &&
@@ -81,25 +86,17 @@ export default class HitCircle {
 
     if (this.finished > 0) {
       // Either hit or missed: Fade out everything
+      // Hit circle takes ~0.25s to fade out
       const alpha = 1 - clerp01(time - this.finished, 0, FADE_OUT_MS);
       this.s.container.alpha = alpha;
 
-      this.s.numberSprites.alpha = 0;
-      this.s.approachSprite.alpha = 0;
-
-      // Expand hit circle
+      // Expand hit circle (max ~1.6x scale)
       const size =
-        this.size * clerp(time - this.finished, 0, FADE_OUT_MS, 1, 1.2);
+        clerp(time - this.finished, 0, FADE_OUT_MS, 1, 1.6) * this.size;
       this.s.circleSprite.scale.set(size / this.s.circleSprite.width);
 
       return time > this.finished + FADE_OUT_MS;
     }
-
-    // Not visible yet
-    if (time < this.o.t - this.fadeTime) {
-      return false;
-    }
-
     // Fade in
     if (time < this.o.t) {
       // TODO: don't update for fully opaque notes

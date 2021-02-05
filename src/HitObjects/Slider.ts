@@ -47,8 +47,8 @@ export default class Slider {
 
   // Gameplay
   position: PIXI.Point; // Slider head position
-  finished = 0;
-  headHit: boolean = false; // Is the slider head hit?
+  finished: number = 0;
+  headHit: number = 0; // When the slider head was hit (0 if not hit)
   state: State = State.NONE;
   lastTicks = 0; // Number of ticks passed (per repeat) last frame
   lastForwards: boolean = true; // Slider direction last frame
@@ -313,14 +313,20 @@ export default class Slider {
       this.s.followSprite.alpha = 0;
 
       // Update approach circle sizes
-      const size =
-        this.size *
-        clerp(time, this.o.t - this.fadeTime, this.o.t, APPROACH_R, 1);
+      const scale = clerp(
+        time,
+        this.o.t - this.fadeTime,
+        this.o.t,
+        APPROACH_R,
+        1
+      );
       this.s.approachSprite.scale.set(
-        size / this.s.approachSprite.texture.width
+        (scale * this.size) / this.s.approachSprite.texture.width
       );
       return false;
     }
+
+    this.s.container.alpha = 1;
 
     // Update slider ball
     const progress = (time - this.o.t) / this.o.sliderTime; // Current repeat
@@ -328,27 +334,37 @@ export default class Slider {
     const delta = forwards ? progress % 1 : 1 - (progress % 1); // [0, 1]
     const position = this.pointAt(delta).point;
 
-    const alpha =
-      1 - clerp01(time - this.o.t, 0, this.fadeTime - this.fullTime);
-    this.s.container.alpha = 1;
+    if (this.headHit === 0 && this.getHitResult(time) !== HitResultType.MISS) {
+      // Head can still be hit: hit circle follows slider ball
+      this.s.circleSprite.position.copyFrom(position);
+      this.s.numberSprites.position.copyFrom(position);
+      this.s.approachSprite.position.copyFrom(position);
+    } else {
+      // Fade out head
+      const hitTime =
+        this.headHit > 0
+          ? this.headHit
+          : this.o.t + this.hitWindows[HitResultType.HIT50];
 
-    // Fade out hit circle, combo number, approach circle
-    // TODO: these might actually instantly fade out once hit
-    this.s.circleSprite.alpha = alpha;
-    this.s.circleSprite.position.copyFrom(position);
-
-    this.s.numberSprites.alpha = alpha;
-    this.s.numberSprites.position.copyFrom(position);
-
-    this.s.approachSprite.alpha = alpha;
-    this.s.approachSprite.position.copyFrom(position);
+      // Hit circle takes ~0.25s to fade out
+      const circleAlpha = 1 - clerp01(time - hitTime, 0, FADE_OUT_MS);
+      this.s.circleSprite.alpha = circleAlpha;
+      this.s.numberSprites.alpha = circleAlpha;
+      this.s.approachSprite.alpha = circleAlpha;
+      // Expand hit circle (max ~1.6x scale)
+      const circleSize =
+        clerp(time - hitTime, 0, FADE_OUT_MS, 1, 1.6) * this.size;
+      this.s.circleSprite.scale.set(circleSize / this.s.circleSprite.width);
+    }
 
     // Fade in follow circle
     this.s.followSprite.alpha = clerp01(time - this.o.t, 0, 150);
     this.s.followSprite.position.copyFrom(position);
     // Expand follow circle
-    const size = this.size * clerp(time - this.o.t, 0, 150, 1, FOLLOW_R);
-    this.s.followSprite.scale.set(size / this.s.followSprite.texture.width);
+    const followScale = clerp(time - this.o.t, 0, 150, 1, FOLLOW_R);
+    this.s.followSprite.scale.set(
+      (followScale * this.size) / this.s.followSprite.texture.width
+    );
 
     // Update slider ticks
     const [tickStart, tickEnd] = forwards ? [delta, 1] : [0, delta];
@@ -405,9 +421,9 @@ export default class Slider {
         this.state = State.ACTIVE;
 
         const result = this.getHitResult(time);
-        if (!this.headHit && result !== HitResultType.MISS) {
+        if (this.headHit === 0 && result !== HitResultType.MISS) {
           // Slider head hit
-          this.headHit = true;
+          this.headHit = time;
           this.gameState.addSliderHead(result, this, time);
         }
       }

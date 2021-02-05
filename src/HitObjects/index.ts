@@ -27,9 +27,8 @@ export function initCircleSprite(
 
   const overlay = new PIXI.Sprite(skin.overlay);
 
-  const width = Math.max(circle.width, overlay.width);
-  circle.scale.set(size / width);
-  overlay.scale.set(size / width);
+  circle.scale.set(size / 128);
+  overlay.scale.set(size / 128);
 
   const circleSprite = new PIXI.Container();
   circleSprite.position.copyFrom(position);

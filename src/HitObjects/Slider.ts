@@ -311,6 +311,7 @@ export default class Slider {
 
       // Slider
       this.s.followSprite.alpha = 0;
+      this.s.ballSprite.alpha = 0;
 
       // Update approach circle sizes
       const scale = clerp(
@@ -323,17 +324,18 @@ export default class Slider {
       this.s.approachSprite.scale.set(
         (scale * this.size) / this.s.approachSprite.texture.width
       );
+
       return false;
     }
 
     this.s.container.alpha = 1;
 
-    // Update slider ball
     const progress = (time - this.o.t) / this.o.sliderTime; // Current repeat
     const forwards = Math.floor(progress) % 2 === 0; // Sliding direction
     const delta = forwards ? progress % 1 : 1 - (progress % 1); // [0, 1]
     const position = this.pointAt(delta).point;
 
+    // Update hit circle
     if (this.headHit === 0 && this.getHitResult(time) !== HitResultType.MISS) {
       // Head can still be hit: hit circle follows slider ball
       this.s.circleSprite.position.copyFrom(position);
@@ -358,13 +360,18 @@ export default class Slider {
     }
 
     // Fade in follow circle
-    this.s.followSprite.alpha = clerp01(time - this.o.t, 0, 150);
+    const fadeIn = clerp01(time - this.o.t, 0, 150);
+    this.s.followSprite.alpha = fadeIn;
     this.s.followSprite.position.copyFrom(position);
     // Expand follow circle
     const followScale = clerp(time - this.o.t, 0, 150, 1, FOLLOW_R);
     this.s.followSprite.scale.set(
       (followScale * this.size) / this.s.followSprite.texture.width
     );
+
+    // Update slider ball
+    this.s.ballSprite.alpha = fadeIn;
+    this.s.ballSprite.position.copyFrom(position);
 
     // Update slider ticks
     const [tickStart, tickEnd] = forwards ? [delta, 1] : [0, delta];

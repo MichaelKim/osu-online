@@ -54,6 +54,7 @@ export interface SliderSprites {
   circleSprite: PIXI.Container;
   approachSprite: PIXI.Sprite;
   numberSprites: PIXI.Container;
+  ballSprite: PIXI.Sprite;
   followSprite: PIXI.Sprite;
   reverseSprites: ReverseArrow;
 }
@@ -423,6 +424,9 @@ export function loadSliderSprites(
 
   approachSprite.tint = comboColor;
 
+  const ballSprite = initSprite(skin.sliderb, object.curve[0]);
+  ballSprite.scale.set(size / 128);
+
   const tickSprites = object.ticks.map(t => {
     const index = Math.floor(object.curve.length * t);
     const point = object.curve[index];
@@ -461,6 +465,7 @@ export function loadSliderSprites(
     circleSprite,
     followSprite,
     numberSprites,
+    ballSprite,
     approachSprite
   );
 
@@ -475,6 +480,7 @@ export function loadSliderSprites(
     approachSprite,
     followSprite,
     numberSprites,
+    ballSprite,
     tickSprites,
     reverseSprites
   };

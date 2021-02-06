@@ -1,7 +1,7 @@
 // Timing windows
 
 import { HitResultType } from './HitResultController';
-import { lerp } from './util';
+import { lerp, Tuple } from './util';
 
 // Approach Rate values (in ms)
 const AR0_FADE = 1800;
@@ -13,7 +13,7 @@ const AR5_FULL = 400;
 const AR10_FULL = 150;
 
 // Returns [fadeTime, fullTime]
-export function arToMS(ar: number) {
+export function arToMS(ar: number): Tuple<number, 2> {
   if (ar <= 5)
     return [
       lerp(ar, 0, 5, AR0_FADE, AR5_FADE),

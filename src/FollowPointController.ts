@@ -12,7 +12,7 @@ class FollowTrail {
   lastFade: number;
 
   constructor(
-    texture: PIXI.Texture,
+    texture: PIXI.Texture | undefined,
     prev: PIXI.Point,
     next: PIXI.Point,
     prevT: number,

@@ -14,7 +14,7 @@ class HitResult {
   sprite: PIXI.Sprite;
 
   constructor(
-    texture: PIXI.Texture,
+    texture: PIXI.Texture | undefined,
     position: PIXI.Point,
     diameter: number,
     public type: HitResultType,

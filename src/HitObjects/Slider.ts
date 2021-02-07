@@ -1,5 +1,11 @@
 import * as PIXI from 'pixi.js';
-import { APPROACH_R, FADE_OUT_MS, FOLLOW_R, HitObjectTypes } from '.';
+import {
+  APPROACH_R,
+  FADE_OUT_MS,
+  FOLLOW_R,
+  HitObjectTypes,
+  SLIDER_FADE_OUT_MS
+} from '.';
 import GameState from '../GameState';
 import { HitResultType } from '../HitResultController';
 import { BeatmapData } from '../Loader/BeatmapLoader';
@@ -294,15 +300,21 @@ export default class Slider {
 
     if (this.finished > 0) {
       // Fade out everything
-      const alpha = 1 - clerp01(time - this.finished, 0, FADE_OUT_MS);
+      const alpha = 1 - clerp01(time - this.finished, 0, SLIDER_FADE_OUT_MS);
       this.s.container.alpha = alpha;
 
-      const scale = clerp(time - this.finished, 0, FADE_OUT_MS, FOLLOW_R, 1);
+      const scale = clerp(
+        time - this.finished,
+        0,
+        SLIDER_FADE_OUT_MS,
+        FOLLOW_R,
+        1
+      );
       this.s.followSprite.scale.set(
         (scale * this.size) / this.s.followSprite.texture.width
       );
 
-      return time > this.finished + FADE_OUT_MS;
+      return time > this.finished + SLIDER_FADE_OUT_MS;
     }
 
     this.s.reverseSprites.update(time);

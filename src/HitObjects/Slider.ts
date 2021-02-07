@@ -10,7 +10,7 @@ import {
 } from '../Loader/SliderLoader';
 import Skin from '../Skin';
 import { arToMS, csToSize, odToMS } from '../timing';
-import { clerp, clerp01, Tuple, within } from '../util';
+import { clerp, clerp01, within } from '../util';
 
 // Semi-circle
 const MAX_RES = 24;
@@ -50,6 +50,8 @@ export default class Slider {
   finished: number = 0;
   headHit: number = 0; // When the slider head was hit (0 if not hit)
   state: State = State.NONE;
+  prevState: State = State.NONE;
+  followTime: number = 0; // Animation for follow circle
   lastTicks = 0; // Number of ticks passed (per repeat) last frame
   lastForwards: boolean = true; // Slider direction last frame
 
@@ -295,6 +297,11 @@ export default class Slider {
       const alpha = 1 - clerp01(time - this.finished, 0, FADE_OUT_MS);
       this.s.container.alpha = alpha;
 
+      const scale = clerp(time - this.finished, 0, FADE_OUT_MS, FOLLOW_R, 1);
+      this.s.followSprite.scale.set(
+        (scale * this.size) / this.s.followSprite.texture.width
+      );
+
       return time > this.finished + FADE_OUT_MS;
     }
 
@@ -359,18 +366,23 @@ export default class Slider {
       this.s.circleSprite.scale.set(circleSize / this.s.circleSprite.width);
     }
 
-    // Fade in follow circle
-    const fadeIn = clerp01(time - this.o.t, 0, 150);
-    this.s.followSprite.alpha = fadeIn;
+    // Update follow circle
+    if (this.state !== this.prevState) {
+      this.followTime = time;
+    }
     this.s.followSprite.position.copyFrom(position);
-    // Expand follow circle
-    const followScale = clerp(time - this.o.t, 0, 150, 1, FOLLOW_R);
+    const t = clerp01(time - this.followTime, 0, 150);
+    // If active, fade in, otherwise fade out
+    const alpha = this.state === State.ACTIVE ? t : 1 - t;
+    this.s.followSprite.alpha = alpha;
+    const scale = clerp(alpha, 0, 1, 1, FOLLOW_R);
     this.s.followSprite.scale.set(
-      (followScale * this.size) / this.s.followSprite.texture.width
+      (scale * this.size) / this.s.followSprite.texture.width
     );
 
     // Update slider ball
-    this.s.ballSprite.alpha = fadeIn;
+    const ballAlpha = clerp01(time - this.o.t, 0, 150);
+    this.s.ballSprite.alpha = ballAlpha;
     this.s.ballSprite.position.copyFrom(position);
 
     // Update slider ticks
@@ -407,6 +419,7 @@ export default class Slider {
     this.position.copyFrom(position);
     this.lastTicks = ticks;
     this.lastForwards = forwards;
+    this.prevState = this.state;
 
     return false;
   }

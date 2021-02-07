@@ -16,7 +16,7 @@ import {
 } from '../Loader/SliderLoader';
 import Skin from '../Skin';
 import { arToMS, csToSize, odToMS } from '../timing';
-import { clerp, clerp01, within } from '../util';
+import { clamp, clerp, clerp01, within } from '../util';
 
 // Semi-circle
 const MAX_RES = 24;
@@ -298,25 +298,6 @@ export default class Slider {
       }
     }
 
-    if (this.finished > 0) {
-      // Fade out everything
-      const alpha = 1 - clerp01(time - this.finished, 0, SLIDER_FADE_OUT_MS);
-      this.s.container.alpha = alpha;
-
-      const scale = clerp(
-        time - this.finished,
-        0,
-        SLIDER_FADE_OUT_MS,
-        FOLLOW_R,
-        1
-      );
-      this.s.followSprite.scale.set(
-        (scale * this.size) / this.s.followSprite.texture.width
-      );
-
-      return time > this.finished + SLIDER_FADE_OUT_MS;
-    }
-
     this.s.reverseSprites.update(time);
 
     // Fade in
@@ -349,7 +330,11 @@ export default class Slider {
 
     this.s.container.alpha = 1;
 
-    const progress = (time - this.o.t) / this.o.sliderTime; // Current repeat
+    const progress = clamp(
+      (time - this.o.t) / this.o.sliderTime,
+      0,
+      this.o.slides
+    ); // Current repeat
     const forwards = Math.floor(progress) % 2 === 0; // Sliding direction
     const delta = forwards ? progress % 1 : 1 - (progress % 1); // [0, 1]
     const position = this.pointAt(delta).point;
@@ -426,6 +411,25 @@ export default class Slider {
         const currentSlide = Math.floor(progress);
         this.gameState.addSliderEdge(this, time, currentSlide);
       }
+    }
+
+    if (this.finished > 0) {
+      // Fade out everything
+      const alpha = 1 - clerp01(time - this.finished, 0, SLIDER_FADE_OUT_MS);
+      this.s.container.alpha = alpha;
+
+      const scale = clerp(
+        time - this.finished,
+        0,
+        SLIDER_FADE_OUT_MS,
+        FOLLOW_R,
+        1
+      );
+      this.s.followSprite.scale.set(
+        (scale * this.size) / this.s.followSprite.texture.width
+      );
+
+      return time > this.finished + SLIDER_FADE_OUT_MS;
     }
 
     this.position.copyFrom(position);

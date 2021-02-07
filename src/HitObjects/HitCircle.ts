@@ -97,9 +97,9 @@ export default class HitCircle {
 
       return time > this.finished + FADE_OUT_MS;
     }
+
     // Fade in
     if (time < this.o.t) {
-      // TODO: don't update for fully opaque notes
       const alpha = clerp01(
         time,
         this.o.t - this.fadeTime,

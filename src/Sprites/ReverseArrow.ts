@@ -39,10 +39,6 @@ export default class ReverseArrow {
   private getAlphas(time: number): Tuple<number, 2> {
     // Fade in
     if (time < this.o.t) {
-      if (this.o.slides <= 1) {
-        return [0, 0];
-      }
-
       return [0, clerp01(time - (this.o.t - this.fullTime), 0, FADE_MS)];
     }
 
@@ -74,12 +70,14 @@ export default class ReverseArrow {
   }
 
   update(time: number) {
-    // Pulses from 0.9 to 0.75 every 500ms
-    const t = time % 500;
-    const scale = clerp(t, 0, 500, 0.9, 0.75);
-    this.start.scale.set(scale);
-    this.end.scale.set(scale);
+    if (this.o.slides > 1) {
+      // Pulses from 0.9 to 0.75 every 500ms
+      const t = time % 500;
+      const scale = clerp(t, 0, 500, 0.9, 0.75);
+      this.start.scale.set(scale);
+      this.end.scale.set(scale);
 
-    [this.start.alpha, this.end.alpha] = this.getAlphas(time);
+      [this.start.alpha, this.end.alpha] = this.getAlphas(time);
+    }
   }
 }

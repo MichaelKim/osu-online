@@ -15,7 +15,7 @@ import {
   SliderSprites
 } from '../Loader/SliderLoader';
 import Skin from '../Skin';
-import { arToMS, csToSize, odToMS } from '../timing';
+import { arToMS, odToMS } from '../timing';
 import { clamp, clerp, clerp01, within } from '../util';
 
 // Semi-circle
@@ -45,7 +45,6 @@ export default class Slider {
     [HitResultType.HIT100]: number;
     [HitResultType.HIT50]: number;
   };
-  size: number; // Diameter of hit circle
 
   // Rendering
   s: SliderSprites;
@@ -70,12 +69,11 @@ export default class Slider {
     // Compute timing windows
     [this.fadeTime, this.fullTime] = arToMS(beatmap.ar);
     this.hitWindows = odToMS(beatmap.od);
-    this.size = csToSize(beatmap.cs);
 
-    this.s = loadSliderSprites(this.o, beatmap, skin, this.size);
+    // Load sprites
+    this.s = loadSliderSprites(this.o, beatmap, skin);
 
     this.position = this.start;
-
     for (let i = 0; i < this.o.curve.length - 1; i++) {
       // For each pair of points in the curve
       const p1 = this.o.curve[i];
@@ -86,8 +84,8 @@ export default class Slider {
 
       // Find the offset tangent to the line segment
       const offset = new PIXI.Point(
-        ((-dy / length) * this.size) / 2,
-        ((dx / length) * this.size) / 2
+        ((-dy / length) * this.o.size) / 2,
+        ((dx / length) * this.o.size) / 2
       );
 
       this.lines.push({
@@ -198,12 +196,12 @@ export default class Slider {
       // Each triangle is composed of the center,
       // and the two points along the circumference (starting from 0, step to PI - step, PI)
       const t1 = theta + (i * Math.PI) / MAX_RES;
-      const p1x = (Math.cos(t1) * this.size) / 2 + center.x;
-      const p1y = (Math.sin(t1) * this.size) / 2 + center.y;
+      const p1x = (Math.cos(t1) * this.o.size) / 2 + center.x;
+      const p1y = (Math.sin(t1) * this.o.size) / 2 + center.y;
 
       const t2 = theta + ((i + 1) * Math.PI) / MAX_RES;
-      const p2x = (Math.cos(t2) * this.size) / 2 + center.x;
-      const p2y = (Math.sin(t2) * this.size) / 2 + center.y;
+      const p2x = (Math.cos(t2) * this.o.size) / 2 + center.x;
+      const p2y = (Math.sin(t2) * this.o.size) / 2 + center.y;
 
       points.push(center.x, center.y, p1x, p1y, p2x, p2y);
       texturePoints.push(1, 0, 0);
@@ -322,7 +320,7 @@ export default class Slider {
         1
       );
       this.s.approachSprite.scale.set(
-        (scale * this.size) / this.s.approachSprite.texture.width
+        (scale * this.o.size) / this.s.approachSprite.texture.width
       );
 
       return false;
@@ -359,7 +357,7 @@ export default class Slider {
       this.s.approachSprite.alpha = circleAlpha;
       // Expand hit circle (max ~1.6x scale)
       const circleSize =
-        clerp(time - hitTime, 0, FADE_OUT_MS, 1, 1.6) * this.size;
+        clerp(time - hitTime, 0, FADE_OUT_MS, 1, 1.6) * this.o.size;
       this.s.circleSprite.scale.set(circleSize / this.s.circleSprite.width);
     }
 
@@ -374,7 +372,7 @@ export default class Slider {
     this.s.followSprite.alpha = alpha;
     const scale = clerp(alpha, 0, 1, 1, FOLLOW_R);
     this.s.followSprite.scale.set(
-      (scale * this.size) / this.s.followSprite.texture.width
+      (scale * this.o.size) / this.s.followSprite.texture.width
     );
 
     // Update slider ball
@@ -426,7 +424,7 @@ export default class Slider {
         1
       );
       this.s.followSprite.scale.set(
-        (scale * this.size) / this.s.followSprite.texture.width
+        (scale * this.o.size) / this.s.followSprite.texture.width
       );
 
       return time > this.finished + SLIDER_FADE_OUT_MS;
@@ -453,7 +451,7 @@ export default class Slider {
   hit(time: number, position: PIXI.Point) {
     // Hitbox follows the slider head after slider starts
     if (this.state !== State.ACTIVE) {
-      if (within(position, this.position, this.size / 2)) {
+      if (within(position, this.position, this.o.size / 2)) {
         this.state = State.ACTIVE;
 
         const result = this.getHitResult(time);
@@ -470,13 +468,13 @@ export default class Slider {
 
   move(time: number, position: PIXI.Point) {
     if (this.state === State.DOWN) {
-      if (within(position, this.position, this.size / 2)) {
+      if (within(position, this.position, this.o.size / 2)) {
         // Re-enter slider
         this.state = State.ACTIVE;
       }
     } else if (
       this.state === State.ACTIVE &&
-      !within(position, this.position, (FOLLOW_R * this.size) / 2)
+      !within(position, this.position, (FOLLOW_R * this.o.size) / 2)
     ) {
       // Leave slider
       this.state = State.DOWN;

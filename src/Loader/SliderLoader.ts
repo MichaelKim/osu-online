@@ -13,6 +13,7 @@ import { BaseHitSound } from '../HitSoundController';
 import { parseHitSample, SampleSetType } from '../SampleSet';
 import Skin from '../Skin';
 import ReverseArrow from '../Sprites/ReverseArrow';
+import { csToSize } from '../timing';
 import { clamp, clerp01, lerp, Tuple } from '../util';
 import { BeatmapData } from './BeatmapLoader';
 import { TimingPoint } from './TimingPointLoader';
@@ -44,6 +45,7 @@ export interface SliderData {
   sliderTime: number; // Without repeats
   endTime: number; // Time when slider ends
   curve: PIXI.Point[];
+  size: number;
   ticks: number[];
 }
 
@@ -114,6 +116,9 @@ export function parseSlider(
   const sliderTime =
     (timingPoint.beatLength * (length / beatmap.sliderMultiplier)) / 100;
 
+  // Hit circle diameter
+  const size = csToSize(beatmap.cs);
+
   // Commonly computed value
   const endTime = t + sliderTime * slides;
 
@@ -152,6 +157,7 @@ export function parseSlider(
     sliderTime,
     endTime,
     curve,
+    size,
     ticks
   };
 }
@@ -392,8 +398,7 @@ function createSliderTexture(skin: Skin, color: number) {
 export function loadSliderSprites(
   object: SliderData,
   beatmap: BeatmapData,
-  skin: Skin,
-  size: number
+  skin: Skin
 ): SliderSprites {
   const comboColors = beatmap.colors.length > 0 ? beatmap.colors : skin.colors;
   const comboColor = comboColors[object.comboIndex % comboColors.length];
@@ -403,29 +408,29 @@ export function loadSliderSprites(
     skin,
     comboColor,
     object.curve[0],
-    size
+    object.size
   );
   const approachSprite = initSprite(
     skin.approach,
     object.curve[0],
-    size * APPROACH_R
+    object.size * APPROACH_R
   );
   const followSprite = initSprite(
     skin.sliderFollowCircle,
     object.curve[0],
-    size * FOLLOW_R
+    object.size * FOLLOW_R
   );
   const numberSprites = getNumberSprites(
     skin,
     object.comboNumber,
     object.curve[0],
-    size
+    object.size
   );
 
   approachSprite.tint = comboColor;
 
   const ballSprite = initSprite(skin.sliderb, object.curve[0]);
-  ballSprite.scale.set(size / 128);
+  ballSprite.scale.set(object.size / 128);
   if (skin.allowSliderBallTint) {
     ballSprite.tint = comboColor;
   }
@@ -473,7 +478,7 @@ export function loadSliderSprites(
   );
 
   // Hit object stacking
-  const offset = -(object.stackCount * size) / STACK_OFFSET_MULT;
+  const offset = -(object.stackCount * object.size) / STACK_OFFSET_MULT;
   container.position.set(offset);
 
   return {

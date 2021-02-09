@@ -9,7 +9,7 @@ import {
   loadHitCircleSprites
 } from '../Loader/HitCircleLoader';
 import Skin from '../Skin';
-import { arToMS, csToSize, odToMS } from '../timing';
+import { arToMS, odToMS } from '../timing';
 import { clerp, clerp01, within } from '../util';
 
 export default class HitCircle {
@@ -23,7 +23,6 @@ export default class HitCircle {
     [HitResultType.HIT100]: number;
     [HitResultType.HIT50]: number;
   };
-  size: number; // Diameter of hit circle
 
   // Sprites
   s: HitCircleSprites;
@@ -40,10 +39,9 @@ export default class HitCircle {
     // Compute timing windows
     [this.fadeTime, this.fullTime] = arToMS(beatmap.ar);
     this.hitWindows = odToMS(beatmap.od);
-    this.size = csToSize(beatmap.cs);
 
     // Load sprites
-    this.s = loadHitCircleSprites(this.o, beatmap, skin, this.size);
+    this.s = loadHitCircleSprites(this.o, beatmap, skin);
   }
 
   get start() {
@@ -92,7 +90,7 @@ export default class HitCircle {
 
       // Expand hit circle (max ~1.6x scale)
       const size =
-        clerp(time - this.finished, 0, FADE_OUT_MS, 1, 1.6) * this.size;
+        clerp(time - this.finished, 0, FADE_OUT_MS, 1, 1.6) * this.o.size;
       this.s.circleSprite.scale.set(size / this.s.circleSprite.width);
 
       return time > this.finished + FADE_OUT_MS;
@@ -109,7 +107,7 @@ export default class HitCircle {
 
       // Update approach circle sizes
       const size =
-        this.size *
+        this.o.size *
         clerp(time, this.o.t - this.fadeTime, this.o.t, APPROACH_R, 1);
       this.s.approachSprite.scale.set(
         size / this.s.approachSprite.texture.width
@@ -120,7 +118,7 @@ export default class HitCircle {
     // Waiting for hit
     this.s.container.alpha = 1;
     this.s.approachSprite.scale.set(
-      this.size / this.s.approachSprite.texture.width
+      this.o.size / this.s.approachSprite.texture.width
     );
     return false;
   }
@@ -136,7 +134,7 @@ export default class HitCircle {
   }
 
   hit(time: number, position: PIXI.Point) {
-    if (within(position, this.o.position, this.size / 2)) {
+    if (within(position, this.o.position, this.o.size / 2)) {
       this.finished = time;
 
       const result = this.getHitResult(time);

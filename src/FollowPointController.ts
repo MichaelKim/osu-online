@@ -115,7 +115,7 @@ function loadFollowTrails(notes: HitObject[], skin: Skin) {
           next.start,
           prev.endTime,
           next.o.t,
-          next.size
+          next.o.size
         );
         points.push(...trail);
       } else if (prev.type === HitObjectTypes.SLIDER) {
@@ -126,7 +126,7 @@ function loadFollowTrails(notes: HitObject[], skin: Skin) {
           next.start,
           prev.endTime,
           next.o.t,
-          next.size
+          next.o.size
         );
         points.push(...trail);
       }

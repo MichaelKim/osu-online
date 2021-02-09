@@ -10,6 +10,7 @@ import {
 import { BaseHitSound } from '../HitSoundController';
 import { parseHitSample, SampleSetType } from '../SampleSet';
 import Skin from '../Skin';
+import { csToSize } from '../timing';
 import { BeatmapData } from './BeatmapLoader';
 import { TimingPoint } from './TimingPointLoader';
 
@@ -27,6 +28,9 @@ export interface HitCircleData {
   sampleSet: SampleSetType; // Sample set override
   additionSet: SampleSetType;
   stackCount: number;
+
+  // Computed
+  size: number;
 }
 
 export interface HitCircleSprites {
@@ -55,6 +59,8 @@ export function parseHitCircle(
   const sampleSet = hitSample[0] || timingPoint.sampleSet || beatmap.sampleSet;
   const additionSet = hitSample[1] || sampleSet;
 
+  const size = csToSize(beatmap.cs);
+
   return {
     type: HitObjectTypes.HIT_CIRCLE,
     position: new PIXI.Point(x, y),
@@ -64,15 +70,15 @@ export function parseHitCircle(
     comboIndex,
     sampleSet,
     additionSet,
-    stackCount: 0
+    stackCount: 0,
+    size
   };
 }
 
 export function loadHitCircleSprites(
   object: HitCircleData,
   beatmap: BeatmapData,
-  skin: Skin,
-  size: number
+  skin: Skin
 ): HitCircleSprites {
   const comboColors = beatmap.colors.length > 0 ? beatmap.colors : skin.colors;
   const comboColor = comboColors[object.comboIndex % comboColors.length];
@@ -81,18 +87,18 @@ export function loadHitCircleSprites(
     skin,
     comboColor,
     object.position,
-    size
+    object.size
   );
   const approachSprite = initSprite(
     skin.approach,
     object.position,
-    size * APPROACH_R
+    object.size * APPROACH_R
   );
   const numberSprites = getNumberSprites(
     skin,
     object.comboNumber,
     object.position,
-    size
+    object.size
   );
 
   approachSprite.tint = comboColor;
@@ -103,7 +109,7 @@ export function loadHitCircleSprites(
   container.addChild(circleSprite, numberSprites, approachSprite);
 
   // Hit object stacking
-  const offset = -(object.stackCount * size) / STACK_OFFSET_MULT;
+  const offset = -(object.stackCount * object.size) / STACK_OFFSET_MULT;
   container.position.set(offset);
 
   return {

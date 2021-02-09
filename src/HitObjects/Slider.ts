@@ -6,6 +6,7 @@ import {
   HitObjectTypes,
   SLIDER_FADE_OUT_MS
 } from '.';
+import { pointAt } from '../Curve';
 import GameState from '../GameState';
 import { HitResultType } from '../HitResultController';
 import { BeatmapData } from '../Loader/BeatmapLoader';
@@ -20,13 +21,6 @@ import { clamp, clerp, clerp01, within } from '../util';
 
 // Semi-circle
 const MAX_RES = 24;
-
-type Line = Readonly<{
-  start: PIXI.Point;
-  end: PIXI.Point;
-  offset: PIXI.Point;
-  angle: number;
-}>;
 
 enum State {
   NONE,
@@ -48,7 +42,6 @@ export default class Slider {
 
   // Rendering
   s: SliderSprites;
-  lines: Line[] = [];
 
   // Gameplay
   position: PIXI.Point; // Slider head position
@@ -74,42 +67,21 @@ export default class Slider {
     this.s = loadSliderSprites(this.o, beatmap, skin);
 
     this.position = this.start;
-    for (let i = 0; i < this.o.curve.length - 1; i++) {
-      // For each pair of points in the curve
-      const p1 = this.o.curve[i];
-      const p2 = this.o.curve[i + 1];
-      const dx = p2.x - p1.x;
-      const dy = p2.y - p1.y;
-      const length = Math.hypot(dx, dy);
-
-      // Find the offset tangent to the line segment
-      const offset = new PIXI.Point(
-        ((-dy / length) * this.o.size) / 2,
-        ((dx / length) * this.o.size) / 2
-      );
-
-      this.lines.push({
-        start: p1,
-        end: p2,
-        offset,
-        angle: Math.atan2(dy, dx)
-      });
-    }
   }
 
   get start() {
-    const point = this.o.curve[0];
+    const point = this.o.lines[0];
     return new PIXI.Point(
-      point.x + this.s.container.x,
-      point.y + this.s.container.y
+      point.start.x + this.s.container.x,
+      point.start.y + this.s.container.y
     );
   }
 
   get end() {
-    const point = this.o.curve[this.o.curve.length - 1];
+    const point = this.o.lines[this.o.lines.length - 1];
     return new PIXI.Point(
-      point.x + this.s.container.x,
-      point.y + this.s.container.y
+      point.end.x + this.s.container.x,
+      point.end.y + this.s.container.y
     );
   }
 
@@ -168,26 +140,6 @@ export default class Slider {
     return [0, 0];
   }
 
-  private pointAt(t: number) {
-    const position = this.lines.length * t; // [0, 1] => [0, curve.length - 1]
-    // Line segment index
-    const index = t === 1 ? this.lines.length - 1 : Math.floor(position); // [0, curve.length - 2]
-
-    // Interpolate point
-    const startT = position - index; // [0, 1]
-    const point = new PIXI.Point(
-      this.lines[index].start.x * (1 - startT) +
-        this.lines[index].end.x * startT,
-      this.lines[index].start.y * (1 - startT) +
-        this.lines[index].end.y * startT
-    );
-
-    return {
-      point,
-      index
-    };
-  }
-
   private updateCap(center: PIXI.Point, theta: number) {
     const points: number[] = [];
     const texturePoints: number[] = [];
@@ -216,11 +168,11 @@ export default class Slider {
 
     // Slider end positions
     const [startT, endT] = this.calcIndices(time);
-    const start = this.pointAt(startT);
-    const end = this.pointAt(endT);
+    const start = pointAt(this.o.lines, startT);
+    const end = pointAt(this.o.lines, endT);
 
     // Draw head
-    const startAngle = this.lines[start.index].angle;
+    const startAngle = this.o.lines[start.index].angle;
     const startCap = this.updateCap(start.point, startAngle + Math.PI / 2);
     vertices.push(...startCap.points);
     textureVertices.push(...startCap.texturePoints);
@@ -228,11 +180,11 @@ export default class Slider {
     // Draw quads
     for (let i = start.index; i < end.index + 1; i++) {
       // For each pair of points in the curve
-      const p1 = i === start.index ? start.point : this.lines[i].start;
-      const p2 = i === end.index ? end.point : this.lines[i].end;
+      const p1 = i === start.index ? start.point : this.o.lines[i].start;
+      const p2 = i === end.index ? end.point : this.o.lines[i].end;
 
       // Find the tangent to the line segment
-      const offset = this.lines[i].offset;
+      const offset = this.o.lines[i].offset;
 
       // Extend length radius past each point along the tangent
       const v1x = p1.x - offset.x;
@@ -262,7 +214,7 @@ export default class Slider {
 
       // Draw cap
       // TODO: possible optimization? draw only the outer edge instead of entire semi-circle
-      const cap = this.updateCap(p2, this.lines[i].angle - Math.PI / 2);
+      const cap = this.updateCap(p2, this.o.lines[i].angle - Math.PI / 2);
       vertices.push(...cap.points);
       textureVertices.push(...cap.texturePoints);
     }
@@ -335,7 +287,7 @@ export default class Slider {
     ); // Current repeat
     const forwards = Math.floor(progress) % 2 === 0; // Sliding direction
     const delta = forwards ? progress % 1 : 1 - (progress % 1); // [0, 1]
-    const position = this.pointAt(delta).point;
+    const position = pointAt(this.o.lines, delta).point;
 
     // Update hit circle
     if (this.headHit === 0 && this.getHitResult(time) !== HitResultType.MISS) {

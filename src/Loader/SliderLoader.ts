@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js';
-import { CurveTypes, getSliderCurve } from '../Curve';
+import { CurveTypes, getSliderCurve, Line, pointAt } from '../Curve';
 import {
   APPROACH_R,
   FOLLOW_R,
@@ -44,7 +44,7 @@ export interface SliderData {
   // Computed
   sliderTime: number; // Without repeats
   endTime: number; // Time when slider ends
-  curve: PIXI.Point[];
+  lines: Line[];
   size: number;
   ticks: number[];
 }
@@ -123,7 +123,7 @@ export function parseSlider(
   const endTime = t + sliderTime * slides;
 
   // Calculate curve points
-  const curve = getSliderCurve(sliderType, points, length);
+  const lines = getSliderCurve(sliderType, points, length, size);
 
   // Calculate slider ticks
   const tickDist =
@@ -156,7 +156,7 @@ export function parseSlider(
     stackCount: 0,
     sliderTime,
     endTime,
-    curve,
+    lines,
     size,
     ticks
   };
@@ -403,42 +403,38 @@ export function loadSliderSprites(
   const comboColors = beatmap.colors.length > 0 ? beatmap.colors : skin.colors;
   const comboColor = comboColors[object.comboIndex % comboColors.length];
 
+  const start = object.lines[0].start;
+
   // Load sprites
-  const circleSprite = initCircleSprite(
-    skin,
-    comboColor,
-    object.curve[0],
-    object.size
-  );
+  const circleSprite = initCircleSprite(skin, comboColor, start, object.size);
   const approachSprite = initSprite(
     skin.approach,
-    object.curve[0],
+    start,
     object.size * APPROACH_R
   );
   const followSprite = initSprite(
     skin.sliderFollowCircle,
-    object.curve[0],
+    start,
     object.size * FOLLOW_R
   );
   const numberSprites = getNumberSprites(
     skin,
     object.comboNumber,
-    object.curve[0],
+    start,
     object.size
   );
 
   approachSprite.tint = comboColor;
 
-  const ballSprite = initSprite(skin.sliderb, object.curve[0]);
+  const ballSprite = initSprite(skin.sliderb, start);
   ballSprite.scale.set(object.size / 128);
   if (skin.allowSliderBallTint) {
     ballSprite.tint = comboColor;
   }
 
   const tickSprites = object.ticks.map(t => {
-    const index = Math.floor(object.curve.length * t);
-    const point = object.curve[index];
-    return initSprite(skin.sliderScorePoint, point);
+    const position = pointAt(object.lines, t);
+    return initSprite(skin.sliderScorePoint, position.point);
   });
 
   // Reverse arrows

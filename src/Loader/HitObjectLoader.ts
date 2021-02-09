@@ -91,11 +91,11 @@ function start(note: HitCircleData | SliderData) {
   if (note.type === HitObjectTypes.HIT_CIRCLE) {
     return note.position;
   }
-  return note.curve[0];
+  return note.lines[0].start;
 }
 
 function end(note: SliderData) {
-  return note.curve[note.curve.length - 1];
+  return note.lines[note.lines.length - 1].end;
 }
 
 function endTime(note: HitCircleData | SliderData) {

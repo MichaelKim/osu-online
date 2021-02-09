@@ -18,19 +18,13 @@ export default class ReverseArrow {
     private readonly o: SliderData,
     beatmap: BeatmapData
   ) {
-    this.start = initSprite(texture, o.curve[0]);
-    this.start.rotation = Math.atan2(
-      o.curve[1].y - o.curve[0].y,
-      o.curve[1].x - o.curve[0].x
-    );
+    this.start = initSprite(texture, o.lines[0].start);
+    this.start.rotation = o.lines[0].angle;
     this.start.alpha = 0;
 
-    const endPosition = o.curve[o.curve.length - 1];
-    this.end = initSprite(texture, endPosition);
-    this.end.rotation = Math.atan2(
-      o.curve[o.curve.length - 2].y - endPosition.y,
-      o.curve[o.curve.length - 2].x - endPosition.x
-    );
+    const endPosition = o.lines[o.lines.length - 1];
+    this.end = initSprite(texture, endPosition.end);
+    this.end.rotation = endPosition.angle + Math.PI;
     this.end.alpha = 0;
 
     this.fullTime = arToMS(beatmap.ar)[1];

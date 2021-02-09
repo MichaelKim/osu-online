@@ -1,77 +1,107 @@
 import * as PIXI from 'pixi.js';
 import { HitObject, HitObjectTypes, initSprite } from './HitObjects';
 import Skin from './Skin';
-import { clerp01 } from './util';
+import { clerp01, lerp } from './util';
 
-const POINT_FADE = 375; // Follow point fade in/out duration in ms
+const SPACING = 32;
+const PREEMPT = 800;
+const FADE_DURATION = 400;
 
-class FollowTrail {
-  container: PIXI.Container;
-  points: PIXI.Sprite[] = [];
-  firstFade: number;
-  lastFade: number;
+// A single follow point
+class FollowPoint {
+  sprite: PIXI.Sprite;
 
   constructor(
     texture: PIXI.Texture | undefined,
-    prev: PIXI.Point,
-    next: PIXI.Point,
-    prevT: number,
-    nextT: number
+    private start: PIXI.Point,
+    private end: PIXI.Point,
+    angle: number,
+    public fadeInTime: number,
+    private fadeOutTime: number,
+    private size: number
   ) {
-    this.container = new PIXI.Container();
-    this.container.visible = false;
-
-    // Calculate intermediate points
-    const dx = next.x - prev.x;
-    const dy = next.y - prev.y;
-    const dist = Math.hypot(dx, dy);
-    const numPoints = Math.floor(dist / 50); // TODO: find better interval
-
-    const angle = Math.atan2(dy, dx);
-
-    const step = 1 / (numPoints + 1);
-
-    for (let i = 1; i <= numPoints; i++) {
-      const x = prev.x + dx * step * i;
-      const y = prev.y + dy * step * i;
-      // TODO: size according to circle size
-      const sprite = initSprite(texture, new PIXI.Point(x, y));
-      sprite.rotation = angle;
-      this.points.push(sprite);
-      this.container.addChild(sprite);
-    }
-
-    const dt = nextT - prevT;
-    this.firstFade = prevT - 780 + 0.15 * dt;
-    this.lastFade = this.firstFade + 0.7 * dt;
+    this.sprite = initSprite(texture, start);
+    this.sprite.rotation = angle;
+    this.sprite.scale.set((1.5 * size) / 128);
+    this.sprite.alpha = 0;
+    this.sprite.visible = false;
   }
 
   update(time: number) {
-    // TODO: individual point fade in / out
-    if (time < this.firstFade) return false;
+    /*
+    [fadeInTime, fadeInTime + 400]: fade in
+    [fadeInTime, fadeInTime + 400]: scale from 1.5 to 1
+    [fadeInTime, fadeInTime + 400]: move from position to endPosition
+    [fadeOutTime, fadeOutTime + 400]: fade out
+    */
+    if (time < this.fadeInTime) return false;
 
-    if (time < this.firstFade + 800) {
-      const alpha = clerp01(time - this.firstFade, 0, POINT_FADE);
-      this.container.visible = true;
-      this.container.alpha = alpha;
+    if (time < this.fadeOutTime) {
+      const t = clerp01(time, this.fadeInTime, this.fadeInTime + FADE_DURATION);
+      this.sprite.alpha = t;
+
+      const scale = lerp(t, 0, 1, 1.5, 1);
+      this.sprite.scale.set((scale * this.size) / 128);
+
+      const x = lerp(t, 0, 1, this.start.x, this.end.x);
+      const y = lerp(t, 0, 1, this.start.y, this.end.y);
+      this.sprite.position.set(x, y);
       return false;
     }
 
-    if (time < this.firstFade + 800 + POINT_FADE) {
-      const alpha = 1 - clerp01(time - this.firstFade - 800, 0, POINT_FADE);
-      this.container.visible = true;
-      this.container.alpha = alpha;
-      return false;
-    }
+    const t =
+      1 - clerp01(time, this.fadeOutTime, this.fadeOutTime + FADE_DURATION);
+    this.sprite.alpha = t;
 
-    this.container.visible = false;
-    this.container.alpha = 0;
-    return true;
+    return time > this.fadeOutTime + FADE_DURATION;
   }
 }
 
+function generatePoints(
+  texture: PIXI.Texture | undefined,
+  prev: PIXI.Point,
+  next: PIXI.Point,
+  prevT: number,
+  nextT: number,
+  size: number
+) {
+  const points: FollowPoint[] = [];
+
+  const dx = next.x - prev.x;
+  const dy = next.y - prev.y;
+  const dist = Math.hypot(dx, dy);
+  const angle = Math.atan2(dy, dx);
+  const duration = nextT - prevT;
+
+  // Calculate intermediate points
+  for (let d = Math.floor(SPACING * 1.5); d < dist - SPACING; d += SPACING) {
+    const t = d / dist;
+    const pointStartPosition = new PIXI.Point(
+      prev.x + (t - 0.1) * dx,
+      prev.y + (t - 0.1) * dy
+    );
+    const pointEndPosition = new PIXI.Point(prev.x + t * dx, prev.y + t * dy);
+    const fadeOutTime = prevT + t * duration;
+    const fadeInTime = fadeOutTime - PREEMPT;
+
+    points.push(
+      new FollowPoint(
+        texture,
+        pointStartPosition,
+        pointEndPosition,
+        angle,
+        fadeInTime,
+        fadeOutTime,
+        size
+      )
+    );
+  }
+
+  return points;
+}
+
 function loadFollowTrails(notes: HitObject[], skin: Skin) {
-  const trails: FollowTrail[] = [];
+  const points: FollowPoint[] = [];
 
   for (let i = 0; i < notes.length - 1; i++) {
     const prev = notes[i];
@@ -79,63 +109,61 @@ function loadFollowTrails(notes: HitObject[], skin: Skin) {
 
     if (next.type !== HitObjectTypes.SPINNER && next.o.comboNumber !== 1) {
       if (prev.type === HitObjectTypes.HIT_CIRCLE) {
-        const trail = new FollowTrail(
+        const trail = generatePoints(
           skin.followPoint,
           prev.start,
           next.start,
-          prev.o.t,
-          next.o.t
+          prev.endTime,
+          next.o.t,
+          next.size
         );
-        if (trail.points.length > 0) {
-          trails.push(trail);
-        }
+        points.push(...trail);
       } else if (prev.type === HitObjectTypes.SLIDER) {
         const prevStart = prev.o.slides % 2 === 0 ? prev.start : prev.end;
-        const trail = new FollowTrail(
+        const trail = generatePoints(
           skin.followPoint,
           prevStart,
           next.start,
           prev.endTime,
-          next.o.t
+          next.o.t,
+          next.size
         );
-        if (trail.points.length > 0) {
-          trails.push(trail);
-        }
+        points.push(...trail);
       }
     }
   }
 
-  return trails;
+  return points;
 }
 
 export default class FollowPointController {
-  trails: FollowTrail[] = [];
+  points: FollowPoint[] = [];
   left: number = 0;
   right: number = 0;
 
   constructor(private stage: PIXI.Container, notes: HitObject[], skin: Skin) {
-    this.trails = loadFollowTrails(notes, skin);
-    this.trails.forEach(t => this.stage.addChild(t.container));
+    this.points = loadFollowTrails(notes, skin);
+    this.points.forEach(p => this.stage.addChild(p.sprite));
   }
 
   update(time: number) {
-    // Check for new trails
+    // Check for new points
     while (
-      this.right < this.trails.length &&
-      time > this.trails[this.right].firstFade
+      this.right < this.points.length &&
+      time >= this.points[this.right].fadeInTime
     ) {
-      this.trails[this.right].container.visible = true;
+      this.points[this.right].sprite.visible = true;
       this.right++;
     }
 
-    // Update trail
-    while (this.left < this.right && this.trails[this.left].update(time)) {
+    // Update points
+    while (this.left < this.right && this.points[this.left].update(time)) {
       // Don't have to update anymore
-      this.trails[this.left].container.visible = false;
+      this.points[this.left].sprite.visible = false;
       this.left++;
     }
     for (let i = this.left + 1; i < this.right; i++) {
-      this.trails[i].update(time);
+      this.points[i].update(time);
     }
   }
 }

@@ -286,14 +286,14 @@ export default class Slider {
     ); // Current repeat
     const forwards = Math.floor(progress) % 2 === 0; // Sliding direction
     const delta = forwards ? progress % 1 : 1 - (progress % 1); // [0, 1]
-    const position = pointAt(this.o.lines, delta).point;
+    this.position.copyFrom(pointAt(this.o.lines, delta).point);
 
     // Update hit circle
     if (this.headHit === 0 && this.getHitResult(time) !== HitResultType.MISS) {
       // Head can still be hit: hit circle follows slider ball
-      this.s.circleSprite.position.copyFrom(position);
-      this.s.numberSprites.position.copyFrom(position);
-      this.s.approachSprite.position.copyFrom(position);
+      this.s.circleSprite.position.copyFrom(this.position);
+      this.s.numberSprites.position.copyFrom(this.position);
+      this.s.approachSprite.position.copyFrom(this.position);
     } else {
       // Fade out head
       const hitTime =
@@ -316,7 +316,7 @@ export default class Slider {
     if (this.state !== this.prevState) {
       this.followTime = time;
     }
-    this.s.followSprite.position.copyFrom(position);
+    this.s.followSprite.position.copyFrom(this.position);
     const t = clerp01(time - this.followTime, 0, 150);
     // If active, fade in, otherwise fade out
     const alpha = this.state === State.ACTIVE ? t : 1 - t;
@@ -329,7 +329,7 @@ export default class Slider {
     // Update slider ball
     const ballAlpha = clerp01(time - this.o.t, 0, 150);
     this.s.ballSprite.alpha = ballAlpha;
-    this.s.ballSprite.position.copyFrom(position);
+    this.s.ballSprite.position.copyFrom(this.position);
 
     // Update slider ticks
     this.s.tickSprites.forEach(t => {
@@ -354,7 +354,7 @@ export default class Slider {
       }
     }
 
-    this.position.copyFrom(position);
+    // Store progress and state for next frame
     this.lastProgress = progress;
     this.prevState = this.state;
 

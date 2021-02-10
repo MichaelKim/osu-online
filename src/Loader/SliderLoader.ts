@@ -13,6 +13,7 @@ import { BaseHitSound } from '../HitSoundController';
 import { parseHitSample, SampleSetType } from '../SampleSet';
 import Skin from '../Skin';
 import ReverseArrow from '../Sprites/ReverseArrow';
+import SliderTick from '../Sprites/SliderTick';
 import { csToSize } from '../timing';
 import { clamp, clerp01, lerp, Tuple } from '../util';
 import { BeatmapData } from './BeatmapLoader';
@@ -46,13 +47,13 @@ export interface SliderData {
   endTime: number; // Time when slider ends
   lines: Line[];
   size: number;
-  ticks: number[];
+  tickDist: number;
 }
 
 export interface SliderSprites {
   container: PIXI.Container;
   mesh: PIXI.Mesh;
-  tickSprites: PIXI.Sprite[];
+  tickSprites: SliderTick[];
   circleSprite: PIXI.Container;
   approachSprite: PIXI.Sprite;
   numberSprites: PIXI.Container;
@@ -130,14 +131,6 @@ export function parseSlider(
     (100 * beatmap.sliderMultiplier) /
     beatmap.sliderTickRate /
     timingPoint.mult;
-  const numTicks = Math.ceil(length / tickDist) - 2; // Ignore start and end
-  const ticks = [];
-  if (numTicks > 0) {
-    const tickOffset = 1 / (numTicks + 1);
-    for (let i = 0, t = tickOffset; i < numTicks; i++, t += tickOffset) {
-      ticks.push(t);
-    }
-  }
 
   return {
     type: HitObjectTypes.SLIDER,
@@ -158,7 +151,7 @@ export function parseSlider(
     endTime,
     lines,
     size,
-    ticks
+    tickDist
   };
 }
 
@@ -432,10 +425,17 @@ export function loadSliderSprites(
     ballSprite.tint = comboColor;
   }
 
-  const tickSprites = object.ticks.map(t => {
-    const position = pointAt(object.lines, t);
-    return initSprite(skin.sliderScorePoint, position.point);
-  });
+  // Slider ticks
+  const numTicks = Math.ceil(object.length / object.tickDist) - 2; // Ignore start and end
+  const tickSprites: SliderTick[] = [];
+  const tickOffset = 1 / (numTicks + 1);
+  for (let slideIndex = 0; slideIndex < object.slides; slideIndex++) {
+    for (let i = 0, t = tickOffset; i < numTicks; i++, t += tickOffset) {
+      tickSprites.push(
+        new SliderTick(skin.sliderScorePoint, object, t, slideIndex)
+      );
+    }
+  }
 
   // Reverse arrows
   const reverseSprites = new ReverseArrow(skin.reverseArrow, object, beatmap);
@@ -463,7 +463,7 @@ export function loadSliderSprites(
   container.visible = false;
   container.addChild(
     mesh,
-    ...tickSprites,
+    ...tickSprites.map(t => t.sprite),
     reverseSprites.start,
     reverseSprites.end,
     circleSprite,

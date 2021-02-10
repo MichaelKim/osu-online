@@ -50,8 +50,7 @@ export default class Slider {
   state: State = State.NONE;
   prevState: State = State.NONE;
   followTime: number = 0; // Animation for follow circle
-  lastTicks = 0; // Number of ticks passed (per repeat) last frame
-  lastForwards: boolean = true; // Slider direction last frame
+  lastProgress = 0; // Progress of last frame
 
   constructor(
     readonly o: SliderData,
@@ -333,35 +332,31 @@ export default class Slider {
     this.s.ballSprite.position.copyFrom(position);
 
     // Update slider ticks
-    const [tickStart, tickEnd] = forwards ? [delta, 1] : [0, delta];
-    let ticks = 0;
-    for (let i = 0; i < this.o.ticks.length; i++) {
-      // TODO: ticks are evenly spaced, so [0, end] -> [length - end, 1] is more efficient
-      if (this.o.ticks[i] > tickStart && this.o.ticks[i] < tickEnd) {
-        // TODO: fade in and pop out
-        this.s.tickSprites[i].alpha = 1;
-      } else {
-        this.s.tickSprites[i].alpha = 0;
-        ticks++;
+    this.s.tickSprites.forEach(t => {
+      if (this.state === State.ACTIVE) {
+        // Check for hit ticks
+        if (t.progress > this.lastProgress && t.progress < progress) {
+          // Tick's progress was between last frame and this frame
+          t.hit = true;
+          this.gameState.addSliderTick(this, time);
+        }
       }
-    }
-
-    if (this.state === State.ACTIVE) {
-      // Play tick hit sound
-      for (let i = this.lastTicks; i < ticks; i++) {
-        // Number of ticks hit increased: new ticks
-        this.gameState.addSliderTick(this, time);
-      }
-    }
+      t.update(time);
+    });
 
     // Play slider end hit sound
-    if (this.lastForwards !== forwards) {
+    const lastForwards = Math.floor(this.lastProgress) % 2 === 0; // Slider direction last frame
+    if (lastForwards !== forwards) {
       // Switched direction
       if (this.state === State.ACTIVE) {
         const currentSlide = Math.floor(progress);
         this.gameState.addSliderEdge(this, time, currentSlide);
       }
     }
+
+    this.position.copyFrom(position);
+    this.lastProgress = progress;
+    this.prevState = this.state;
 
     if (this.finished > 0) {
       // Fade out everything
@@ -381,11 +376,6 @@ export default class Slider {
 
       return time > this.finished + SLIDER_FADE_OUT_MS;
     }
-
-    this.position.copyFrom(position);
-    this.lastTicks = ticks;
-    this.lastForwards = forwards;
-    this.prevState = this.state;
 
     return false;
   }

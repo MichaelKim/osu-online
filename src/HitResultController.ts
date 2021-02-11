@@ -1,7 +1,7 @@
 import * as PIXI from 'pixi.js';
 import { initSprite } from './HitObjects';
 import Skin from './Skin';
-import { clerp01 } from './util';
+import { clerp, clerp01 } from './util';
 
 export enum HitResultType {
   MISS,
@@ -23,15 +23,25 @@ class HitResult {
     this.sprite = initSprite(texture, position, diameter);
     this.sprite.alpha = 0;
     this.sprite.visible = true;
+    this.sprite.scale.set(0.6);
   }
 
   update(time: number) {
-    // TODO: more detailed animation
     const delta = time - this.t;
+
+    // Misses rotate slightly
+    if (this.type === HitResultType.MISS) {
+      this.sprite.angle = clerp(delta, 0, 1000, 0, -5);
+    }
+
+    this.sprite.scale.set(clerp(delta, 0, 1000, 0.6, 0.7));
+
     if (delta < 0) this.sprite.alpha = 0;
-    else if (delta < 900) this.sprite.alpha = 1;
-    else if (delta < 1000) this.sprite.alpha = 1 - clerp01(delta, 900, 1000);
-    else {
+    else if (delta < 100) {
+      this.sprite.alpha = clerp01(delta, 0, 100);
+    } else if (delta < 1000) {
+      this.sprite.alpha = 1 - clerp01(delta, 100, 1000);
+    } else {
       this.sprite.alpha = 0;
       return true;
     }

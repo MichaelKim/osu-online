@@ -5,15 +5,20 @@ import Slider from '../HitObjects/Slider';
 import Spinner from '../HitObjects/Spinner';
 import Skin from '../Skin';
 import { arToMS } from '../timing';
-import { readFile, within } from '../util';
+import { getSection, readFile, within } from '../util';
 import { BeatmapData } from './BeatmapLoader';
 import { HitCircleData, parseHitCircle } from './HitCircleLoader';
 import { parseSlider, SliderData } from './SliderLoader';
 import { parseSpinner, SpinnerData } from './SpinnerLoader';
+import { parseTimingPoints, TimingPoint } from './TimingPointLoader';
 
 type HitObjectData = HitCircleData | SliderData | SpinnerData;
 
-function parseHitObjects(file: string[], beatmap: BeatmapData) {
+function parseHitObjects(
+  file: string[],
+  beatmap: BeatmapData,
+  timingPoints: TimingPoint[]
+) {
   let comboNumber = 0;
   let comboIndex = 0;
   let timingIndex = -1;
@@ -21,14 +26,10 @@ function parseHitObjects(file: string[], beatmap: BeatmapData) {
     beatLength = 1;
   const notes: HitObjectData[] = [];
 
-  for (
-    let i = file.indexOf('[HitObjects]') + 1;
-    i < file.length && file[i][0] !== '[' && file[i].length > 0;
-    i++
-  ) {
-    const tokens = file[i].split(',');
+  const section = getSection(file, '[HitObjects]');
+  for (const line of section) {
+    const tokens = line.split(',');
     if (tokens.length < 4) {
-      console.error(`Line ${i} missing tokens`);
       continue;
     }
 
@@ -50,20 +51,19 @@ function parseHitObjects(file: string[], beatmap: BeatmapData) {
     // Update latest point
     const t = parseInt(tokens[2]);
     while (
-      timingIndex + 1 < beatmap.timingPoints.length &&
-      beatmap.timingPoints[timingIndex + 1].time <= t
+      timingIndex + 1 < timingPoints.length &&
+      timingPoints[timingIndex + 1].time <= t
     ) {
       timingIndex++;
       // Calculate beat length
-      if (beatmap.timingPoints[timingIndex].inherited) {
-        beatLength = baseBeatLength * beatmap.timingPoints[timingIndex].mult;
+      if (timingPoints[timingIndex].inherited) {
+        beatLength = baseBeatLength * timingPoints[timingIndex].mult;
       } else {
-        baseBeatLength = beatLength =
-          beatmap.timingPoints[timingIndex].beatLength;
+        baseBeatLength = beatLength = timingPoints[timingIndex].beatLength;
       }
     }
     const timingPoint = {
-      ...beatmap.timingPoints[timingIndex],
+      ...timingPoints[timingIndex],
       beatLength,
       inherited: false
     };
@@ -159,7 +159,8 @@ export async function loadHitObjects(
   gameState: GameState
 ): Promise<HitObject[]> {
   const file = await readFile(beatmap.filepath);
-  const notes = parseHitObjects(file, beatmap);
+  const timingPoints = parseTimingPoints(file);
+  const notes = parseHitObjects(file, beatmap, timingPoints);
   calcStacking(beatmap, notes);
   return notes.map(n => {
     switch (n.type) {

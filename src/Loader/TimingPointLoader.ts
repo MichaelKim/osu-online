@@ -1,5 +1,5 @@
 import { SampleSetType } from '../SampleSet';
-import { clamp } from '../util';
+import { clamp, getSection } from '../util';
 
 enum Effects {
   KIAI = 1 << 0
@@ -18,35 +18,44 @@ export interface TimingPoint {
   mult: number; // inverse slider velocity multiplier
 }
 
-export function parseTimingPoint(tokens: string[]): TimingPoint {
-  const time = parseFloat(tokens[0]);
-  const meter = parseInt(tokens[2]);
-  const sampleSet = parseInt(tokens[3]);
-  const sampleIndex = parseInt(tokens[4]);
-  const volume = parseInt(tokens[5]);
-  // this.inherited = parseInt(tokens[6]);
-  let kiai = false;
-  if (tokens.length > 7) {
-    const effects = parseInt(tokens[7]);
-    kiai = (effects & Effects.KIAI) > 0;
+export function parseTimingPoints(file: string[]) {
+  const timingPoints: TimingPoint[] = [];
+
+  const section = getSection(file, '[TimingPoints]');
+  for (const line of section) {
+    const tokens = line.split(',');
+
+    const time = parseFloat(tokens[0]);
+    const meter = parseInt(tokens[2]);
+    const sampleSet = parseInt(tokens[3]);
+    const sampleIndex = parseInt(tokens[4]);
+    const volume = parseInt(tokens[5]);
+    // this.inherited = parseInt(tokens[6]);
+    let kiai = false;
+    if (tokens.length > 7) {
+      const effects = parseInt(tokens[7]);
+      kiai = (effects & Effects.KIAI) > 0;
+    }
+
+    // tokens[1] is either beatLength (positive) or velocity (negative)
+    const beatLength = parseFloat(tokens[1]);
+    const inherited = beatLength <= 0;
+    const mult = inherited ? clamp(-beatLength, 10, 1000) / 100 : 1;
+
+    timingPoints.push({
+      time,
+      beatLength,
+      meter,
+      sampleSet,
+      sampleIndex,
+      volume,
+      inherited,
+      kiai,
+      mult
+    });
   }
 
-  // tokens[1] is either beatLength (positive) or velocity (negative)
-  const beatLength = parseFloat(tokens[1]);
-  const inherited = beatLength <= 0;
-  const mult = inherited ? clamp(-beatLength, 10, 1000) / 100 : 1;
-
-  return {
-    time,
-    beatLength,
-    meter,
-    sampleSet,
-    sampleIndex,
-    volume,
-    inherited,
-    kiai,
-    mult
-  };
+  return timingPoints;
 }
 
 export function normalize(points: TimingPoint[]) {

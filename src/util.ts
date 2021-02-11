@@ -72,6 +72,14 @@ export function* getSections(file: string[]): Gen<[string, Gen<string>]> {
   }
 }
 
+// Parse single section
+export function* getSection(file: string[], startSection: string): Gen<string> {
+  let i = file.indexOf(startSection) + 1;
+  while (i < file.length && file[i][0] !== '[') {
+    yield file[i++];
+  }
+}
+
 // Parsing "key: value" lines
 export function parseKeyValue(line: string): [string, string] {
   const split = line.indexOf(':');

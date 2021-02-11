@@ -1,6 +1,5 @@
 import { SampleSetType } from '../SampleSet';
 import { getSections, parseColor, parseKeyValue, readFile } from '../util';
-import { parseTimingPoint, TimingPoint } from './TimingPointLoader';
 
 export interface BeatmapData {
   filepath: string; // Path to .osu file
@@ -21,9 +20,6 @@ export interface BeatmapData {
 
   // [Colours]
   colors: number[];
-
-  // Computed
-  timingPoints: TimingPoint[];
 }
 
 const DEFAULTS: BeatmapData = {
@@ -34,7 +30,6 @@ const DEFAULTS: BeatmapData = {
   ar: 5,
   sliderMultiplier: 1.4,
   sliderTickRate: 1,
-  timingPoints: [],
   colors: [],
 
   filepath: '',
@@ -88,10 +83,8 @@ export async function parseBeatmap(filepath: string) {
         break;
       }
       case '[TimingPoints]': {
-        for (const line of section) {
-          // TODO: timing point loading should be deferred too?
-          const tokens = line.split(',');
-          b.timingPoints.push(parseTimingPoint(tokens));
+        // Parse timing points later
+        for (const _ of section) {
         }
         break;
       }

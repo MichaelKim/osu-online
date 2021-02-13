@@ -1,17 +1,18 @@
 import * as PIXI from 'pixi.js';
 
 export default class Renderer {
-  renderer: PIXI.Renderer;
+  private renderer: PIXI.Renderer;
 
   // Stages
-  stage: PIXI.Container; // Base stage
+  private stage: PIXI.Container; // Base stage
   cursorStage: PIXI.Container; // Highest stage for cursor
-  gameStage: PIXI.Container; // Game field (osu!pixels with 4:3)
+  private gameStage: PIXI.Container; // Game field (osu!pixels with 4:3)
 
   // Substage
   notesStage: PIXI.Container; // Stage for hit objects
   hitResultStage: PIXI.Container; // Stage for hit results
   followStage: PIXI.Container; // Stage for follow points
+  displayStage: PIXI.Container; // Stage for other game elements
 
   constructor(view: HTMLCanvasElement) {
     this.renderer = new PIXI.Renderer({
@@ -27,7 +28,8 @@ export default class Renderer {
     this.stage = new PIXI.Container();
     this.cursorStage = new PIXI.Container();
     this.gameStage = new PIXI.Container();
-    this.stage.addChild(this.gameStage, this.cursorStage);
+    this.displayStage = new PIXI.Container();
+    this.stage.addChild(this.gameStage, this.cursorStage, this.displayStage);
 
     this.notesStage = new PIXI.Container();
     this.hitResultStage = new PIXI.Container();

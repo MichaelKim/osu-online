@@ -39,7 +39,19 @@ const assets = {
   spinnerGlow: 'spinner-glow.png',
   spinnerMiddle: 'spinner-middle.png',
   spinnerMiddle2: 'spinner-middle2.png',
-  spinnerTop: 'spinner-top.png'
+  spinnerTop: 'spinner-top.png',
+  score0: 'score-0.png',
+  score1: 'score-1.png',
+  score2: 'score-2.png',
+  score3: 'score-3.png',
+  score4: 'score-4.png',
+  score5: 'score-5.png',
+  score6: 'score-6.png',
+  score7: 'score-7.png',
+  score8: 'score-8.png',
+  score9: 'score-9.png',
+  scoreComma: 'score-comma.png',
+  scoreX: 'score-x.png'
 };
 
 type Resources = Record<keyof typeof assets, PIXI.LoaderResource>;
@@ -72,6 +84,9 @@ export default class Skin {
   followPoint?: PIXI.Texture;
   // Numbers
   numbers: Partial<Tuple<PIXI.Texture, 10>> = [];
+  scores: Partial<Tuple<PIXI.Texture, 10>> = [];
+  scoreComma?: PIXI.Texture;
+  scoreX?: PIXI.Texture;
   // Slider
   sliderb?: PIXI.Texture;
   sliderFollowCircle?: PIXI.Texture;
@@ -215,6 +230,21 @@ export default class Skin {
     this.spinnerMiddle = resources.spinnerMiddle?.texture;
     this.spinnerMiddle2 = resources.spinnerMiddle2?.texture;
     this.spinnerTop = resources.spinnerTop?.texture;
+
+    this.scores = [
+      resources.score0?.texture,
+      resources.score1?.texture,
+      resources.score2?.texture,
+      resources.score3?.texture,
+      resources.score4?.texture,
+      resources.score5?.texture,
+      resources.score6?.texture,
+      resources.score7?.texture,
+      resources.score8?.texture,
+      resources.score9?.texture
+    ];
+    this.scoreComma = resources.scoreComma?.texture;
+    this.scoreX = resources.scoreX?.texture;
   }
 
   async load() {

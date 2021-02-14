@@ -16,12 +16,12 @@ export default class GameState {
   combo: number = 0;
   hitResult: HitResultController;
   hitSound: HitSoundController;
-  gameDisplay: ComboDisplay;
+  comboDisplay: ComboDisplay;
 
   constructor(renderer: Renderer, skin: Skin) {
     this.hitResult = new HitResultController(renderer.hitResultStage, skin);
     this.hitSound = new HitSoundController(skin);
-    this.gameDisplay = new ComboDisplay(renderer.displayStage, skin);
+    this.comboDisplay = new ComboDisplay(renderer.displayStage, skin);
   }
 
   load(beatmap: Beatmap) {
@@ -30,25 +30,26 @@ export default class GameState {
 
   addResult(type: HitResultType, object: HitCircle, time: number) {
     if (type !== HitResultType.MISS) {
-      this.combo++;
+      this.setCombo(this.combo + 1, time);
       this.hitSound.playBaseSound(object.o.sampleSet, object.o.hitSound);
     } else {
-      // if (this.combo > 20)
-      this.combo++;
-      if (this.combo > 10) this.combo = 0;
+      this.setCombo(0, time);
     }
-    this.gameDisplay.setCombo(this.combo, time);
     this.hitResult.addResult(type, object.start, time);
   }
 
   addSliderHead(type: HitResultType, object: Slider, time: number) {
     if (type !== HitResultType.MISS) {
       this.addSliderEdge(object, time, 0);
+    } else {
+      this.setCombo(0, time);
     }
     this.hitResult.addResult(type, object.start, time);
   }
 
   addSliderTick(object: Slider, time: number) {
+    this.setCombo(this.combo + 1, time);
+
     this.hitSound.playSound(object.o.sampleSet, SliderHitSound.SLIDER_TICK);
   }
 
@@ -59,10 +60,20 @@ export default class GameState {
     const sampleSet =
       object.o.edgeSets[index]?.[setIndex] || object.o.sampleSet;
     this.hitSound.playBaseSound(sampleSet, hitSound);
+
+    // LAZER: slider ends don't add to combo
+    if (index !== object.o.edgeSounds.length - 1) {
+      this.setCombo(this.combo + 1, time);
+    }
+  }
+
+  private setCombo(combo: number, time: number) {
+    this.combo = combo;
+    this.comboDisplay.setCombo(this.combo, time);
   }
 
   update(time: number) {
     this.hitResult.update(time);
-    this.gameDisplay.update(time);
+    this.comboDisplay.update(time);
   }
 }

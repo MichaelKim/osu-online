@@ -41,20 +41,13 @@ class ComboContainer extends PIXI.Container {
   }
 }
 
-/*
-When new combo is added, (4 -> 5)
-- pop combo pops with new combo (5)
-- if the regular combo is still on the old combo (3), replace it with next (4)
-- if pop combo finishes pop, update regular combo (5)
-- when the regular combo updates (either delay from pop combo or pop combo is +2), pop it 
-*/
 type Update = (time: number) => boolean;
 type Node = {
   update: Update;
   next: Node[];
 };
 
-class Test {
+class Updater {
   updates: Node[] = [];
 
   // Clear all ongoing updates
@@ -62,36 +55,6 @@ class Test {
     this.updates = [];
     return this;
   }
-
-  // add<T extends []>(u: (time: number, ...args: T) => boolean, ...args: T) {
-  //   const node: Node = {
-  //     update: t => u(t, ...args),
-  //     next: []
-  //   };
-  //   this.updates.push(node);
-
-  //   let next = node.next;
-  //   const then = <U extends []>(
-  //     u: (time: number, ...args: U) => boolean,
-  //     ...args: U
-  //   ) => {
-  //     const nextNode: Node = {
-  //       update: t => u(t, ...args),
-  //       next: []
-  //     };
-  //     next.push(nextNode);
-  //     next = nextNode.next;
-  //     return {
-  //       add: this.add,
-  //       then
-  //     };
-  //   };
-
-  //   return {
-  //     add: this.add,
-  //     then
-  //   };
-  // }
 
   chain(...us: Update[]) {
     this.updates.push(
@@ -117,11 +80,13 @@ class Test {
   }
 }
 
+// TODO: add duration to updates?
+
 export default class ComboDisplay {
   // Graphics
   container: ComboContainer; // Regular combo display
   popContainer: ComboContainer; // "Pop" combo display
-  updates: Test = new Test();
+  updates: Updater = new Updater();
 
   constructor(stage: PIXI.Container, skin: Skin) {
     this.container = new ComboContainer(skin);

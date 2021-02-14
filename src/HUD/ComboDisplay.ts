@@ -1,6 +1,6 @@
 import * as PIXI from 'pixi.js';
 import Skin from '../Skin';
-import { clerp } from '../util';
+import { clerp, clerp01 } from '../util';
 
 const SCORE_DIGIT_WIDTH = 30;
 const COMBO_POP_TIME = 250;
@@ -9,77 +9,6 @@ const MAX_COMBO_DIGITS = 6;
 
 class ComboContainer extends PIXI.Container {
   combo: number = 0;
-  updateTime: number = 0;
-  sprites: PIXI.Sprite[] = [];
-
-  countdown: number = 0;
-
-  constructor(private skin: Skin) {
-    super();
-    const spriteHeight = skin.scores[0]?.height ?? 0;
-    for (let i = 0; i < MAX_COMBO_DIGITS; i++) {
-      const sprite = new PIXI.Sprite();
-      sprite.position.set((i + 0.5) * SCORE_DIGIT_WIDTH, -spriteHeight);
-      this.sprites.push(sprite);
-      this.addChild(sprite);
-    }
-  }
-
-  update(time: number) {
-    if (this.countdown > 0) {
-      const num = Math.round(
-        clerp(time - this.countdown, 0, 100, this.combo, 0)
-      );
-      this.setSprites(num);
-      if (num === 0) {
-        this.countdown = 0;
-        this.combo = 0;
-      }
-      return;
-    }
-
-    const delta = time - this.updateTime;
-    if (delta < COMBO_POP_2_TIME) {
-      this.scale.set(clerp(delta, 0, COMBO_POP_2_TIME, 2.2, 2));
-    } else {
-      this.scale.set(2);
-    }
-  }
-
-  setCombo(combo: number, time: number) {
-    if (combo === this.combo) return;
-    if (combo === 0) {
-      // Count down from this.combo to 0
-      this.countdown = time;
-      return;
-    }
-
-    this.countdown = 0;
-    this.combo = combo;
-    this.updateTime = time;
-    this.setSprites(combo);
-  }
-
-  setSprites(value: number) {
-    const length = value === 0 ? 1 : Math.floor(Math.log10(value) + 1);
-    for (let i = this.sprites.length - 1; i > length; i--) {
-      this.sprites[i].texture = PIXI.Texture.EMPTY;
-    }
-
-    this.sprites[length].texture = this.skin.scoreX || PIXI.Texture.EMPTY;
-
-    for (let i = length - 1; i >= 0; i--) {
-      const digit = Math.floor(value % 10);
-      this.sprites[i].texture = this.skin.scores[digit] || PIXI.Texture.EMPTY;
-
-      value /= 10;
-    }
-  }
-}
-
-class PopComboContainer extends PIXI.Container {
-  combo: number = 0;
-  updateTime: number = 0;
   sprites: PIXI.Sprite[] = [];
 
   constructor(private skin: Skin) {
@@ -93,30 +22,10 @@ class PopComboContainer extends PIXI.Container {
     }
   }
 
-  update(time: number) {
-    const delta = time - this.updateTime;
-
-    if (delta < COMBO_POP_TIME) {
-      this.visible = true;
-      this.scale.set(clerp(delta, 0, COMBO_POP_TIME, 3, 2));
-      return false;
-    } else {
-      this.visible = false;
-      return true;
-    }
-  }
-
-  setCombo(combo: number, time: number) {
-    if (this.combo === combo) return;
-
+  setCombo(combo: number) {
     this.combo = combo;
-    this.updateTime = time;
-    this.visible = true;
-    this.setSprites(combo);
-  }
 
-  setSprites(value: number) {
-    const length = Math.floor(Math.log10(value) + 1);
+    const length = combo === 0 ? 1 : Math.floor(Math.log10(combo) + 1);
     for (let i = this.sprites.length - 1; i > length; i--) {
       this.sprites[i].texture = PIXI.Texture.EMPTY;
     }
@@ -124,10 +33,10 @@ class PopComboContainer extends PIXI.Container {
     this.sprites[length].texture = this.skin.scoreX || PIXI.Texture.EMPTY;
 
     for (let i = length - 1; i >= 0; i--) {
-      const digit = Math.floor(value % 10);
+      const digit = Math.floor(combo % 10);
       this.sprites[i].texture = this.skin.scores[digit] || PIXI.Texture.EMPTY;
 
-      value /= 10;
+      combo /= 10;
     }
   }
 }
@@ -139,15 +48,84 @@ When new combo is added, (4 -> 5)
 - if pop combo finishes pop, update regular combo (5)
 - when the regular combo updates (either delay from pop combo or pop combo is +2), pop it 
 */
+type Update = (time: number) => boolean;
+type Node = {
+  update: Update;
+  next: Node[];
+};
+
+class Test {
+  updates: Node[] = [];
+
+  // Clear all ongoing updates
+  clear() {
+    this.updates = [];
+    return this;
+  }
+
+  // add<T extends []>(u: (time: number, ...args: T) => boolean, ...args: T) {
+  //   const node: Node = {
+  //     update: t => u(t, ...args),
+  //     next: []
+  //   };
+  //   this.updates.push(node);
+
+  //   let next = node.next;
+  //   const then = <U extends []>(
+  //     u: (time: number, ...args: U) => boolean,
+  //     ...args: U
+  //   ) => {
+  //     const nextNode: Node = {
+  //       update: t => u(t, ...args),
+  //       next: []
+  //     };
+  //     next.push(nextNode);
+  //     next = nextNode.next;
+  //     return {
+  //       add: this.add,
+  //       then
+  //     };
+  //   };
+
+  //   return {
+  //     add: this.add,
+  //     then
+  //   };
+  // }
+
+  chain(...us: Update[]) {
+    this.updates.push(
+      ...us.reduceRight<Node[]>(
+        (next, u) => [
+          {
+            update: u,
+            next
+          }
+        ],
+        []
+      )
+    );
+  }
+
+  update(time: number) {
+    this.updates = this.updates.flatMap(u => {
+      if (u.update(time)) {
+        return u.next;
+      }
+      return u;
+    });
+  }
+}
 
 export default class ComboDisplay {
   // Graphics
   container: ComboContainer; // Regular combo display
-  popContainer: PopComboContainer; // "Pop" combo display
+  popContainer: ComboContainer; // "Pop" combo display
+  updates: Test = new Test();
 
   constructor(stage: PIXI.Container, skin: Skin) {
     this.container = new ComboContainer(skin);
-    this.popContainer = new PopComboContainer(skin);
+    this.popContainer = new ComboContainer(skin);
 
     // Set to bottom-right
     const margin = window.innerWidth * 0.008;
@@ -161,25 +139,97 @@ export default class ComboDisplay {
 
   setCombo(combo: number, time: number) {
     if (combo === 0) {
+      // Hide pop
       this.popContainer.visible = false;
-      this.container.setCombo(0, time);
+      this.popContainer.setCombo(0);
+
+      const startCombo = this.container.combo;
+
+      const countdown = (t: number) => {
+        // Count down from this.combo to 0
+        const num = Math.round(clerp(t - time, 0, 100, startCombo, 0));
+        this.container.setCombo(num);
+        return num === 0;
+      };
+
+      const fadeOut = (t: number) => {
+        // Fade out
+        const alpha = 1 - clerp01(t - time - 100, 0, 100);
+        this.container.alpha = alpha;
+        return alpha === 0;
+      };
+
+      this.updates.clear().chain(countdown, fadeOut);
       return;
     }
 
-    if (this.popContainer.visible) {
+    if (this.popContainer.combo !== this.container.combo) {
       // Previous pop still ongoing, force update regular combo
-      this.container.setCombo(this.popContainer.combo, time);
+      this.container.setCombo(this.popContainer.combo);
+
+      const popCombo = (t: number) => {
+        // Pop combo number
+        const scale = clerp(
+          t - time - COMBO_POP_TIME,
+          0,
+          COMBO_POP_2_TIME,
+          2.2,
+          2
+        );
+        this.container.scale.set(scale);
+        return scale === 2;
+      };
+
+      const popBoth = (t: number) => {
+        // Pop both counters
+        const delta = t - time;
+        const comboScale = clerp(delta, 0, COMBO_POP_2_TIME, 2.2, 2);
+        this.container.scale.set(comboScale);
+
+        const popScale = clerp(delta, 0, COMBO_POP_TIME, 3, 2);
+        this.popContainer.scale.set(popScale);
+
+        return comboScale === 2 && popScale === 2;
+      };
+
+      this.updates.clear().chain(popBoth, this.hide, popCombo);
+    } else {
+      const popPop = (t: number) => {
+        // Pop pop
+        const scale = clerp(t - time, 0, COMBO_POP_TIME, 3, 2);
+        this.popContainer.scale.set(scale);
+        return scale === 2;
+      };
+
+      const popCombo = (t: number) => {
+        // Pop combo number
+        const scale = clerp(
+          t - time - COMBO_POP_TIME,
+          0,
+          COMBO_POP_2_TIME,
+          2.2,
+          2
+        );
+        this.container.scale.set(scale);
+        return scale === 2;
+      };
+
+      this.updates.chain(popPop, this.hide, popCombo);
     }
 
-    this.popContainer.setCombo(combo, time);
+    this.container.alpha = 1;
+    this.popContainer.visible = true;
+    this.popContainer.setCombo(combo);
+  }
+
+  hide() {
+    // Pop done, copy to regular
+    this.container.setCombo(this.popContainer.combo);
+    this.popContainer.visible = false;
+    return true;
   }
 
   update(time: number) {
-    if (this.popContainer.visible && this.popContainer.update(time)) {
-      // Pop done, copy to regular
-      this.container.setCombo(this.popContainer.combo, time);
-    }
-
-    this.container.update(time);
+    this.updates.update(time);
   }
 }

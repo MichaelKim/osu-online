@@ -48,14 +48,12 @@ export default class Game {
     await this.skin.load();
 
     this.cursor = new Cursor(this.renderer.cursorStage, this.skin);
+    this.gameState = new GameState(this.renderer, this.skin);
     this.input.start();
   }
 
   async loadBeatmap(data: BeatmapData) {
-    this.gameState = new GameState(this.renderer, this.skin);
     this.beatmap = new Beatmap(data, this.audio, this.gameState);
-
-    this.gameState.load(this.beatmap);
     await this.beatmap.load(this.renderer.notesStage, this.skin);
 
     this.followPoint = new FollowPointController(

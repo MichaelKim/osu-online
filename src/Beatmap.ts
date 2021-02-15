@@ -20,6 +20,8 @@ export default class Beatmap {
   ) {}
 
   async load(stage: PIXI.Container, skin: Skin) {
+    this.gameState.load(this);
+
     this.notes = await loadHitObjects(this.data, skin, this.gameState);
 
     // stage.removeChildren();

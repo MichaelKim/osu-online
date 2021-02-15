@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js';
-import { HitResultType } from './HitResultController';
+import { HitCircleHitResultType, HitResultType } from './HitResultController';
 import SampleSetData, { SampleSetType } from './SampleSet';
 import {
   getSections,
@@ -99,7 +99,7 @@ export default class Skin {
   spinnerMiddle2?: PIXI.Texture;
   spinnerTop?: PIXI.Texture;
   // Hits
-  hits: Partial<Record<HitResultType, PIXI.Texture>> = {};
+  hits: Partial<Record<HitCircleHitResultType, PIXI.Texture>> = {};
 
   // Sounds
   sampleSets: Record<SampleSetType, SampleSetData> = {

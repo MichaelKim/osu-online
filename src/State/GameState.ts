@@ -1,12 +1,15 @@
 import Beatmap from '../Beatmap';
 import HitCircle from '../HitObjects/HitCircle';
 import Slider from '../HitObjects/Slider';
-import HitResultController, { HitResultType } from '../HitResultController';
+import HitResultController, {
+  HitCircleHitResultType,
+  HitResultType
+} from '../HitResultController';
 import HitSoundController, { SliderHitSound } from '../HitSoundController';
 import Renderer from '../Renderer';
 import Skin from '../Skin';
 import { csToSize } from '../timing';
-import ScoreState, { SliderHitResultType } from './ScoreState';
+import ScoreState from './ScoreState';
 
 export default class GameState {
   hitResult: HitResultController;
@@ -21,9 +24,10 @@ export default class GameState {
 
   load(beatmap: Beatmap) {
     this.hitResult.loadDiameter(csToSize(beatmap.data.cs));
+    this.scoreState.load(beatmap);
   }
 
-  addResult(type: HitResultType, object: HitCircle, time: number) {
+  addResult(type: HitCircleHitResultType, object: HitCircle, time: number) {
     if (type !== HitResultType.MISS) {
       this.hitSound.playBaseSound(object.o.sampleSet, object.o.hitSound);
     }
@@ -32,7 +36,7 @@ export default class GameState {
     this.hitResult.addResult(type, object.start, time);
   }
 
-  addSliderHead(type: HitResultType, object: Slider, time: number) {
+  addSliderHead(type: HitCircleHitResultType, object: Slider, time: number) {
     if (type !== HitResultType.MISS) {
       this.hitSound.playSliderEdge(object.o, 0);
     }
@@ -43,11 +47,11 @@ export default class GameState {
 
   addSliderTick(object: Slider, time: number) {
     this.hitSound.playSound(object.o.sampleSet, SliderHitSound.SLIDER_TICK);
-    this.scoreState.addResult(SliderHitResultType.TICK_HIT, time);
+    this.scoreState.addResult(HitResultType.TICK_HIT, time);
   }
 
   missSliderTick(object: Slider, time: number) {
-    this.scoreState.addResult(SliderHitResultType.TICK_MISS, time);
+    this.scoreState.addResult(HitResultType.TICK_MISS, time);
   }
 
   addSliderEdge(object: Slider, time: number, index: number) {
@@ -55,14 +59,14 @@ export default class GameState {
 
     // LAZER: slider ends don't add to combo
     if (index !== object.o.edgeSounds.length - 1) {
-      this.scoreState.addResult(SliderHitResultType.EDGE_HIT, time);
+      this.scoreState.addResult(HitResultType.EDGE_HIT, time);
     }
   }
 
   missSliderEdge(object: Slider, time: number, index: number) {
     // LAZER: slider ends don't add to combo
     if (index !== object.o.edgeSounds.length - 1) {
-      this.scoreState.addResult(SliderHitResultType.EDGE_MISS, time);
+      this.scoreState.addResult(HitResultType.EDGE_MISS, time);
     }
   }
 

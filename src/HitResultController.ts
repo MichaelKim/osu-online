@@ -7,8 +7,20 @@ export enum HitResultType {
   MISS,
   HIT50,
   HIT100,
-  HIT300
+  HIT300,
+  TICK_HIT,
+  TICK_MISS,
+  EDGE_HIT,
+  EDGE_MISS,
+  SPIN_TICK,
+  SPIN_BONUS
 }
+
+export type HitCircleHitResultType =
+  | HitResultType.MISS
+  | HitResultType.HIT50
+  | HitResultType.HIT100
+  | HitResultType.HIT300;
 
 class HitResult {
   sprite: PIXI.Sprite;
@@ -17,7 +29,7 @@ class HitResult {
     texture: PIXI.Texture | undefined,
     position: PIXI.Point,
     diameter: number,
-    public type: HitResultType,
+    public type: HitCircleHitResultType,
     private t: number
   ) {
     this.sprite = initSprite(texture, position, diameter);
@@ -65,7 +77,7 @@ class HitResult {
 export default class HitResultController {
   diameter: number = 0;
 
-  free: Record<HitResultType, HitResult[]> = {
+  free: Record<HitCircleHitResultType, HitResult[]> = {
     [HitResultType.MISS]: [],
     [HitResultType.HIT50]: [],
     [HitResultType.HIT100]: [],
@@ -79,7 +91,7 @@ export default class HitResultController {
     this.diameter = diameter;
   }
 
-  addResult(type: HitResultType, position: PIXI.Point, t: number) {
+  addResult(type: HitCircleHitResultType, position: PIXI.Point, t: number) {
     if (this.free[type].length > 0) {
       const result = this.free[type].pop()!;
       result.reset(position, t);

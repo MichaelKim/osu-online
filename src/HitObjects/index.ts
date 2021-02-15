@@ -40,7 +40,7 @@ export function initCircleSprite(
 // Common sprite initialization
 export function initSprite(
   texture?: PIXI.Texture,
-  position: PIXI.Point = new PIXI.Point(),
+  position: PIXI.IPointData = { x: 0, y: 0 },
   size: number = 0
 ) {
   const sprite = new PIXI.Sprite(texture);

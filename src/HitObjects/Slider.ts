@@ -337,14 +337,17 @@ export default class Slider {
 
     // Update slider ticks
     this.s.tickSprites.forEach(t => {
-      if (this.state === State.ACTIVE) {
-        // Check for hit ticks
-        if (t.progress > this.lastProgress && t.progress < progress) {
-          // Tick's progress was between last frame and this frame
+      // Check for hit ticks
+      if (t.progress > this.lastProgress && t.progress < progress) {
+        // Tick's progress was between last frame and this frame
+        if (this.state === State.ACTIVE) {
           t.hit = true;
           this.gameState.addSliderTick(this, time);
+        } else {
+          this.gameState.missSliderTick(this, time);
         }
       }
+
       t.update(time);
     });
 
@@ -352,9 +355,11 @@ export default class Slider {
     const lastForwards = Math.floor(this.lastProgress) % 2 === 0; // Slider direction last frame
     if (lastForwards !== forwards) {
       // Switched direction
+      const currentSlide = Math.floor(progress);
       if (this.state === State.ACTIVE) {
-        const currentSlide = Math.floor(progress);
         this.gameState.addSliderEdge(this, time, currentSlide);
+      } else {
+        this.gameState.missSliderEdge(this, time, currentSlide);
       }
     }
 

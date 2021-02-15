@@ -1,3 +1,4 @@
+import { SliderData } from './Loader/SliderLoader';
 import { SampleSetType } from './SampleSet';
 import Skin from './Skin';
 
@@ -32,6 +33,14 @@ export default class HitSoundController {
     if (hitSound & BaseHitSound.CLAP) {
       this.playSound(sampleSet, BaseHitSound.CLAP);
     }
+  }
+
+  playSliderEdge(slider: SliderData, index: number) {
+    const hitSound = slider.edgeSounds[index] || slider.hitSound;
+    // [normal, addition]
+    const setIndex = hitSound === BaseHitSound.NORMAL ? 0 : 1;
+    const sampleSet = slider.edgeSets[index]?.[setIndex] || slider.sampleSet;
+    this.playBaseSound(sampleSet, hitSound);
   }
 
   playSound(sampleSet: SampleSetType, hitSound: HitSoundType) {

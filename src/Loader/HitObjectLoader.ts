@@ -1,4 +1,4 @@
-import GameState from '../GameState';
+import GameState from '../State/GameState';
 import { HitObject, HitObjectTypes } from '../HitObjects';
 import HitCircle from '../HitObjects/HitCircle';
 import Slider from '../HitObjects/Slider';

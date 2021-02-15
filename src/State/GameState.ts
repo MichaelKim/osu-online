@@ -1,15 +1,15 @@
-import Beatmap from './Beatmap';
-import HitCircle from './HitObjects/HitCircle';
-import Slider from './HitObjects/Slider';
-import HitResultController, { HitResultType } from './HitResultController';
+import Beatmap from '../Beatmap';
+import HitCircle from '../HitObjects/HitCircle';
+import Slider from '../HitObjects/Slider';
+import HitResultController, { HitResultType } from '../HitResultController';
 import HitSoundController, {
   BaseHitSound,
   SliderHitSound
-} from './HitSoundController';
-import ComboDisplay from './HUD/ComboDisplay';
-import Renderer from './Renderer';
-import Skin from './Skin';
-import { csToSize } from './timing';
+} from '../HitSoundController';
+import ComboDisplay from '../HUD/ComboDisplay';
+import Renderer from '../Renderer';
+import Skin from '../Skin';
+import { csToSize } from '../timing';
 
 export default class GameState {
   score: number = 0;

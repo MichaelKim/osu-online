@@ -1,6 +1,6 @@
 import * as PIXI from 'pixi.js';
 import AudioController from './AudioController';
-import GameState from './GameState';
+import GameState from './State/GameState';
 import { HitObject, HitObjectTypes } from './HitObjects';
 import { BeatmapData } from './Loader/BeatmapLoader';
 import { loadHitObjects } from './Loader/HitObjectLoader';

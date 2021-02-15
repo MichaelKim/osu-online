@@ -7,7 +7,7 @@ import {
   SLIDER_FADE_OUT_MS
 } from '.';
 import { pointAt } from '../Curve';
-import GameState from '../GameState';
+import GameState from '../State/GameState';
 import { HitResultType } from '../HitResultController';
 import { BeatmapData } from '../Loader/BeatmapLoader';
 import {

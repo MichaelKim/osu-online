@@ -3,7 +3,7 @@ import Beatmap from './Beatmap';
 import Clock from './Clock';
 import Cursor from './Cursor';
 import FollowPointController from './FollowPointController';
-import GameState from './GameState';
+import GameState from './State/GameState';
 import InputController, { InputType } from './InputController';
 import { BeatmapData } from './Loader/BeatmapLoader';
 import { initLock, lockPointer } from './lock';

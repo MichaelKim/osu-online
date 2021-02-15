@@ -1,6 +1,6 @@
 import * as PIXI from 'pixi.js';
 import { APPROACH_R, FADE_OUT_MS, HitObjectTypes } from '.';
-import GameState from '../GameState';
+import GameState from '../State/GameState';
 import { HitResultType } from '../HitResultController';
 import { BeatmapData } from '../Loader/BeatmapLoader';
 import {

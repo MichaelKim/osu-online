@@ -92,7 +92,7 @@ export default class ComboDisplay {
     this.container = new ComboContainer(skin);
     this.popContainer = new ComboContainer(skin);
 
-    // Set to bottom-right
+    // Set to bottom-left
     const margin = window.innerWidth * 0.008;
     this.container.position.set(margin, window.innerHeight - margin);
     this.popContainer.position.set(margin, window.innerHeight - margin);
@@ -187,12 +187,12 @@ export default class ComboDisplay {
     this.popContainer.setCombo(combo);
   }
 
-  hide() {
+  hide = () => {
     // Pop done, copy to regular
     this.container.setCombo(this.popContainer.combo);
     this.popContainer.visible = false;
     return true;
-  }
+  };
 
   update(time: number) {
     this.updates.update(time);

@@ -294,6 +294,10 @@ export default class Slider {
       this.s.circleSprite.position.copyFrom(this.position);
       this.s.numberSprites.position.copyFrom(this.position);
       this.s.approachSprite.position.copyFrom(this.position);
+    } else if (this.headHit === 0) {
+      // Head missed
+      this.headHit = this.o.t + this.hitWindows[HitResultType.HIT50];
+      this.gameState.addSliderHead(HitResultType.MISS, this, time);
     } else {
       // Fade out head
       const hitTime =

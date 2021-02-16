@@ -63,14 +63,14 @@ export default class GameState {
     this.hitSound.playSliderEdge(object.o, index);
 
     // LAZER: slider ends don't add to combo
-    if (index !== object.o.edgeSounds.length - 1) {
+    if (index !== object.o.slides) {
       this.scoreState.addResult(HitResultType.EDGE_HIT, time);
     }
   }
 
   missSliderEdge(object: Slider, time: number, index: number) {
     // LAZER: slider ends don't add to combo
-    if (index !== object.o.edgeSounds.length - 1) {
+    if (index !== object.o.slides) {
       this.scoreState.addResult(HitResultType.EDGE_MISS, time);
     }
   }

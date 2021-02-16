@@ -243,7 +243,7 @@ export default class Slider {
       // Check if slider is finished
       if (this.state === State.ACTIVE) {
         // Play slider end hit sound
-        this.gameState.addSliderEdge(this, time, this.o.edgeSounds.length - 1);
+        this.gameState.addSliderEdge(this, time, this.o.slides);
       }
     }
 
@@ -356,10 +356,12 @@ export default class Slider {
     if (lastForwards !== forwards) {
       // Switched direction
       const currentSlide = Math.floor(progress);
-      if (this.state === State.ACTIVE) {
-        this.gameState.addSliderEdge(this, time, currentSlide);
-      } else {
-        this.gameState.missSliderEdge(this, time, currentSlide);
+      if (currentSlide >= 1 && currentSlide < this.o.slides) {
+        if (this.state === State.ACTIVE) {
+          this.gameState.addSliderEdge(this, time, currentSlide);
+        } else {
+          this.gameState.missSliderEdge(this, time, currentSlide);
+        }
       }
     }
 

@@ -58,6 +58,7 @@ export function parseTimingPoints(file: string[]) {
   return timingPoints;
 }
 
+// TODO: not being used?
 export function normalize(points: TimingPoint[]) {
   // Convert all timing points into uninherited ones
   const normPoints = [];

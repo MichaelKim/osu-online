@@ -1,6 +1,7 @@
 import Beatmap from '../Beatmap';
 import HitCircle from '../HitObjects/HitCircle';
 import Slider from '../HitObjects/Slider';
+import Spinner from '../HitObjects/Spinner';
 import HitResultController, {
   HitCircleHitResultType,
   HitResultType
@@ -27,7 +28,11 @@ export default class GameState {
     this.scoreState.load(beatmap);
   }
 
-  addResult(type: HitCircleHitResultType, object: HitCircle, time: number) {
+  addResult(
+    type: HitCircleHitResultType,
+    object: HitCircle | Spinner,
+    time: number
+  ) {
     if (type !== HitResultType.MISS) {
       this.hitSound.playBaseSound(object.o.sampleSet, object.o.hitSound);
     }
@@ -68,6 +73,15 @@ export default class GameState {
     if (index !== object.o.edgeSounds.length - 1) {
       this.scoreState.addResult(HitResultType.EDGE_MISS, time);
     }
+  }
+
+  addSpinnerTick(
+    type: HitResultType.SPIN_TICK | HitResultType.SPIN_BONUS,
+    object: Spinner,
+    time: number
+  ) {
+    this.scoreState.addResult(type, time);
+    // TODO: play sound
   }
 
   update(time: number) {

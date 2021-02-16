@@ -38,6 +38,14 @@ export function clerp(
   return clamp(l, r2, l2);
 }
 
+// lerp val from [0, 5] -> [min, mid] and [5, 10] -> [mid, max]
+export function range(val: number, min: number, mid: number, max: number) {
+  if (val <= 5) {
+    return lerp(val, 0, 5, min, mid);
+  }
+  return lerp(val, 5, 10, mid, max);
+}
+
 export type Tuple<
   T,
   N extends number,

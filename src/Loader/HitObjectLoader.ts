@@ -169,7 +169,7 @@ export async function loadHitObjects(
       case HitObjectTypes.SLIDER:
         return new Slider(n, beatmap, skin, gameState);
       case HitObjectTypes.SPINNER:
-        return new Spinner(n, skin);
+        return new Spinner(n, skin, gameState);
     }
   });
 }

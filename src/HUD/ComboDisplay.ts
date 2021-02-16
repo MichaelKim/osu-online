@@ -103,6 +103,10 @@ export default class ComboDisplay {
   }
 
   setCombo(combo: number, time: number) {
+    if (this.popContainer.combo === combo) {
+      return;
+    }
+
     if (combo === 0) {
       // Hide pop
       this.popContainer.visible = false;

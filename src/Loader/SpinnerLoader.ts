@@ -3,6 +3,7 @@ import { HitObjectTypes, initSprite } from '../HitObjects';
 import { BaseHitSound } from '../HitSoundController';
 import { parseHitSample } from '../SampleSet';
 import Skin from '../Skin';
+import { range } from '../util';
 import { BeatmapData } from './BeatmapLoader';
 import { TimingPoint } from './TimingPointLoader';
 
@@ -15,7 +16,13 @@ export interface SpinnerData {
   sampleSet: number;
   additionSet: number;
   rotationsNeeded: number;
+  maxBonusSpins: number;
 }
+
+// 480rpm (osu!lazer) ~ 477rpm (osu!stable)
+const MAX_ROTATIONS_PER_SEC = 8;
+// lazer to stable adjustment factor
+const STABLE_ADJUST = 0.6;
 
 export function parseSpinner(
   tokens: string[],
@@ -31,9 +38,13 @@ export function parseSpinner(
   const sampleSet = hitSample[0] || timingPoint.sampleSet || beatmap.sampleSet;
   const additionSet = hitSample[1] || sampleSet;
 
-  // Compute required rotations (Taken from opsu)
-  const spinsPerMinute = 100 + beatmap.od * 15;
-  const rotationsNeeded = (spinsPerMinute * (endTime - t)) / 60000;
+  // Compute required rotations
+  const duration = (endTime - t) / 1000; // In seconds
+  const minRotationsPerSec = STABLE_ADJUST * range(beatmap.od, 3, 5, 7.5);
+  const rotationsNeeded = Math.floor(duration * minRotationsPerSec);
+  const maxBonusSpins = Math.floor(
+    (MAX_ROTATIONS_PER_SEC - minRotationsPerSec) * duration
+  );
 
   return {
     position: new PIXI.Point(256, 192),
@@ -43,7 +54,8 @@ export function parseSpinner(
     endTime,
     sampleSet,
     additionSet,
-    rotationsNeeded
+    rotationsNeeded,
+    maxBonusSpins
   };
 }
 

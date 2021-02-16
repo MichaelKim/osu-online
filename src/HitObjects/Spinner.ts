@@ -1,17 +1,47 @@
 import * as PIXI from 'pixi.js';
 import { HitObjectTypes } from '.';
+import { HitResultType } from '../HitResultController';
 import {
   loadSpinnerSprites,
   SpinnerData,
   SpinnerSprites
 } from '../Loader/SpinnerLoader';
 import Skin from '../Skin';
-import { clamp, clerp, clerp01 } from '../util';
+import GameState from '../State/GameState';
+import { clamp, clerp, clerp01, lerp } from '../util';
 
 const SPINNER_FADE_OUT_MS = 150;
-const DELTA_UPDATE_TIME = 1000 / 60;
-const MAX_ANGLE_DIFF = 5 / 6;
 const TWO_PI = 2 * Math.PI;
+
+// Keeps track of a rolling average rpm
+interface SpinRecord {
+  rotation: number; // Cumulative rotation made
+  time: number;
+}
+
+const MAX_RECORD_DURATION = 595;
+
+class SpinnerCounter {
+  rpm: number = 0;
+  private records: SpinRecord[] = [];
+
+  addRecord(rotation: number, time: number) {
+    // Remove old records
+    if (this.records.length > 0) {
+      // In case
+      let r = this.records[0];
+      while (this.records.length > 0 && time - r.time > MAX_RECORD_DURATION) {
+        r = this.records.shift()!;
+      }
+
+      this.rpm = Math.floor(
+        (((rotation - r.rotation) / (time - r.time)) * 1000 * 60) / TWO_PI
+      );
+    }
+
+    this.records.push({ rotation, time });
+  }
+}
 
 export default class Spinner {
   readonly type = HitObjectTypes.SPINNER;
@@ -22,17 +52,15 @@ export default class Spinner {
   // Gameplay
   // All times are in ms (except for rpm) and angles are in radians
   private down: boolean = false; // Whether the spinner is held down or not
+  private rotations: number = 0; // Number of rotations made so far
+  private position: PIXI.Point = new PIXI.Point(); // Position of cursor
   private lastAngle: number = 0; // Angle of cursor last frame
   private lastTime: number = 0; // Time of last frame
-  private deltaAngleOverflow: number = 0; // Unprocessed delta angle
-  private deltaTimeOverflow: number = 0; // Unprocessed time
-  private storedDeltaAngle: number[] = []; // Ring buffer of previous angles
-  private sumDeltaAngle: number = 0; // Sum of storedDeltaAngle
-  private deltaAngleIndex: number = 0; // Latest index in storedDeltaAngle
-  private rotations: number = 0; // Number of rotations made so far
+  private currentRotations: number = 0; // Actual rotation of sprites (before dampen)
+  private lastSpins: number = 0; // Rotations made last frame
+  private counter: SpinnerCounter = new SpinnerCounter();
 
   // Rendering
-  private drawnRPM: number = 0; // Displayed RPM
   private drawnAngle: number = 0; // Sprite rotation
   private text: PIXI.Text = new PIXI.Text('', {
     fill: 0xffffff,
@@ -41,20 +69,15 @@ export default class Spinner {
   });
   finished: number = 0;
 
-  constructor(readonly o: SpinnerData, skin: Skin) {
+  constructor(
+    readonly o: SpinnerData,
+    skin: Skin,
+    private gameState: GameState
+  ) {
     this.s = loadSpinnerSprites(this.o, skin);
 
     this.text.anchor.set(0.5);
     this.text.position.set(256, 356);
-
-    const minVel = 12;
-    const maxVel = 48;
-    const minTime = 2000;
-    const maxTime = 5000;
-    const maxStoredDeltaAngles = Math.floor(
-      clerp(this.o.endTime - this.o.t, minTime, maxTime, minVel, maxVel)
-    );
-    this.storedDeltaAngle = new Array(maxStoredDeltaAngles).fill(0);
   }
 
   addToStage(stage: PIXI.Container) {
@@ -66,24 +89,44 @@ export default class Spinner {
     this.text.visible = visible;
   }
 
+  get start() {
+    return this.o.position;
+  }
+
   get enter() {
     return this.o.t;
+  }
+
+  private getHitResult() {
+    const progress = this.rotations / this.o.rotationsNeeded;
+    if (progress >= 1) {
+      return HitResultType.HIT300;
+    }
+    if (progress > 0.9) {
+      return HitResultType.HIT100;
+    }
+    if (progress > 0.75) {
+      return HitResultType.HIT50;
+    }
+    return HitResultType.MISS;
   }
 
   update(time: number) {
     // Always finished once endTime is reached
     if (time > this.o.endTime) {
-      this.finished = this.o.endTime;
+      if (this.finished === 0) {
+        // Just finished, get score
+        this.finished = this.o.endTime;
+        const result = this.getHitResult();
+        this.gameState.addResult(result, this, time);
+      }
+
+      // Fade out
       const alpha = 1 - clerp01(time - this.o.endTime, 0, SPINNER_FADE_OUT_MS);
       this.s.container.alpha = alpha;
       this.text.alpha = alpha;
 
       return time > this.o.endTime + SPINNER_FADE_OUT_MS;
-    }
-
-    // Too early
-    if (time < this.o.t - 150) {
-      return false;
     }
 
     // Fade in
@@ -97,52 +140,50 @@ export default class Spinner {
     this.s.container.alpha = 1;
     this.text.alpha = 1;
 
-    // Update elapsed time
-    this.deltaTimeOverflow += time - this.lastTime;
-    this.lastTime = time;
+    // Calculate angle
+    const angle = Math.atan2(
+      this.position.y - this.o.position.y,
+      this.position.x - this.o.position.x
+    );
 
-    while (this.deltaTimeOverflow >= DELTA_UPDATE_TIME) {
-      // Calculate angle moved
-      const deltaAngle = clamp(
-        (this.deltaAngleOverflow * DELTA_UPDATE_TIME) / this.deltaTimeOverflow,
-        -MAX_ANGLE_DIFF,
-        MAX_ANGLE_DIFF
-      );
-      // Remove from overflow
-      this.deltaAngleOverflow -= deltaAngle;
-      this.deltaTimeOverflow -= DELTA_UPDATE_TIME;
-      // Update sum
-      this.sumDeltaAngle +=
-        deltaAngle - this.storedDeltaAngle[this.deltaAngleIndex];
-      this.storedDeltaAngle[this.deltaAngleIndex] = deltaAngle;
-      this.deltaAngleIndex =
-        (this.deltaAngleIndex + 1) % this.storedDeltaAngle.length;
+    if (this.down && time >= this.o.t && time <= this.o.t + this.o.endTime) {
+      // Set angleDiff to [-pi, pi]
+      let deltaAngle = angle - this.lastAngle;
+      if (deltaAngle < -Math.PI) deltaAngle += TWO_PI;
+      else if (deltaAngle > Math.PI) deltaAngle -= TWO_PI;
 
-      // Calculate rolling window angle
-      const rotationAngle = clamp(
-        this.sumDeltaAngle / this.storedDeltaAngle.length,
-        -MAX_ANGLE_DIFF,
-        MAX_ANGLE_DIFF
-      );
-      const rotationPerSec =
-        (rotationAngle * (1000 / DELTA_UPDATE_TIME)) / TWO_PI;
-
-      this.drawnRPM = Math.floor(Math.abs(rotationPerSec * 60));
-
-      // Rotate
-      this.drawnAngle += rotationAngle;
-      const newRotations = this.rotations + Math.abs(rotationAngle) / TWO_PI;
-      if (Math.floor(newRotations) > this.rotations) {
-        if (newRotations > this.o.rotationsNeeded) {
-          console.log('bonus rotation');
-          // TODO: flash spinner-glow
-        } else {
-          console.log('new rotation');
-        }
-      }
-
-      this.rotations = newRotations;
+      this.currentRotations += deltaAngle;
+      this.rotations += Math.abs(deltaAngle);
     }
+
+    // Update counter
+    this.counter.addRecord(this.rotations, time);
+
+    // Get progress
+    const spins = Math.floor(this.rotations / TWO_PI);
+    while (this.lastSpins < spins) {
+      if (this.lastSpins < this.o.rotationsNeeded) {
+        // Regular tick
+        this.gameState.addSpinnerTick(HitResultType.SPIN_TICK, this, time);
+      } else {
+        // Bonus tick
+        this.gameState.addSpinnerTick(HitResultType.SPIN_BONUS, this, time);
+      }
+      this.lastSpins++;
+    }
+
+    // Update visible rotation
+    const deltaTime = time - this.lastTime;
+    this.drawnAngle = lerp(
+      1 - Math.pow(0.99, deltaTime),
+      0,
+      1,
+      this.drawnAngle,
+      this.currentRotations
+    );
+
+    this.lastAngle = angle;
+    this.lastTime = time;
 
     // Rotate sprites
     this.s.bottomSprite.rotation = this.drawnAngle / 7;
@@ -159,42 +200,22 @@ export default class Spinner {
     const red = (1 - progress) * 255;
     this.s.middleSprite.tint = 0xff0000 | (red << 8) | red;
 
-    this.text.text = `${this.drawnRPM} RPM`;
+    this.text.text = `${this.counter.rpm} RPM`;
 
     return false;
   }
 
   hit(time: number, position: PIXI.Point) {
     this.down = true;
-    this.lastTime = time;
-    this.lastAngle = Math.atan2(
-      position.y - this.o.position.y,
-      position.x - this.o.position.x
-    );
+    this.position = position;
   }
 
   move(time: number, position: PIXI.Point) {
-    if (!this.down) return;
-
-    const angle = Math.atan2(
-      position.y - this.o.position.y,
-      position.x - this.o.position.x
-    );
-
-    // Set angleDiff to [-pi, pi]
-    let angleDiff = angle - this.lastAngle;
-    if (angleDiff < -Math.PI) angleDiff += TWO_PI;
-    else if (angleDiff > Math.PI) angleDiff -= TWO_PI;
-
-    // Collect new angle movement
-    this.deltaTimeOverflow += time - this.lastTime;
-    this.deltaAngleOverflow += angleDiff;
-
-    this.lastAngle = angle;
-    this.lastTime = time;
+    this.position = position;
   }
 
   up(time: number, position: PIXI.Point) {
     this.down = false;
+    this.position = position;
   }
 }

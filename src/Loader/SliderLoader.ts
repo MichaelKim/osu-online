@@ -105,17 +105,13 @@ export function parseSlider(
     });
   }
 
-  if (edgeSounds.length !== edgeSets.length) {
-    console.warn('Mismatching edge sound lengths', tokens);
-  }
-
   const hitSample = tokens.length > 10 ? parseHitSample(tokens[10]) : [0, 0];
   const sampleSet = hitSample[0] || timingPoint.sampleSet || beatmap.sampleSet;
   const additionSet = hitSample[1] || hitSample[0];
 
   // Calculate slider duration
   const sliderTime =
-    (timingPoint.beatLength * (length / beatmap.sliderMultiplier)) / 100;
+    (timingPoint.beatLength * length) / (100 * beatmap.sliderMultiplier);
 
   // Hit circle diameter
   const size = csToSize(beatmap.cs);
@@ -426,11 +422,15 @@ export function loadSliderSprites(
   }
 
   // Slider ticks
-  const numTicks = Math.ceil(object.length / object.tickDist) - 2; // Ignore start and end
   const tickSprites: SliderTick[] = [];
-  const tickOffset = 1 / (numTicks + 1);
+  const velocity = object.length / object.sliderTime;
   for (let slideIndex = 0; slideIndex < object.slides; slideIndex++) {
-    for (let i = 0, t = tickOffset; i < numTicks; i++, t += tickOffset) {
+    for (
+      let d = object.tickDist;
+      d < object.length - velocity * 10;
+      d += object.tickDist
+    ) {
+      const t = d / object.length;
       tickSprites.push(
         new SliderTick(skin.sliderScorePoint, object, t, slideIndex)
       );

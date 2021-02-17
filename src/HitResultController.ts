@@ -96,6 +96,10 @@ export default class HitResultController {
       const result = this.free[type].pop()!;
       result.reset(position, t);
       this.used.push(result);
+      // Move to end (assume adding latest hit result)
+      const idx = this.stage.getChildIndex(result.sprite);
+      this.stage.children.splice(idx, 1);
+      this.stage.children.push(result.sprite);
     } else {
       const result = new HitResult(
         this.skin.hits[type],

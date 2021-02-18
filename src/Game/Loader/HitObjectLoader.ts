@@ -153,14 +153,13 @@ function calcStacking(beatmap: BeatmapData, notes: HitObjectData[]) {
   }
 }
 
-export async function loadHitObjects(
+export function loadHitObjects(
   beatmap: BeatmapData,
   skin: Skin,
   gameState: GameState
-): Promise<HitObject[]> {
-  const file = await readFile(beatmap.filepath);
-  const timingPoints = parseTimingPoints(file);
-  const notes = parseHitObjects(file, beatmap, timingPoints);
+): HitObject[] {
+  const timingPoints = parseTimingPoints(beatmap.file);
+  const notes = parseHitObjects(beatmap.file, beatmap, timingPoints);
   calcStacking(beatmap, notes);
   return notes.map(n => {
     switch (n.type) {

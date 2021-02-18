@@ -1,7 +1,7 @@
 import 'pixi-sound';
 import Game from './Game';
-import { parseBeatmap } from './Loader/BeatmapLoader';
-import initStart from './start';
+import { parseBeatmap } from './Game/Loader/BeatmapLoader';
+import initStart from './Game/start';
 
 initStart().then(init);
 

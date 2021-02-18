@@ -1,15 +1,29 @@
 import { SampleSetType } from '../SampleSet';
 import { getSections, parseColor, parseKeyValue, readFile } from '../util';
 
+enum GameMode {
+  STANDARD = 0,
+  // Unsupported
+  TAIKO = 1,
+  CATCH = 2,
+  MANIA = 3
+}
+
 export interface BeatmapData {
-  filepath: string; // Path to .osu file
-  version: number;
+  file: string[]; // Contents of .osu file
+  formatVersion: number;
 
   // [General]
   audioFilename: string;
   audioLeadIn: number;
   sampleSet: SampleSetType;
   stackLeniency: number;
+  mode: number;
+
+  // [Metadata]
+  title: string;
+  version: string;
+  beatmapID: number;
 
   // [Difficulty]
   cs: number;
@@ -23,7 +37,7 @@ export interface BeatmapData {
 }
 
 const DEFAULTS: BeatmapData = {
-  version: 14,
+  formatVersion: 14,
   audioLeadIn: 0,
   sampleSet: SampleSetType.NORMAL,
   stackLeniency: 0.7,
@@ -31,8 +45,11 @@ const DEFAULTS: BeatmapData = {
   sliderMultiplier: 1.4,
   sliderTickRate: 1,
   colors: [],
-
-  filepath: '',
+  mode: GameMode.STANDARD,
+  title: '',
+  version: '',
+  beatmapID: 0,
+  file: [],
   audioFilename: '',
   cs: 5,
   od: 5
@@ -43,9 +60,8 @@ function switchcase<T = string>(cases: Record<string, (value: T) => void>) {
   return (key: string, value: T) => cases[key]?.(value);
 }
 
-export async function parseBeatmap(filepath: string) {
-  const file = await readFile(filepath);
-  const b: BeatmapData = { ...DEFAULTS, filepath };
+export function parseBeatmap(file: string[]) {
+  const b: BeatmapData = { ...DEFAULTS, file };
 
   const parseGeneral = switchcase({
     AudioFilename: value => (b.audioFilename = value),
@@ -55,7 +71,14 @@ export async function parseBeatmap(filepath: string) {
       Soft: () => (b.sampleSet = SampleSetType.SOFT),
       Drum: () => (b.sampleSet = SampleSetType.DRUM)
     }),
-    StackLeniency: value => (b.stackLeniency = parseFloat(value))
+    StackLeniency: value => (b.stackLeniency = parseFloat(value)),
+    Mode: value => (b.mode = parseInt(value))
+  });
+
+  const parseMetadata = switchcase({
+    Title: value => (b.title = value),
+    Version: value => (b.version = value),
+    BeatmapID: value => (b.beatmapID = parseInt(value))
   });
 
   const parseDifficulty = switchcase({
@@ -72,6 +95,13 @@ export async function parseBeatmap(filepath: string) {
         for (const line of section) {
           const [key, value] = parseKeyValue(line);
           parseGeneral(key, value);
+        }
+        break;
+      }
+      case '[Metadata]': {
+        for (const line of section) {
+          const [key, value] = parseKeyValue(line);
+          parseMetadata(key, value);
         }
         break;
       }

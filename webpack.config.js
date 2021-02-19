@@ -1,20 +1,25 @@
+/* eslint-disable no-undef */
+/* eslint-disable @typescript-eslint/no-var-requires */
+
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+const ESLintPlugin = require('eslint-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 const path = require('path');
 const TerserPlugin = require('terser-webpack-plugin');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 const config = {
   entry: {
-    main: './src/index.ts'
+    main: './src/index.tsx'
   },
   output: {
-    path: path.resolve(__dirname, 'build'),
+    path: path.resolve('./build'),
     filename: '[name].js'
   },
   module: {
     rules: [
       {
-        test: /\.ts/,
+        test: /\.tsx?/,
         exclude: /node_modules/,
         use: {
           loader: 'babel-loader',
@@ -26,6 +31,7 @@ const config = {
                   targets: '>1%, not ie 11, not op_mini all'
                 }
               ],
+              '@babel/preset-react',
               '@babel/preset-typescript'
             ],
             plugins: ['@babel/plugin-proposal-class-properties', 'const-enum']
@@ -35,7 +41,7 @@ const config = {
     ]
   },
   resolve: {
-    extensions: ['.ts', '.js']
+    extensions: ['.ts', '.js', '.tsx']
   },
   plugins: [
     new HtmlWebpackPlugin({
@@ -43,6 +49,9 @@ const config = {
     }),
     new CopyWebpackPlugin({
       patterns: [{ from: 'public' }]
+    }),
+    new ESLintPlugin({
+      extensions: ['js', 'ts', 'tsx']
     })
   ],
   stats: {
@@ -66,6 +75,7 @@ module.exports = async (env, argv) => {
         })
       ]
     };
+    config.plugins.push(new CleanWebpackPlugin());
   } else {
     config.mode = 'development';
     config.devtool = 'cheap-module-source-map';
@@ -75,7 +85,6 @@ module.exports = async (env, argv) => {
       port: '8080',
       hot: true,
       overlay: true
-      // writeToDisk: true
     };
   }
 

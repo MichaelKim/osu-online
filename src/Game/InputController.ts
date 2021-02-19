@@ -19,8 +19,8 @@ export default class InputController {
   private position: PIXI.Point;
   key1 = '1';
   key2 = '2';
-  cursorSensitivity: number = 2;
-  private numDown: number = 0; // Number of inputs currently pressing down
+  cursorSensitivity = 2;
+  private numDown = 0; // Number of inputs currently pressing down
   events: InputEvent[] = [];
 
   // Needs clock to log input event timings

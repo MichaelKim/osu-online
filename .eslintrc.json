@@ -9,7 +9,10 @@
   "rules": {
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "warn",
-    "react/prop-types": "off"
+    // Using TypeScript for types
+    "react/prop-types": "off",
+    // Allow implicit function return types
+    "@typescript-eslint/explicit-module-boundary-types": "off"
   },
   "settings": {
     "react": {

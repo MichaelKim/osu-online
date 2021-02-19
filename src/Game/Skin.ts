@@ -58,8 +58,8 @@ type Resources = Record<keyof typeof assets, PIXI.LoaderResource>;
 
 export default class Skin {
   // [General]
-  allowSliderBallTint: boolean = false;
-  layeredHitSounds: boolean = true;
+  allowSliderBallTint = false;
+  layeredHitSounds = true;
 
   // [Colours]
   colors: number[] = [
@@ -73,7 +73,7 @@ export default class Skin {
   sliderTrackOverride?: number;
 
   // [Fonts]
-  hitCircleOverlap: number = -2;
+  hitCircleOverlap = -2;
 
   // Textures
   cursor?: PIXI.Texture;

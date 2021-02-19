@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js';
-import { CurveTypes, getSliderCurve, Line, pointAt } from '../Curve';
+import { CurveTypes, getSliderCurve, Line } from '../Curve';
 import {
   APPROACH_R,
   FOLLOW_R,
@@ -186,13 +186,13 @@ class CustomMesh extends PIXI.Mesh {
   protected _renderDefault(renderer: PIXI.Renderer): void {
     const shader = this.shader;
 
-    // @ts-expect-error
+    // @ts-expect-error: PIXI type error
     shader.alpha = this.worldAlpha;
-    // @ts-expect-error
+    // @ts-expect-error: PIXI type error
     shader.update?.();
 
     renderer.batch.flush();
-    // @ts-expect-error
+    // @ts-expect-error: PIXI type error
     if (shader.program.uniformData.translationMatrix) {
       shader.uniforms.translationMatrix = this.transform.worldTransform.toArray(
         true
@@ -321,6 +321,7 @@ function createLegacySliderTexture(skin: Skin, color: number) {
   return PIXI.Texture.fromBuffer(buffer, WIDTH, 1);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function createSliderTexture(skin: Skin, color: number) {
   // osu!lazer sliders
   // - have no shadow portion

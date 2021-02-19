@@ -45,11 +45,11 @@ export default class Slider {
 
   // Gameplay
   position: PIXI.Point; // Slider head position
-  finished: number = 0;
-  headHit: number = 0; // When the slider head was hit (0 if not hit)
+  finished = 0;
+  headHit = 0; // When the slider head was hit (0 if not hit)
   state: State = State.NONE;
   prevState: State = State.NONE;
-  followTime: number = 0; // Animation for follow circle
+  followTime = 0; // Animation for follow circle
   lastProgress = 0; // Progress of last frame
 
   constructor(

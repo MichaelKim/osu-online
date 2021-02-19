@@ -5,9 +5,9 @@ export default class AudioController {
   private loader: PIXI.Loader = new PIXI.Loader();
   private sounds: Record<string, PIXI.sound.Sound> = {};
 
-  private elapsedTime: number = 0; // Offset due to resuming
-  private resumeTime: number = 0; // When the audio was last resumed
-  private pausedTime: number = Infinity; // When the audio was paused (Infinity if currently playing)
+  private elapsedTime = 0; // Offset due to resuming
+  private resumeTime = 0; // When the audio was last resumed
+  private pausedTime = Infinity; // When the audio was paused (Infinity if currently playing)
   private current?: PIXI.sound.Sound;
 
   async load(filename: string) {

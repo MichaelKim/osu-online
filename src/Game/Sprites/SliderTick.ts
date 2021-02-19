@@ -13,7 +13,7 @@ export default class SliderTick {
   progress: number;
   time: number; // Time when tick is hit
   fadeInTime: number;
-  hit: boolean = false;
+  hit = false;
 
   constructor(
     texture: PIXI.Texture | undefined,

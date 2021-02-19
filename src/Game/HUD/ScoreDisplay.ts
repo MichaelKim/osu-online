@@ -39,5 +39,7 @@ export default class ScoreDisplay {
     }
   }
 
-  update(time: number) {}
+  update(time: number) {
+    // TODO: lerp towards target
+  }
 }

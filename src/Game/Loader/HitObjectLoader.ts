@@ -5,7 +5,7 @@ import Slider from '../HitObjects/Slider';
 import Spinner from '../HitObjects/Spinner';
 import Skin from '../Skin';
 import { arToMS } from '../timing';
-import { getSection, readFile, within } from '../util';
+import { getSection, within } from '../util';
 import { BeatmapData } from './BeatmapLoader';
 import { HitCircleData, parseHitCircle } from './HitCircleLoader';
 import { parseSlider, SliderData } from './SliderLoader';

@@ -1,12 +1,12 @@
 // Locks pointer and enables fullscreen
-export async function lockPointer(view: HTMLCanvasElement) {
+export async function lockPointer(view: HTMLCanvasElement): Promise<void> {
   await document.documentElement.requestFullscreen();
-  // @ts-ignore: ignore mouse acceleration
+  // @ts-expect-error: ignore mouse acceleration
   const promise = view.requestPointerLock({
     // TODO: apparently this only works in Chrome
     unadjustedMovement: true
   });
-  // @ts-ignore: promise is not void in Chrome 88+ (?)
+  // @ts-expect-error: promise is not void in Chrome 88+ (?)
   console.log(promise ? 'locked unadjusted' : 'locked normal');
   await promise;
 }
@@ -15,7 +15,7 @@ export async function lockPointer(view: HTMLCanvasElement) {
 export function initLock(
   view: HTMLCanvasElement,
   callback: (paused: boolean) => void
-) {
+): void {
   const pointerLockWarning = document.getElementById('lock');
   if (pointerLockWarning == null) {
     console.error('Missing lock element');

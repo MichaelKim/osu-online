@@ -41,7 +41,7 @@ export function initCircleSprite(
 export function initSprite(
   texture?: PIXI.Texture,
   position: PIXI.IPointData = { x: 0, y: 0 },
-  size: number = 0
+  size = 0
 ) {
   const sprite = new PIXI.Sprite(texture);
   sprite.position.copyFrom(position);

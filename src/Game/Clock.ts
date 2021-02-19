@@ -1,7 +1,7 @@
 import AudioController from './AudioController';
 
 export default class Clock {
-  private requestID: number = 0;
+  private requestID = 0;
 
   constructor(
     private audio: AudioController,

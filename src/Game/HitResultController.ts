@@ -75,7 +75,7 @@ class HitResult {
 }
 
 export default class HitResultController {
-  diameter: number = 0;
+  diameter = 0;
 
   free: Record<HitCircleHitResultType, HitResult[]> = {
     [HitResultType.MISS]: [],

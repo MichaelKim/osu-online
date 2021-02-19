@@ -71,11 +71,11 @@ export async function readFile(filepath: string) {
 type Gen<T> = Generator<T, void, void>;
 export function* getSections(file: string[]): Gen<[string, Gen<string>]> {
   for (let i = 0; i < file.length; ) {
-    function* parseSection() {
+    const parseSection = function* () {
       while (i < file.length && file[i][0] !== '[') {
         yield file[i++];
       }
-    }
+    };
     yield [file[i++], parseSection()];
   }
 }
@@ -105,8 +105,8 @@ export function parseColor(rgb: string) {
 
 /* PIXI Specific */
 // Loads a PIXI Loader as a promise
-export async function loader<K extends string>(loader: PIXI.Loader) {
-  return new Promise<Partial<Record<K, PIXI.LoaderResource>>>(resolve =>
-    loader.load((_, res) => resolve(res))
-  );
+export async function loader<K extends string>(
+  loader: PIXI.Loader
+): Promise<Partial<Record<K, PIXI.LoaderResource>>> {
+  return new Promise(resolve => loader.load((_, res) => resolve(res)));
 }

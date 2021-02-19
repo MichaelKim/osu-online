@@ -28,7 +28,6 @@ export function getCurve(sliderPoints: PIXI.Point[], length: number) {
   let endAng = Math.atan2(endAngPoint.y, endAngPoint.x);
 
   const TWO_PI = Math.PI * 2;
-  const HALF_PI = Math.PI / 2;
 
   // find the angles that pass through midAng
   if (!isIn(startAng, midAng, endAng)) {
@@ -122,7 +121,7 @@ function pointAt(
   circleCenter: PIXI.Point
 ) {
   if (t > 1) t = 1;
-  var ang = lerp(startAng, endAng, t);
+  const ang = lerp(startAng, endAng, t);
   return new PIXI.Point(
     Math.cos(ang) * radius + circleCenter.x,
     Math.sin(ang) * radius + circleCenter.y

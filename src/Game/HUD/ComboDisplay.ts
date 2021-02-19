@@ -8,7 +8,7 @@ const COMBO_POP_2_TIME = 100;
 const MAX_COMBO_DIGITS = 6;
 
 class ComboContainer extends PIXI.Container {
-  combo: number = 0;
+  combo = 0;
   sprites: PIXI.Sprite[] = [];
 
   constructor(private skin: Skin) {

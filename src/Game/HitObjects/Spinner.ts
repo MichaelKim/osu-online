@@ -8,7 +8,7 @@ import {
 } from '../Loader/SpinnerLoader';
 import Skin from '../Skin';
 import GameState from '../State/GameState';
-import { clamp, clerp, clerp01, lerp } from '../util';
+import { clamp, clerp01, lerp } from '../util';
 
 const SPINNER_FADE_OUT_MS = 150;
 const TWO_PI = 2 * Math.PI;
@@ -22,7 +22,7 @@ interface SpinRecord {
 const MAX_RECORD_DURATION = 595;
 
 class SpinnerCounter {
-  rpm: number = 0;
+  rpm = 0;
   private records: SpinRecord[] = [];
 
   addRecord(rotation: number, time: number) {
@@ -51,23 +51,23 @@ export default class Spinner {
 
   // Gameplay
   // All times are in ms (except for rpm) and angles are in radians
-  private down: boolean = false; // Whether the spinner is held down or not
-  private rotations: number = 0; // Number of rotations made so far
+  private down = false; // Whether the spinner is held down or not
+  private rotations = 0; // Number of rotations made so far
   private position: PIXI.Point = new PIXI.Point(); // Position of cursor
-  private lastAngle: number = 0; // Angle of cursor last frame
-  private lastTime: number = 0; // Time of last frame
-  private currentRotations: number = 0; // Actual rotation of sprites (before dampen)
-  private lastSpins: number = 0; // Rotations made last frame
+  private lastAngle = 0; // Angle of cursor last frame
+  private lastTime = 0; // Time of last frame
+  private currentRotations = 0; // Actual rotation of sprites (before dampen)
+  private lastSpins = 0; // Rotations made last frame
   private counter: SpinnerCounter = new SpinnerCounter();
 
   // Rendering
-  private drawnAngle: number = 0; // Sprite rotation
+  private drawnAngle = 0; // Sprite rotation
   private text: PIXI.Text = new PIXI.Text('', {
     fill: 0xffffff,
     fontSize: 24,
     align: 'center'
   });
-  finished: number = 0;
+  finished = 0;
 
   constructor(
     readonly o: SpinnerData,

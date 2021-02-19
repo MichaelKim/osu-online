@@ -1,5 +1,5 @@
 import { SampleSetType } from '../SampleSet';
-import { getSections, parseColor, parseKeyValue, readFile } from '../util';
+import { getSections, parseColor, parseKeyValue } from '../util';
 
 enum GameMode {
   STANDARD = 0,
@@ -114,8 +114,7 @@ export function parseBeatmap(file: string[]) {
       }
       case '[TimingPoints]': {
         // Parse timing points later
-        for (const _ of section) {
-        }
+        for (const _ of section);
         break;
       }
       case '[Colours]': {
@@ -134,11 +133,11 @@ export function parseBeatmap(file: string[]) {
               break;
           }
         }
+        break;
       }
       case '[HitObjects]': {
         // Parse hit objects later
-        for (const _ of section) {
-        }
+        for (const _ of section);
         break;
       }
     }

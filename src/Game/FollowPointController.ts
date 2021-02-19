@@ -138,8 +138,8 @@ function loadFollowTrails(notes: HitObject[], skin: Skin) {
 
 export default class FollowPointController {
   points: FollowPoint[] = [];
-  left: number = 0;
-  right: number = 0;
+  left = 0;
+  right = 0;
 
   constructor(private stage: PIXI.Container, notes: HitObject[], skin: Skin) {
     this.points = loadFollowTrails(notes, skin);

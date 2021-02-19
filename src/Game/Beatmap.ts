@@ -10,8 +10,8 @@ export default class Beatmap {
   notes: HitObject[] = [];
 
   // Gameplay
-  left: number = 0;
-  right: number = 0;
+  left = 0;
+  right = 0;
 
   constructor(
     readonly data: BeatmapData,

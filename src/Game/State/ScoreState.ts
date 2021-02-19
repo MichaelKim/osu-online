@@ -10,13 +10,13 @@ const ACCURACY_WEIGHT = 0.3;
 const COMBO_WEIGHT = 0.7;
 
 export default class ScoreState {
-  combo: number = 0;
+  combo = 0;
 
-  rawScore: number = 0;
-  bonusScore: number = 0;
+  rawScore = 0;
+  bonusScore = 0;
 
-  maxCombo: number = 0;
-  maxScore: number = 0;
+  maxCombo = 0;
+  maxScore = 0;
 
   comboDisplay: ComboDisplay;
   scoreDisplay: ScoreDisplay;
@@ -84,6 +84,7 @@ export default class ScoreState {
       case HitResultType.EDGE_HIT:
         this.rawScore += 30;
         this.combo += 1;
+        break;
       case HitResultType.SPIN_TICK:
         this.bonusScore += 10;
         break;

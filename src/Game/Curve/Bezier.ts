@@ -53,7 +53,7 @@ function createBezier(points: PIXI.Point[]): Bezier {
 // Split slider into several curve sections
 // Red control points are in sliderPoints twice
 function splitSlider(sliderPoints: PIXI.Point[], linear: boolean) {
-  let beziers: Bezier[] = [];
+  const beziers: Bezier[] = [];
   let points: PIXI.Point[] = [];
   let lastPoi: PIXI.Point | null = null;
 
@@ -167,7 +167,7 @@ function binomialCoefficient(n: number, k: number) {
   }
   const k2 = Math.min(k, n - k);
   let c = 1;
-  for (var i = 0; i < k2; i++) {
+  for (let i = 0; i < k2; i++) {
     c *= (n - i) / (i + 1);
   }
   return c;
@@ -179,7 +179,7 @@ function bernstein(i: number, n: number, t: number) {
 }
 
 function pointAt(points: PIXI.Point[], t: number) {
-  let c = new PIXI.Point(0, 0);
+  const c = new PIXI.Point(0, 0);
   const n = points.length - 1; // Degree (?)
   for (let i = 0; i < points.length; i++) {
     const b = bernstein(i, n, t);

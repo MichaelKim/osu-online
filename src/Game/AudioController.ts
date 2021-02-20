@@ -1,3 +1,4 @@
+import PIXISound from 'pixi-sound';
 import * as PIXI from 'pixi.js';
 import { loader } from './util';
 
@@ -11,6 +12,7 @@ export default class AudioController {
   private current?: PIXI.sound.Sound;
 
   async load(filename: string) {
+    console.log('load', filename);
     if (!filename) {
       console.error('Missing audio filename');
       return;
@@ -31,18 +33,26 @@ export default class AudioController {
       console.error(data?.error);
     } else {
       this.sounds[url] = data.sound;
-      this.current = this.sounds[url];
     }
   }
 
-  play() {
-    if (this.current == null) {
+  async loadBlob(filename: string, audioFile: ArrayBuffer) {
+    console.log('load blob', filename);
+    if (!filename) {
+      console.error('Missing audio filename');
+      return;
+    }
+    this.sounds[filename] = PIXISound.add(filename, audioFile);
+  }
+
+  async play(filename: string) {
+    if (this.sounds[filename] == null) {
       console.log('No loaded audio');
       return;
     }
-
+    this.current = this.sounds[filename];
+    await this.current.play();
     this.resumeTime = this.getCurrentTime();
-    this.current.play();
   }
 
   private getCurrentTime() {

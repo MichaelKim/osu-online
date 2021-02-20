@@ -94,6 +94,7 @@ export default class ComboDisplay {
 
     // Set to bottom-left
     const margin = window.innerWidth * 0.008;
+    // TODO: update when window is resized
     this.container.position.set(margin, window.innerHeight - margin);
     this.popContainer.position.set(margin, window.innerHeight - margin);
     this.popContainer.alpha = 0.5;

@@ -12,6 +12,7 @@ export default class ScoreDisplay {
   constructor(stage: PIXI.Container, private skin: Skin) {
     // Set to top-right
     const margin = window.innerWidth * 0.008;
+    // TODO: update when window is resized
     this.container.position.set(window.innerWidth - margin, margin);
 
     const spriteHeight = skin.scores[0]?.height ?? 0;

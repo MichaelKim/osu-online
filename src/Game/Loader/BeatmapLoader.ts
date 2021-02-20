@@ -23,7 +23,7 @@ export interface BeatmapData {
   // [Metadata]
   title: string;
   version: string;
-  beatmapID: number;
+  beatmapID: number; // Old versions don't have this ID
 
   // [Difficulty]
   cs: number;

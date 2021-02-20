@@ -25,7 +25,7 @@ export default class GameState {
 
   load(beatmap: Beatmap) {
     this.hitResult.loadDiameter(csToSize(beatmap.data.cs));
-    this.scoreState.load(beatmap);
+    this.scoreState.load(beatmap.notes);
   }
 
   addResult(

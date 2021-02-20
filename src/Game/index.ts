@@ -34,6 +34,32 @@ export default class Game {
 
   async init() {
     await this.renderer.start();
+    await this.skin.load();
+
+    this.cursor = new Cursor(this.renderer.cursorStage, this.skin);
+    this.gameState = new GameState(this.renderer, this.skin);
+  }
+
+  loadBeatmap(data: BeatmapData) {
+    this.beatmap = new Beatmap(
+      data,
+      this.gameState,
+      this.renderer.notesStage,
+      this.skin
+    );
+
+    this.followPoint = new FollowPointController(
+      this.renderer.followStage,
+      this.beatmap.notes,
+      this.skin
+    );
+  }
+
+  async play() {
+    if (this.beatmap == null) {
+      console.error('no beatmap loaded');
+      return;
+    }
 
     this.view.style.display = 'block';
     initLock(this.view, paused => {
@@ -45,32 +71,9 @@ export default class Game {
     });
     await lockPointer(this.view);
 
-    await this.skin.load();
-
-    this.cursor = new Cursor(this.renderer.cursorStage, this.skin);
-    this.gameState = new GameState(this.renderer, this.skin);
-    this.input.start();
-  }
-
-  async loadBeatmap(data: BeatmapData) {
-    this.beatmap = new Beatmap(data, this.audio, this.gameState);
-    await this.beatmap.load(this.renderer.notesStage, this.skin);
-
-    this.followPoint = new FollowPointController(
-      this.renderer.followStage,
-      this.beatmap.notes,
-      this.skin
-    );
-  }
-
-  play() {
-    if (this.beatmap == null) {
-      console.error('no beatmap loaded');
-      return;
-    }
-
-    this.beatmap.play();
+    await this.audio.play(this.beatmap.data.audioFilename);
     this.clock.start();
+    this.input.start();
   }
 
   update = (time: number) => {

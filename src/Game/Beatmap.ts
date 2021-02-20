@@ -1,5 +1,4 @@
 import * as PIXI from 'pixi.js';
-import AudioController from './AudioController';
 import GameState from './State/GameState';
 import { HitObject, HitObjectTypes } from './HitObjects';
 import { BeatmapData } from './Loader/BeatmapLoader';
@@ -15,28 +14,21 @@ export default class Beatmap {
 
   constructor(
     readonly data: BeatmapData,
-    private audio: AudioController,
-    private gameState: GameState
-  ) {}
-
-  async load(stage: PIXI.Container, skin: Skin) {
-    this.notes = loadHitObjects(this.data, skin, this.gameState);
-    this.gameState.load(this);
+    gameState: GameState,
+    stage: PIXI.Container,
+    skin: Skin
+  ) {
+    this.notes = loadHitObjects(data, skin, gameState);
+    gameState.load(this);
 
     // stage.removeChildren();
     for (let i = this.notes.length - 1; i >= 0; i--) {
       this.notes[i].addToStage(stage);
     }
-
-    await this.audio.load(this.data.audioFilename);
-  }
-
-  play() {
-    this.audio.play();
   }
 
   // Returns index of earliest unfinished hit object
-  getNextNote() {
+  private getNextNote() {
     let index = this.left;
     while (index < this.right && this.notes[index].finished > 0) index++;
     return index;

@@ -1,5 +1,5 @@
 import Beatmap from '../Beatmap';
-import { HitObjectTypes } from '../HitObjects';
+import { HitObject, HitObjectTypes } from '../HitObjects';
 import { HitResultType } from '../HitResultController';
 import ComboDisplay from '../HUD/ComboDisplay';
 import ScoreDisplay from '../HUD/ScoreDisplay';
@@ -26,8 +26,8 @@ export default class ScoreState {
     this.scoreDisplay = new ScoreDisplay(stage, skin);
   }
 
-  load(beatmap: Beatmap) {
-    for (const note of beatmap.notes) {
+  load(notes: HitObject[]) {
+    for (const note of notes) {
       switch (note.type) {
         case HitObjectTypes.HIT_CIRCLE:
           this.maxCombo += 1;
@@ -63,7 +63,7 @@ export default class ScoreState {
       case HitResultType.MISS:
       case HitResultType.EDGE_MISS:
       case HitResultType.TICK_MISS:
-        this.combo += 1;
+        this.combo = 0;
         break;
       case HitResultType.HIT50:
         this.rawScore += 50;

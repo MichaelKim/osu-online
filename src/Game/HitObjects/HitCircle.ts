@@ -1,5 +1,10 @@
 import * as PIXI from 'pixi.js';
-import { APPROACH_R, FADE_OUT_MS, HitObjectTypes } from '.';
+import {
+  APPROACH_R,
+  FADE_OUT_MS,
+  HitObjectTypes,
+  HIT_CIRCLE_DIAMETER
+} from '.';
 import GameState from '../State/GameState';
 import { HitResultType } from '../HitResultController';
 import { BeatmapData } from '../Loader/BeatmapLoader';
@@ -91,7 +96,7 @@ export default class HitCircle {
       // Expand hit circle (max ~1.6x scale)
       const size =
         clerp(time - this.finished, 0, FADE_OUT_MS, 1, 1.6) * this.o.size;
-      this.s.circleSprite.scale.set(size / this.s.circleSprite.width);
+      this.s.circleSprite.scale.set(size / HIT_CIRCLE_DIAMETER);
 
       return time > this.finished + FADE_OUT_MS;
     }

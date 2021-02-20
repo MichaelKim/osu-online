@@ -1,5 +1,10 @@
 import * as PIXI from 'pixi.js';
-import { HitObject, HitObjectTypes, initSprite } from './HitObjects';
+import {
+  HitObject,
+  HitObjectTypes,
+  HIT_CIRCLE_DIAMETER,
+  initSprite
+} from './HitObjects';
 import Skin from './Skin';
 import { clerp01, lerp } from './util';
 
@@ -41,7 +46,7 @@ class FollowPoint {
       this.sprite.alpha = t;
 
       const scale = lerp(t, 0, 1, 1.5, 1);
-      this.sprite.scale.set((scale * this.size) / 128);
+      this.sprite.scale.set((scale * this.size) / HIT_CIRCLE_DIAMETER);
 
       const x = lerp(t, 0, 1, this.start.x, this.end.x);
       const y = lerp(t, 0, 1, this.start.y, this.end.y);

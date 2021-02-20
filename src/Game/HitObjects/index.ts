@@ -27,8 +27,8 @@ export function initCircleSprite(
 
   const overlay = new PIXI.Sprite(skin.overlay);
 
-  circle.scale.set(size / 128);
-  overlay.scale.set(size / 128);
+  circle.scale.set(size / HIT_CIRCLE_DIAMETER);
+  overlay.scale.set(size / HIT_CIRCLE_DIAMETER);
 
   const circleSprite = new PIXI.Container();
   circleSprite.position.copyFrom(position);
@@ -80,6 +80,9 @@ export function getNumberSprites(
 
   return container;
 }
+
+// Hit circle sprite size
+export const HIT_CIRCLE_DIAMETER = 128;
 
 // Approach circle size multiplier
 export const APPROACH_R = 2.5;

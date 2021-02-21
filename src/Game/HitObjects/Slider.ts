@@ -19,8 +19,19 @@ import Skin from '../Skin';
 import { arToMS, odToMS } from '../timing';
 import { clamp, clerp, clerp01, within } from '../util';
 
-// Semi-circle
-const MAX_RES = 24;
+// Number of points dividing a circle
+const MAX_RES = 60;
+const UNIT_CIRCLE = (() => {
+  const vectors: PIXI.IPointData[] = [];
+  for (let i = 0; i < MAX_RES; i++) {
+    const t = (i * 2 * Math.PI) / MAX_RES;
+    vectors.push({
+      x: Math.cos(t),
+      y: Math.sin(t)
+    });
+  }
+  return vectors;
+})();
 
 enum State {
   NONE,
@@ -139,26 +150,35 @@ export default class Slider {
     return [0, 0];
   }
 
-  private updateCap(center: PIXI.Point, theta: number) {
-    const points: number[] = [];
-    const texturePoints: number[] = [];
-
-    for (let i = 0; i < MAX_RES; i++) {
-      // Each triangle is composed of the center,
-      // and the two points along the circumference (starting from 0, step to PI - step, PI)
-      const t1 = theta + (i * Math.PI) / MAX_RES;
-      const p1x = (Math.cos(t1) * this.o.size) / 2 + center.x;
-      const p1y = (Math.sin(t1) * this.o.size) / 2 + center.y;
-
-      const t2 = theta + ((i + 1) * Math.PI) / MAX_RES;
-      const p2x = (Math.cos(t2) * this.o.size) / 2 + center.x;
-      const p2y = (Math.sin(t2) * this.o.size) / 2 + center.y;
-
-      points.push(center.x, center.y, p1x, p1y, p2x, p2y);
-      texturePoints.push(1, 0, 0);
+  private updateCap(
+    center: PIXI.Point,
+    startTheta: number, // [-3pi/2, 3pi/2]
+    endTheta: number, // [startTheta, startTheta + pi]
+    start: PIXI.IPointData,
+    end: PIXI.IPointData
+  ) {
+    if (startTheta < 0) {
+      startTheta += 2 * Math.PI; // [0, 2pi]
+      endTheta += 2 * Math.PI;
     }
+    const arc: PIXI.IPointData[] = [];
 
-    return { points, texturePoints };
+    const startI = Math.ceil((startTheta * MAX_RES) / (2 * Math.PI));
+    const endI = Math.ceil((endTheta * MAX_RES) / (2 * Math.PI));
+
+    arc.push(start);
+    for (let i = startI; i < endI; i++) {
+      // Each triangle is composed of the center,
+      // and the two points along the circumference
+      const point = UNIT_CIRCLE[i % MAX_RES];
+      arc.push({
+        x: center.x + (point.x * this.o.size) / 2,
+        y: center.y + (point.y * this.o.size) / 2
+      });
+    }
+    arc.push(end);
+
+    return arc;
   }
 
   private updateSlider(time: number) {
@@ -171,19 +191,42 @@ export default class Slider {
     const end = pointAt(this.o.lines, endT);
 
     // Draw head
-    const startAngle = this.o.lines[start.index].angle;
-    const startCap = this.updateCap(start.point, startAngle + Math.PI / 2);
-    vertices.push(...startCap.points);
-    textureVertices.push(...startCap.texturePoints);
+    const startLine = this.o.lines[start.index];
+    const startAngle = startLine.angle;
+    const startCap = this.updateCap(
+      start.point,
+      startAngle + Math.PI / 2,
+      startAngle + (3 * Math.PI) / 2,
+      {
+        x: start.point.x + startLine.offset.x,
+        y: start.point.y + startLine.offset.y
+      },
+      {
+        x: start.point.x - startLine.offset.x,
+        y: start.point.y - startLine.offset.y
+      }
+    );
+    for (let i = 0; i < startCap.length - 1; i++) {
+      vertices.push(
+        start.point.x,
+        start.point.y,
+        startCap[i].x,
+        startCap[i].y,
+        startCap[i + 1].x,
+        startCap[i + 1].y
+      );
+      textureVertices.push(1, 0, 0);
+    }
 
     // Draw quads
     for (let i = start.index; i < end.index + 1; i++) {
+      const line = this.o.lines[i];
       // For each pair of points in the curve
-      const p1 = i === start.index ? start.point : this.o.lines[i].start;
-      const p2 = i === end.index ? end.point : this.o.lines[i].end;
+      const p1 = i === start.index ? start.point : line.start;
+      const p2 = i === end.index ? end.point : line.end;
 
       // Find the tangent to the line segment
-      const offset = this.o.lines[i].offset;
+      const offset = line.offset;
 
       // Extend length radius past each point along the tangent
       const v1x = p1.x - offset.x;
@@ -211,11 +254,100 @@ export default class Slider {
       vertices.push(p1.x, p1.y, p2.x, p2.y, v4x, v4y);
       textureVertices.push(1, 1, 0);
 
-      // Draw cap
-      // TODO: possible optimization? draw only the outer edge instead of entire semi-circle
-      const cap = this.updateCap(p2, this.o.lines[i].angle - Math.PI / 2);
-      vertices.push(...cap.points);
-      textureVertices.push(...cap.texturePoints);
+      if (i < end.index) {
+        // Draw arc
+        const l1 = this.o.lines[i];
+        const l2 = this.o.lines[i + 1];
+        // Calculate direction using cross product
+        const dx1 = l1.end.x - l1.start.x;
+        const dy1 = l1.end.y - l1.start.y;
+        const dx2 = l2.end.x - l2.start.x;
+        const dy2 = l2.end.y - l2.start.y;
+        const cross = dx1 * dy2 - dx2 * dy1;
+        if (cross > 0) {
+          // arc centered at l1.end from l1's v3 (l1.angle - Math.PI / 2) to l2's v1 (l2.angle - Math.PI / 2)
+          const t1 = l1.angle - Math.PI / 2;
+          const t2 = l2.angle - Math.PI / 2;
+          const cap = this.updateCap(
+            p2,
+            t1,
+            t2,
+            {
+              x: v3x,
+              y: v3y
+            },
+            {
+              x: l2.start.x - l2.offset.x,
+              y: l2.start.y - l2.offset.y
+            }
+          );
+          for (let i = 0; i < cap.length - 1; i++) {
+            vertices.push(
+              p2.x,
+              p2.y,
+              cap[i].x,
+              cap[i].y,
+              cap[i + 1].x,
+              cap[i + 1].y
+            );
+            textureVertices.push(1, 0, 0);
+          }
+        } else {
+          // arc centered at l1.end from l2's v2 (l2.angle + Math.PI / 2) to l1's v4 (l1.angle + Math.PI / 2)
+          const t1 = l1.angle - Math.PI / 2;
+          const t2 = l2.angle - Math.PI / 2;
+          const cap = this.updateCap(
+            p2,
+            t1,
+            t2,
+            {
+              x: l2.start.x + l2.offset.x,
+              y: l2.start.y + l2.offset.y
+            },
+            {
+              x: v4x,
+              y: v4y
+            }
+          );
+          for (let i = 0; i < cap.length - 1; i++) {
+            vertices.push(
+              p2.x,
+              p2.y,
+              cap[i].x,
+              cap[i].y,
+              cap[i + 1].x,
+              cap[i + 1].y
+            );
+            textureVertices.push(1, 0, 0);
+          }
+        }
+      } else {
+        // Draw end cap
+        const cap = this.updateCap(
+          p2,
+          line.angle - Math.PI / 2,
+          line.angle + Math.PI / 2,
+          {
+            x: v3x,
+            y: v3y
+          },
+          {
+            x: v4x,
+            y: v4y
+          }
+        );
+        for (let i = 0; i < cap.length - 1; i++) {
+          vertices.push(
+            p2.x,
+            p2.y,
+            cap[i].x,
+            cap[i].y,
+            cap[i + 1].x,
+            cap[i + 1].y
+          );
+          textureVertices.push(1, 0, 0);
+        }
+      }
     }
 
     // TODO: possible optimization? use index buffers to remote duplicate vertices

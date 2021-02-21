@@ -1,4 +1,3 @@
-import Beatmap from '../Beatmap';
 import { HitObject, HitObjectTypes } from '../HitObjects';
 import { HitResultType } from '../HitResultController';
 import ComboDisplay from '../HUD/ComboDisplay';

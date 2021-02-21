@@ -452,6 +452,7 @@ export function loadSliderSprites(
   const geometry = new PIXI.Geometry();
   geometry.addAttribute('position', [], 2);
   geometry.addAttribute('tex_position', [], 1);
+  geometry.addIndex([]);
 
   const state = new PIXI.State();
   state.depthTest = true;

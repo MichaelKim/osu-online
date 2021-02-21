@@ -53,6 +53,9 @@ export default class Slider {
 
   // Rendering
   s: SliderSprites;
+  positionBuffer: PIXI.Buffer;
+  texPositionBuffer: PIXI.Buffer;
+  indexBuffer: PIXI.Buffer;
 
   // Gameplay
   position: PIXI.Point; // Slider head position
@@ -75,6 +78,11 @@ export default class Slider {
 
     // Load sprites
     this.s = loadSliderSprites(this.o, beatmap, skin);
+
+    // Store buffers for quicker access during update
+    this.positionBuffer = this.s.mesh.geometry.getBuffer('position');
+    this.texPositionBuffer = this.s.mesh.geometry.getBuffer('tex_position');
+    this.indexBuffer = this.s.mesh.geometry.getIndex();
 
     this.position = this.start;
   }
@@ -153,73 +161,51 @@ export default class Slider {
   private updateCap(
     center: PIXI.Point,
     startTheta: number, // [-3pi/2, 3pi/2]
-    endTheta: number, // [startTheta, startTheta + pi]
-    start: PIXI.IPointData,
-    end: PIXI.IPointData
+    endTheta: number, // [startTheta, startTheta + pi],
+    vertices: number[],
+    textureVertices: number[],
+    centerIndex: number,
+    startIndex: number,
+    endIndex: number,
+    indices: number[]
   ) {
     if (startTheta < 0) {
       startTheta += 2 * Math.PI; // [0, 2pi]
       endTheta += 2 * Math.PI;
     }
-    const arc: PIXI.IPointData[] = [];
 
     const startI = Math.ceil((startTheta * MAX_RES) / (2 * Math.PI));
     const endI = Math.ceil((endTheta * MAX_RES) / (2 * Math.PI));
 
-    arc.push(start);
+    // Each triangle is composed of the center, and the two points along the circumference
+    indices.push(centerIndex, startIndex);
     for (let i = startI; i < endI; i++) {
-      // Each triangle is composed of the center,
-      // and the two points along the circumference
-      const point = UNIT_CIRCLE[i % MAX_RES];
-      arc.push({
-        x: center.x + (point.x * this.o.size) / 2,
-        y: center.y + (point.y * this.o.size) / 2
-      });
-    }
-    arc.push(end);
+      const offset = UNIT_CIRCLE[i % MAX_RES];
+      const x = center.x + (offset.x * this.o.size) / 2;
+      const y = center.y + (offset.y * this.o.size) / 2;
 
-    return arc;
+      indices.push(textureVertices.length, centerIndex, textureVertices.length);
+      vertices.push(x, y);
+      textureVertices.push(0);
+    }
+    indices.push(endIndex);
   }
 
   private updateSlider(time: number) {
     const vertices: number[] = [];
     const textureVertices: number[] = [];
+    const indices: number[] = [];
 
     // Slider end positions
     const [startT, endT] = this.calcIndices(time);
     const start = pointAt(this.o.lines, startT);
     const end = pointAt(this.o.lines, endT);
 
-    // Draw head
-    const startLine = this.o.lines[start.index];
-    const startAngle = startLine.angle;
-    const startCap = this.updateCap(
-      start.point,
-      startAngle + Math.PI / 2,
-      startAngle + (3 * Math.PI) / 2,
-      {
-        x: start.point.x + startLine.offset.x,
-        y: start.point.y + startLine.offset.y
-      },
-      {
-        x: start.point.x - startLine.offset.x,
-        y: start.point.y - startLine.offset.y
-      }
-    );
-    for (let i = 0; i < startCap.length - 1; i++) {
-      vertices.push(
-        start.point.x,
-        start.point.y,
-        startCap[i].x,
-        startCap[i].y,
-        startCap[i + 1].x,
-        startCap[i + 1].y
-      );
-      textureVertices.push(1, 0, 0);
-    }
+    vertices.push(start.point.x, start.point.y);
+    textureVertices.push(1);
 
     // Draw quads
-    for (let i = start.index; i < end.index + 1; i++) {
+    for (let i = start.index; i <= end.index; i++) {
       const line = this.o.lines[i];
       // For each pair of points in the curve
       const p1 = i === start.index ? start.point : line.start;
@@ -241,124 +227,91 @@ export default class Slider {
       const v4x = p2.x + offset.x;
       const v4y = p2.y + offset.y;
 
-      // The four points form a quad
-      // Splitting along the line yields two quads
-      // Each quad is drawn as two triangles
-      vertices.push(v1x, v1y, p1.x, p1.y, v3x, v3y);
-      textureVertices.push(0, 1, 0);
-      vertices.push(p1.x, p1.y, v3x, v3y, p2.x, p2.y);
-      textureVertices.push(1, 0, 1);
+      vertices.push(v1x, v1y, v2x, v2y, v3x, v3y, v4x, v4y, p2.x, p2.y);
+      textureVertices.push(0, 0, 0, 0, 1);
 
-      vertices.push(p1.x, p1.y, v2x, v2y, v4x, v4y);
-      textureVertices.push(1, 0, 0);
-      vertices.push(p1.x, p1.y, p2.x, p2.y, v4x, v4y);
-      textureVertices.push(1, 1, 0);
+      const j = (i - start.index) * 5;
+      indices.push(j + 1, j, j + 3); // v1, p1, v3
+      indices.push(j, j + 3, j + 5); // p1, v3, p2
+      indices.push(j, j + 2, j + 4); // p1, v2, v4
+      indices.push(j, j + 5, j + 4); // p1, p2, p4
+    }
 
-      if (i < end.index) {
-        // Draw arc
-        const l1 = this.o.lines[i];
-        const l2 = this.o.lines[i + 1];
-        // Calculate direction using cross product
-        const dx1 = l1.end.x - l1.start.x;
-        const dy1 = l1.end.y - l1.start.y;
-        const dx2 = l2.end.x - l2.start.x;
-        const dy2 = l2.end.y - l2.start.y;
-        const cross = dx1 * dy2 - dx2 * dy1;
-        if (cross > 0) {
-          // arc centered at l1.end from l1's v3 (l1.angle - Math.PI / 2) to l2's v1 (l2.angle - Math.PI / 2)
-          const t1 = l1.angle - Math.PI / 2;
-          const t2 = l2.angle - Math.PI / 2;
-          const cap = this.updateCap(
-            p2,
-            t1,
-            t2,
-            {
-              x: v3x,
-              y: v3y
-            },
-            {
-              x: l2.start.x - l2.offset.x,
-              y: l2.start.y - l2.offset.y
-            }
-          );
-          for (let i = 0; i < cap.length - 1; i++) {
-            vertices.push(
-              p2.x,
-              p2.y,
-              cap[i].x,
-              cap[i].y,
-              cap[i + 1].x,
-              cap[i + 1].y
-            );
-            textureVertices.push(1, 0, 0);
-          }
-        } else {
-          // arc centered at l1.end from l2's v2 (l2.angle + Math.PI / 2) to l1's v4 (l1.angle + Math.PI / 2)
-          const t1 = l1.angle - Math.PI / 2;
-          const t2 = l2.angle - Math.PI / 2;
-          const cap = this.updateCap(
-            p2,
-            t1,
-            t2,
-            {
-              x: l2.start.x + l2.offset.x,
-              y: l2.start.y + l2.offset.y
-            },
-            {
-              x: v4x,
-              y: v4y
-            }
-          );
-          for (let i = 0; i < cap.length - 1; i++) {
-            vertices.push(
-              p2.x,
-              p2.y,
-              cap[i].x,
-              cap[i].y,
-              cap[i + 1].x,
-              cap[i + 1].y
-            );
-            textureVertices.push(1, 0, 0);
-          }
-        }
-      } else {
-        // Draw end cap
-        const cap = this.updateCap(
-          p2,
+    for (let i = start.index; i < end.index; i++) {
+      // Draw arc
+      const line = this.o.lines[i];
+      const nextLine = this.o.lines[i + 1];
+
+      const j = (i - start.index) * 5;
+
+      // Calculate direction using cross product
+      const dx1 = line.end.x - line.start.x;
+      const dy1 = line.end.y - line.start.y;
+      const dx2 = nextLine.end.x - nextLine.start.x;
+      const dy2 = nextLine.end.y - nextLine.start.y;
+      const cross = dx1 * dy2 - dx2 * dy1;
+      if (cross > 0) {
+        // arc centered at l1.end from l1's v3 (l1.angle - Math.PI / 2) to l2's v1 (l2.angle - Math.PI / 2)
+        this.updateCap(
+          line.end,
           line.angle - Math.PI / 2,
-          line.angle + Math.PI / 2,
-          {
-            x: v3x,
-            y: v3y
-          },
-          {
-            x: v4x,
-            y: v4y
-          }
+          nextLine.angle - Math.PI / 2,
+          vertices,
+          textureVertices,
+          j + 5, // p2
+          j + 3, // v3
+          j + 5 + 1, // l2's v1
+          indices
         );
-        for (let i = 0; i < cap.length - 1; i++) {
-          vertices.push(
-            p2.x,
-            p2.y,
-            cap[i].x,
-            cap[i].y,
-            cap[i + 1].x,
-            cap[i + 1].y
-          );
-          textureVertices.push(1, 0, 0);
-        }
+      } else {
+        // arc centered at l1.end from l2's v2 (l2.angle + Math.PI / 2) to l1's v4 (l1.angle + Math.PI / 2)
+        this.updateCap(
+          line.end,
+          line.angle - Math.PI / 2,
+          nextLine.angle - Math.PI / 2,
+          vertices,
+          textureVertices,
+          j + 5, // p2
+          j + 5 + 2, // l2's v2
+          j + 4, // v4
+          indices
+        );
       }
     }
 
-    // TODO: possible optimization? use index buffers to remote duplicate vertices
-    // Add vertices
-    this.s.mesh.geometry
-      .getBuffer('position')
-      .update(new Float32Array(vertices));
-    // Add texture coords
-    this.s.mesh.geometry
-      .getBuffer('tex_position')
-      .update(new Float32Array(textureVertices));
+    // Draw head
+    const startLine = this.o.lines[start.index];
+    this.updateCap(
+      start.point,
+      startLine.angle + Math.PI / 2,
+      startLine.angle + (3 * Math.PI) / 2,
+      vertices,
+      textureVertices,
+      0,
+      2, // v2
+      1, // v1
+      indices
+    );
+
+    // Draw end
+    const endLine = this.o.lines[end.index];
+    const j = (end.index - start.index) * 5;
+    this.updateCap(
+      end.point,
+      endLine.angle - Math.PI / 2,
+      endLine.angle + Math.PI / 2,
+      vertices,
+      textureVertices,
+      j + 5, // p2
+      j + 3, // v3
+      j + 4, // v4
+      indices
+    );
+
+    // Update buffers
+    this.positionBuffer.update(new Float32Array(vertices));
+    this.texPositionBuffer.update(new Float32Array(textureVertices));
+    this.indexBuffer.update(new Uint16Array(indices));
   }
 
   update(time: number) {

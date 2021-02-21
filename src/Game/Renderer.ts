@@ -22,8 +22,11 @@ export default class Renderer {
       autoDensity: true,
       view
     });
-    // Optimization
+    // Disable PIXI interaction (e.g. hit testing, input events)
     this.renderer.plugins.interaction.destroy();
+    // Disable shared ticker
+    PIXI.Ticker.shared.autoStart = false;
+    PIXI.Ticker.shared.stop();
 
     this.stage = new PIXI.Container();
     this.cursorStage = new PIXI.Container();

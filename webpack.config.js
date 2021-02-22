@@ -3,10 +3,10 @@
 
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-const ESLintPlugin = require('eslint-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const path = require('path');
 const TerserPlugin = require('terser-webpack-plugin');
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
 const config = {
   entry: {
@@ -50,8 +50,17 @@ const config = {
     new CopyWebpackPlugin({
       patterns: [{ from: 'public' }]
     }),
-    new ESLintPlugin({
-      extensions: ['js', 'ts', 'tsx']
+    new ForkTsCheckerWebpackPlugin({
+      typescript: {
+        diagnosticOptions: {
+          semantic: true,
+          syntactic: true
+        },
+        mode: 'write-references'
+      },
+      eslint: {
+        files: './src/**/*.{js,ts,tsx}'
+      }
     })
   ],
   stats: {

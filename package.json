@@ -24,7 +24,7 @@
     "eslint": "^7.20.0",
     "eslint-plugin-react": "^7.22.0",
     "eslint-plugin-react-hooks": "^4.2.0",
-    "eslint-webpack-plugin": "^2.5.1",
+    "fork-ts-checker-webpack-plugin": "^6.1.0",
     "html-webpack-plugin": "^5.1.0",
     "pixi-sound": "^3.0.5",
     "pixi.js": "^5.3.7",

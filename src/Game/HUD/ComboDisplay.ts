@@ -71,6 +71,7 @@ class Updater {
   }
 
   update(time: number) {
+    // TODO: this is slow
     this.updates = this.updates.flatMap(u => {
       if (u.update(time)) {
         return u.next;

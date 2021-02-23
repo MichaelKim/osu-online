@@ -31,6 +31,7 @@ class SpinnerCounter {
       // In case
       let r = this.records[0];
       while (this.records.length > 0 && time - r.time > MAX_RECORD_DURATION) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         r = this.records.shift()!;
       }
 

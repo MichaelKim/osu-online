@@ -114,7 +114,7 @@ export function parseBeatmap(file: string[]) {
       }
       case '[TimingPoints]': {
         // Parse timing points later
-        for (const _ of section);
+        while (!section.next().done);
         break;
       }
       case '[Colours]': {
@@ -137,7 +137,7 @@ export function parseBeatmap(file: string[]) {
       }
       case '[HitObjects]': {
         // Parse hit objects later
-        for (const _ of section);
+        while (!section.next().done);
         break;
       }
     }

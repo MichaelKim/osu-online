@@ -519,7 +519,7 @@ export default class Slider {
     }
   }
 
-  up(time: number, position: PIXI.Point) {
+  up() {
     this.state = State.NONE;
   }
 }

@@ -93,6 +93,7 @@ export default class HitResultController {
 
   addResult(type: HitCircleHitResultType, position: PIXI.Point, t: number) {
     if (this.free[type].length > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const result = this.free[type].pop()!;
       result.reset(position, t);
       this.used.push(result);

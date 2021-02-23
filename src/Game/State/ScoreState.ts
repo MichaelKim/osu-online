@@ -2,6 +2,7 @@ import { HitObject, HitObjectTypes } from '../HitObjects';
 import { HitResultType } from '../HitResultController';
 import ComboDisplay from '../HUD/ComboDisplay';
 import ScoreDisplay from '../HUD/ScoreDisplay';
+import Renderer from '../Renderer';
 import Skin from '../Skin';
 
 // Handle score calculations and passes score to ScoreDisplay
@@ -21,9 +22,9 @@ export default class ScoreState {
   comboDisplay: ComboDisplay;
   scoreDisplay: ScoreDisplay;
 
-  constructor(stage: PIXI.Container, skin: Skin) {
-    this.comboDisplay = new ComboDisplay(stage, skin);
-    this.scoreDisplay = new ScoreDisplay(stage, skin);
+  constructor(renderer: Renderer, skin: Skin) {
+    this.comboDisplay = new ComboDisplay(renderer, skin);
+    this.scoreDisplay = new ScoreDisplay(renderer, skin);
   }
 
   load(notes: HitObject[]) {

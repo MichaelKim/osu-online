@@ -1,4 +1,5 @@
 import * as PIXI from 'pixi.js';
+import Renderer from '../Renderer';
 import Skin from '../Skin';
 import { clerp } from '../util';
 
@@ -16,12 +17,7 @@ export default class ScoreDisplay {
   visibleScore = 0;
   lastScore = 0;
 
-  constructor(stage: PIXI.Container, private skin: Skin) {
-    // Set to top-right
-    const margin = window.innerWidth * 0.008;
-    // TODO: update when window is resized
-    this.container.position.set(window.innerWidth - margin, margin);
-
+  constructor(renderer: Renderer, private skin: Skin) {
     const spriteHeight = skin.scores[0]?.height ?? 0;
     for (let i = 0; i < MAX_SCORE_DIGITS; i++) {
       const sprite = new PIXI.Sprite(skin.scores[0]);
@@ -30,7 +26,12 @@ export default class ScoreDisplay {
       this.container.addChild(sprite);
     }
 
-    stage.addChild(this.container);
+    renderer.displayStage.addChild(this.container);
+    renderer.onResize(width => {
+      // Set to top-right
+      const margin = width * 0.008;
+      this.container.position.set(width - margin, margin);
+    });
   }
 
   setScore(score: number, time: number) {

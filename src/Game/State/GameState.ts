@@ -20,7 +20,7 @@ export default class GameState {
   constructor(renderer: Renderer, skin: Skin) {
     this.hitResult = new HitResultController(renderer.hitResultStage, skin);
     this.hitSound = new HitSoundController(skin);
-    this.scoreState = new ScoreState(renderer.displayStage, skin);
+    this.scoreState = new ScoreState(renderer, skin);
   }
 
   load(beatmap: Beatmap) {

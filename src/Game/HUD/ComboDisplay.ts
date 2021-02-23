@@ -1,4 +1,5 @@
 import * as PIXI from 'pixi.js';
+import Renderer from '../Renderer';
 import Skin from '../Skin';
 import { clerp, clerp01 } from '../util';
 
@@ -89,19 +90,20 @@ export default class ComboDisplay {
   popContainer: ComboContainer; // "Pop" combo display
   updates: Updater = new Updater();
 
-  constructor(stage: PIXI.Container, skin: Skin) {
+  constructor(renderer: Renderer, skin: Skin) {
     this.container = new ComboContainer(skin);
     this.popContainer = new ComboContainer(skin);
 
-    // Set to bottom-left
-    const margin = window.innerWidth * 0.008;
-    // TODO: update when window is resized
-    this.container.position.set(margin, window.innerHeight - margin);
-    this.popContainer.position.set(margin, window.innerHeight - margin);
     this.popContainer.alpha = 0.5;
     this.popContainer.visible = false;
 
-    stage.addChild(this.popContainer, this.container);
+    renderer.displayStage.addChild(this.popContainer, this.container);
+    renderer.onResize((width, height) => {
+      // Set to bottom-left
+      const margin = width * 0.008;
+      this.container.position.set(margin, height - margin);
+      this.popContainer.position.set(margin, height - margin);
+    });
   }
 
   setCombo(combo: number, time: number) {

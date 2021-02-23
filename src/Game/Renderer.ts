@@ -1,7 +1,12 @@
 import * as PIXI from 'pixi.js';
 
+type ResizeCallback = (width: number, height: number) => void;
+
 export default class Renderer {
   private renderer: PIXI.Renderer;
+
+  // Bounds callbacks
+  private resizeCallbacks = new Set<ResizeCallback>();
 
   // Stages
   private stage: PIXI.Container; // Base stage
@@ -54,7 +59,7 @@ export default class Renderer {
   }
 
   // Bound for addEventListener
-  resize = () => {
+  private resize = () => {
     const width = window.innerWidth;
     const height = window.innerHeight;
 
@@ -67,6 +72,9 @@ export default class Renderer {
     const yoffset = (height - 384 * scale) / 2;
     this.gameStage.position.set(xoffset, yoffset);
     this.gameStage.scale.set(scale);
+
+    console.log('resized');
+    this.resizeCallbacks.forEach(cb => cb(width, height));
   };
 
   render() {
@@ -81,4 +89,10 @@ export default class Renderer {
   // getBounds() {
   //   return [window.innerWidth, window.innerHeight];
   // }
+
+  onResize(callback: (width: number, height: number) => void) {
+    callback(window.innerWidth, window.innerHeight);
+    this.resizeCallbacks.add(callback);
+    return () => this.resizeCallbacks.delete(callback);
+  }
 }

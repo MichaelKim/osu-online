@@ -7,10 +7,16 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const path = require('path');
 const TerserPlugin = require('terser-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+
+const isDev = process.env.NODE_ENV !== 'production';
+console.log(
+  `===================${isDev ? 'DEV' : 'PROD'}========================`
+);
 
 const config = {
   entry: {
-    main: './src/index.tsx'
+    main: path.resolve('./src/index.tsx')
   },
   output: {
     path: path.resolve('./build'),
@@ -37,6 +43,29 @@ const config = {
             plugins: ['@babel/plugin-proposal-class-properties', 'const-enum']
           }
         }
+      },
+      {
+        test: /\.module\.scss$/,
+        use: [
+          isDev ? 'style-loader' : MiniCssExtractPlugin.loader,
+          {
+            loader: 'css-loader',
+            options: {
+              sourceMap: !isDev,
+              modules: {
+                localIdentName: isDev
+                  ? '[path][name]__[local]'
+                  : '[hash:base64]'
+              }
+            }
+          },
+          {
+            loader: 'sass-loader',
+            options: {
+              sourceMap: !isDev
+            }
+          }
+        ]
       }
     ]
   },
@@ -61,6 +90,10 @@ const config = {
       eslint: {
         files: './src/**/*.{js,ts,tsx}'
       }
+    }),
+    new MiniCssExtractPlugin({
+      filename: isDev ? '[name].css' : '[name].[hash].css',
+      chunkFilename: isDev ? '[id].css' : '[id].[hash].css'
     })
   ],
   stats: {
@@ -68,34 +101,32 @@ const config = {
   }
 };
 
-module.exports = async (env, argv) => {
-  if (argv.mode === 'production') {
-    config.mode = 'production';
-    // Basic options, except ignore console statements
-    config.optimization = {
-      minimizer: [
-        new TerserPlugin({
-          extractComments: false,
-          terserOptions: {
-            compress: {
-              drop_console: true
-            }
+if (isDev) {
+  config.mode = 'development';
+  config.devtool = 'cheap-module-source-map';
+  config.devServer = {
+    contentBase: path.resolve('./build'),
+    host: 'localhost',
+    port: '8080',
+    hot: true,
+    overlay: true
+  };
+} else {
+  config.mode = 'production';
+  // Basic options, except ignore console statements
+  config.optimization = {
+    minimizer: [
+      new TerserPlugin({
+        extractComments: false,
+        terserOptions: {
+          compress: {
+            drop_console: true
           }
-        })
-      ]
-    };
-    config.plugins.push(new CleanWebpackPlugin());
-  } else {
-    config.mode = 'development';
-    config.devtool = 'cheap-module-source-map';
-    config.devServer = {
-      contentBase: path.resolve('./build'),
-      host: 'localhost',
-      port: '8080',
-      hot: true,
-      overlay: true
-    };
-  }
+        }
+      })
+    ]
+  };
+  config.plugins.push(new CleanWebpackPlugin());
+}
 
-  return config;
-};
+module.exports = config;

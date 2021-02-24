@@ -1,7 +1,9 @@
 import React from 'react';
 import Game from '../Game';
 import { BeatmapData } from '../Game/Loader/BeatmapLoader';
-import BeatmapInfo, { BeatmapFiles } from './BeatmapInfo';
+import BeatmapListing from './BeatmapListing';
+import BeatmapLoad, { BeatmapFiles } from './BeatmapUpload';
+import './index.scss';
 
 type Props = Record<string, never>;
 
@@ -25,61 +27,17 @@ export default class Root extends React.Component<Props, State> {
     this.game.init().then(() => this.setState({ gameLoaded: true }));
   }
 
-  onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { files } = e.target;
-    if (files == null) {
-      return;
-    }
-
-    const directories: Record<string, BeatmapFiles> = {};
-
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      // Use directory name as ID
-      // @ts-expect-error: non-standard API
-      const path: string = file.webkitRelativePath;
-      const regex = path.match(/^(.+\/)?(\d+) (.+)\/.+\.(.+)$/);
-      if (regex) {
-        const id = regex[2];
-        const title = regex[3];
-        const ext = regex[4];
-
-        directories[id] ??= {
-          id,
-          title,
-          beatmapFiles: [],
-          otherFiles: []
-        };
-
-        if (ext === 'osu') {
-          directories[id].beatmapFiles.push(file);
-        } else {
-          directories[id].otherFiles.push(file);
-        }
-      }
-    }
-
-    // Filter folders that don't contain .osu files
-    const beatmaps = Object.values(directories).filter(
-      b => b.beatmapFiles.length > 0
-    );
-
+  onLoad = (beatmaps: BeatmapFiles[]) => {
     this.setState({ beatmaps });
   };
 
-  onSelect = async (
-    id: string,
-    title: string,
-    data: BeatmapData,
-    audioFile: File
-  ) => {
+  onSelect = async (id: string, data: BeatmapData, audioFile: File) => {
     this.game.loadBeatmap(data);
 
     // Load audio
     const buffer = await audioFile.arrayBuffer();
     await this.game.audio.loadBlob(data.audioFilename, buffer);
     this.setState({ beatmapLoaded: true });
-    await this.game.play();
   };
 
   render() {
@@ -90,15 +48,23 @@ export default class Root extends React.Component<Props, State> {
         }}
       >
         <h1>osu!</h1>
-        <input
-          type='file'
-          // @ts-expect-error: non-standard API
-          webkitdirectory='true'
-          onChange={this.onChange}
-        />
-        {this.state.beatmaps.map(b => (
-          <BeatmapInfo key={b.id} info={b} onSelect={this.onSelect} />
-        ))}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            maxWidth: 900,
+            backgroundColor: '#eee',
+            boxShadow: '0 0 10px 0 rgb(40 40 40 / 30%)',
+            margin: '0 auto',
+            padding: '0 40px'
+          }}
+        >
+          <BeatmapLoad onSelect={this.onLoad} />
+          <BeatmapListing
+            beatmaps={this.state.beatmaps}
+            onSelect={this.onSelect}
+          />
+        </div>
         {this.state.gameLoaded ? (
           <>
             <p>Game loaded</p>

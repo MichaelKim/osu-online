@@ -73,7 +73,6 @@ export default class Renderer {
     this.gameStage.position.set(xoffset, yoffset);
     this.gameStage.scale.set(scale);
 
-    console.log('resized');
     this.resizeCallbacks.forEach(cb => cb(width, height));
   };
 

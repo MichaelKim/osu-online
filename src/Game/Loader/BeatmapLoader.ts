@@ -22,6 +22,8 @@ export interface BeatmapData {
 
   // [Metadata]
   title: string;
+  artist: string;
+  creator: string;
   version: string;
   beatmapID: number; // Old versions don't have this ID
 
@@ -47,6 +49,8 @@ const DEFAULTS: BeatmapData = {
   colors: [],
   mode: GameMode.STANDARD,
   title: '',
+  artist: '',
+  creator: '',
   version: '',
   beatmapID: 0,
   file: [],
@@ -77,6 +81,8 @@ export function parseBeatmap(file: string[]) {
 
   const parseMetadata = switchcase({
     Title: value => (b.title = value),
+    Artist: value => (b.artist = value),
+    Creator: value => (b.creator = value),
     Version: value => (b.version = value),
     BeatmapID: value => (b.beatmapID = parseInt(value))
   });

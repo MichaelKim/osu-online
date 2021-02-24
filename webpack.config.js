@@ -25,7 +25,7 @@ const config = {
   module: {
     rules: [
       {
-        test: /\.tsx?/,
+        test: /\.tsx?/i,
         exclude: /node_modules/,
         use: {
           loader: 'babel-loader',
@@ -45,7 +45,7 @@ const config = {
         }
       },
       {
-        test: /\.module\.scss$/,
+        test: /\.module\.scss$/i,
         use: [
           isDev ? 'style-loader' : MiniCssExtractPlugin.loader,
           {
@@ -66,6 +66,29 @@ const config = {
             }
           }
         ]
+      },
+      {
+        test: /\.scss$/i,
+        exclude: /\.module\.scss$/i,
+        use: [
+          isDev ? 'style-loader' : MiniCssExtractPlugin.loader,
+          {
+            loader: 'css-loader',
+            options: {
+              sourceMap: !isDev
+            }
+          },
+          {
+            loader: 'sass-loader',
+            options: {
+              sourceMap: !isDev
+            }
+          }
+        ]
+      },
+      {
+        test: /\.ttf$/i,
+        type: 'asset/resource'
       }
     ]
   },

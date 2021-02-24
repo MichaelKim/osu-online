@@ -61,20 +61,16 @@ export function getNumberSprites(
   // Add numbers to container centered at (x, y)
   const container = new PIXI.Container();
   container.position.copyFrom(position);
+  container.scale.set(diameter / 160);
 
+  const width = (skin.numbers[0]?.width ?? 0) - skin.hitCircleOverlap;
   const length = Math.floor(Math.log10(number) + 1);
-
-  // TODO: assuming each digit has the same size
-  const scale = diameter / 160;
-  const width = (skin.numbers[0]?.width ?? 0 - skin.hitCircleOverlap) * scale;
-  let digitX = ((length - 1) * width) / 2;
-  while (number > 0) {
+  const lastDigitX = (length - 1) / 2;
+  for (let i = 0; number > 0; i++) {
     const sprite = new PIXI.Sprite(skin.numbers[number % 10]);
-    sprite.scale.set(scale);
-    sprite.position.set(digitX, 0);
+    sprite.position.set((lastDigitX - i) * width, 0);
     container.addChild(sprite);
 
-    digitX -= width;
     number = Math.floor(number / 10);
   }
 

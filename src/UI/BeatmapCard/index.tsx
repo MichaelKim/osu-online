@@ -1,43 +1,40 @@
 import React from 'react';
-import { BeatmapData } from '../../Game/Loader/BeatmapLoader';
-import { BeatmapFiles } from '../BeatmapUpload';
 import style from './index.module.scss';
 
+export type BeatmapInfo = {
+  id: number;
+  title: string;
+  artist: string;
+  creator: string;
+  diffs: {
+    id: number;
+    version: string;
+    stars: number;
+  }[];
+};
+
 type Props = {
-  beatmap: BeatmapFiles;
-  onSelect: (id: string, data: BeatmapData, audioFile: File) => void;
+  beatmap: BeatmapInfo;
+  onSelect: (diffID: number) => void;
 };
 
 export default function BeatmapCard({ beatmap, onSelect }: Props) {
-  const loadDiff = (data: BeatmapData) => {
-    console.log('Load', data);
-    const audioFile = beatmap.files.find(f => f.name === data.audioFilename);
-    if (audioFile == null) {
-      console.error('Missing audio file!');
-      return;
-    }
-
-    onSelect(beatmap.id, data, audioFile);
-  };
-
-  const { title, artist, creator } = beatmap.difficulties[0];
-
   return (
     <div className={style.beatmapCard}>
       <div className={style.cardBox}>
         <div className={style.cardUpper}>
           <div className={style.cardUpperBox}>
-            <p>{artist}</p>
-            <p className={style.cardTitle}>{title}</p>
+            <p>{beatmap.artist}</p>
+            <p className={style.cardTitle}>{beatmap.title}</p>
           </div>
         </div>
         <div className={style.cardLower}>
-          <p>Mapped by {creator}</p>
+          <p>Mapped by {beatmap.creator}</p>
           <div className={style.cardLowerBox}>
-            {beatmap.difficulties.map(d => (
+            {beatmap.diffs.map(d => (
               <div
-                key={d.version}
-                onClick={() => loadDiff(d)}
+                key={`${d.id}-${d.version}`}
+                onClick={() => onSelect(d.id)}
                 className={style.difficultyCircle}
               />
             ))}

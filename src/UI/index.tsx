@@ -1,9 +1,11 @@
 import React from 'react';
 import Game from '../Game';
 import { BeatmapData } from '../Game/Loader/BeatmapLoader';
-import BeatmapListing from './BeatmapListing';
-import BeatmapLoad, { BeatmapFiles } from './BeatmapUpload';
+import { BeatmapFiles } from './BeatmapUpload';
+import style from './index.module.scss';
 import './index.scss';
+import { Sayobot } from './Sayobot';
+import Local from './Sources/Local';
 
 type Props = Record<string, never>;
 
@@ -31,7 +33,7 @@ export default class Root extends React.Component<Props, State> {
     this.setState({ beatmaps });
   };
 
-  onSelect = async (id: string, data: BeatmapData, audioFile: File) => {
+  onSelect = async (data: BeatmapData, audioFile: Blob) => {
     this.game.loadBeatmap(data);
 
     // Load audio
@@ -48,22 +50,9 @@ export default class Root extends React.Component<Props, State> {
         }}
       >
         <h1>osu!</h1>
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            maxWidth: 900,
-            backgroundColor: '#eee',
-            boxShadow: '0 0 10px 0 rgb(40 40 40 / 30%)',
-            margin: '0 auto',
-            padding: '0 40px'
-          }}
-        >
-          <BeatmapLoad onSelect={this.onLoad} />
-          <BeatmapListing
-            beatmaps={this.state.beatmaps}
-            onSelect={this.onSelect}
-          />
+        <Local onSelect={this.onSelect} />
+        <div className={style.beatmapSection}>
+          <Sayobot onSelect={this.onSelect} />
         </div>
         {this.state.gameLoaded ? (
           <>

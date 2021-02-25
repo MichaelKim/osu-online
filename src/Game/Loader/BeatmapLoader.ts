@@ -26,6 +26,7 @@ export interface BeatmapData {
   creator: string;
   version: string;
   beatmapID: number; // Old versions don't have this ID
+  beatmapSetID: number;
 
   // [Difficulty]
   cs: number;
@@ -53,6 +54,7 @@ const DEFAULTS: BeatmapData = {
   creator: '',
   version: '',
   beatmapID: 0,
+  beatmapSetID: 0,
   file: [],
   audioFilename: '',
   cs: 5,
@@ -84,7 +86,8 @@ export function parseBeatmap(file: string[]) {
     Artist: value => (b.artist = value),
     Creator: value => (b.creator = value),
     Version: value => (b.version = value),
-    BeatmapID: value => (b.beatmapID = parseInt(value))
+    BeatmapID: value => (b.beatmapID = parseInt(value)),
+    BeatmapSetID: value => (b.beatmapSetID = parseInt(value))
   });
 
   const parseDifficulty = switchcase({

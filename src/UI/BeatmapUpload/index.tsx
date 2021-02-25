@@ -7,7 +7,7 @@ type Props = {
 };
 
 export type BeatmapFiles = {
-  id: string;
+  id: number;
   difficulties: BeatmapData[];
   files: File[];
 };
@@ -23,7 +23,7 @@ export default function BeatmapUpload({ onSelect }: Props) {
       }
 
       const directories: Record<string, BeatmapFiles> = {};
-      const beatmaps: { id: string; file: File }[] = [];
+      const beatmaps: { id: number; file: File }[] = [];
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
@@ -35,13 +35,13 @@ export default function BeatmapUpload({ onSelect }: Props) {
           const [, , id, , ext] = regex;
 
           directories[id] ??= {
-            id,
+            id: parseInt(id),
             difficulties: [],
             files: []
           };
 
           if (ext === 'osu') {
-            beatmaps.push({ id, file });
+            beatmaps.push({ id: parseInt(id), file });
           } else {
             directories[id].files.push(file);
           }

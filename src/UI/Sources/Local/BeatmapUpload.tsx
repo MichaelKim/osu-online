@@ -79,13 +79,13 @@ export default function BeatmapUpload({ onSelect }: Props) {
 
   return (
     <div>
-      <h1>Local Beatmaps</h1>
       <label className={style.uploadLabel}>
         <input
           type='file'
           // @ts-expect-error: non-standard API
           webkitdirectory='true'
           onChange={onChange}
+          multiple
         />
         Upload Beatmaps
       </label>

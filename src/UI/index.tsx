@@ -1,11 +1,8 @@
 import React from 'react';
 import Game from '../Game';
 import { BeatmapData } from '../Game/Loader/BeatmapLoader';
-import Search from './Components/Search';
-import Section from './Components/Section';
+import BeatmapListing from './Components/BeatmapListing';
 import './index.scss';
-import Local from './Sources/Local';
-import Sayobot from './Sources/Sayobot';
 
 type Props = Record<string, never>;
 
@@ -36,10 +33,6 @@ export default class Root extends React.Component<Props, State> {
     this.setState({ beatmapLoaded: true });
   };
 
-  onSearch = (keyword: string) => {
-    console.log(keyword);
-  };
-
   render() {
     return (
       <div
@@ -49,15 +42,7 @@ export default class Root extends React.Component<Props, State> {
       >
         <h1>osu!</h1>
 
-        <Section>
-          <Search onChange={this.onSearch} />
-        </Section>
-        <Section>
-          <Local onSelect={this.onSelect} />
-        </Section>
-        <Section>
-          <Sayobot onSelect={this.onSelect} />
-        </Section>
+        <BeatmapListing onSelect={this.onSelect} />
 
         {this.state.gameLoaded ? (
           <>

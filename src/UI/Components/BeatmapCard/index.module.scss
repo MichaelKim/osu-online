@@ -6,7 +6,7 @@
   box-sizing: border-box;
   padding: 4px;
 
-  &:nth-child(odd) {
+  &:nth-child(even) {
     float: right;
   }
 }

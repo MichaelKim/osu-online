@@ -1,10 +1,24 @@
+export enum SayobotListType {
+  HOT = 1,
+  NEW = 2,
+  PACKS = 3,
+  SEARCH = 4
+}
+
+export enum SayobotListMode {
+  STD = 1,
+  TAIKO = 2,
+  CTB = 3,
+  MANIA = 4
+}
+
 type BeatmapListOptions = {
   limit: number;
   offset: number;
-  type: number;
+  type: SayobotListType;
   keyword: string;
   subType: number;
-  mode: number;
+  mode: SayobotListMode;
   class: number;
   genre: number;
   language: number;
@@ -34,21 +48,26 @@ type BeatmapList = {
 export async function getBeatmapList(
   options: Partial<BeatmapListOptions>
 ): Promise<BeatmapList> {
-  let args = '';
+  const args: string[] = [];
   if (options.limit != null) {
-    args += 'L=' + options.limit;
+    args.push('L=' + options.limit);
   }
   if (options.offset != null) {
-    args += 'O=' + options.offset;
+    args.push('O=' + options.offset);
   }
   if (options.type != null) {
-    args += 'T=' + options.type;
+    args.push('T=' + options.type);
+  }
+  if (options.keyword != null) {
+    args.push('K=' + options.keyword);
   }
   if (options.mode != null) {
-    args += 'M=' + options.mode;
+    args.push('M=' + options.mode);
   }
 
-  const res = await fetch('https://api.sayobot.cn/beatmaplist?' + args);
+  const res = await fetch(
+    'https://api.sayobot.cn/beatmaplist?' + args.join('&')
+  );
   return res.json();
 }
 

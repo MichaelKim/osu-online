@@ -1,14 +1,18 @@
+import JSZip from 'jszip';
 import React from 'react';
+import { BeatmapData, parseBeatmap } from '../../../Game/Loader/BeatmapLoader';
 import {
   getBeatmapInfo,
   getBeatmapList,
-  SayobotBeatmapInfo
+  SayobotBeatmapInfo,
+  SayobotListMode,
+  SayobotListType
 } from '../../API/SayobotAPI';
 import BeatmapCard from '../../Components/BeatmapCard';
-import JSZip from 'jszip';
-import { BeatmapData, parseBeatmap } from '../../../Game/Loader/BeatmapLoader';
+import LoadingCircle from '../../Components/LoadingCircle';
 
 type Props = {
+  search: string;
   onSelect: (diff: BeatmapData, audioFile: Blob) => void;
 };
 
@@ -42,14 +46,29 @@ async function fetchOsz(url: string) {
   };
 }
 
-export default function Sayobot({ onSelect }: Props) {
+export default function Sayobot({ search, onSelect }: Props) {
+  const timeoutID = React.useRef<number | undefined>();
+  const [loading, setLoading] = React.useState(true);
   const [beatmaps, setBeatmaps] = React.useState<SayobotBeatmapInfo[]>([]);
 
   React.useEffect(() => {
-    getBeatmapList({ limit: 4, mode: 1 })
-      .then(list => Promise.all(list.data.map(d => getBeatmapInfo(d.sid))))
-      .then(data => setBeatmaps(data.map(d => d.data)));
-  }, []);
+    setLoading(true);
+
+    // Debounce
+    clearTimeout(timeoutID.current);
+    timeoutID.current = window.setTimeout(async () => {
+      const list = await getBeatmapList({
+        limit: 4,
+        type: search === '' ? SayobotListType.NEW : SayobotListType.SEARCH,
+        keyword: search,
+        mode: SayobotListMode.STD
+      });
+      const data = await Promise.all(list.data.map(d => getBeatmapInfo(d.sid)));
+
+      setLoading(false);
+      setBeatmaps(data.map(d => d.data));
+    }, 500);
+  }, [search]);
 
   const _onSelect = React.useCallback(
     async (beatmap: SayobotBeatmapInfo, diffID: number) => {
@@ -78,12 +97,8 @@ export default function Sayobot({ onSelect }: Props) {
     [onSelect]
   );
 
-  if (beatmaps.length === 0) {
-    return (
-      <div>
-        <p>Loading...</p>
-      </div>
-    );
+  if (loading) {
+    return <LoadingCircle />;
   }
 
   return (

@@ -2,6 +2,7 @@ import React from 'react';
 import { BeatmapData } from '../../../Game/Loader/BeatmapLoader';
 import BeatmapCard from '../../Components/BeatmapCard';
 import BeatmapUpload, { BeatmapFiles } from './BeatmapUpload';
+import style from './BeatmapUpload.module.scss';
 
 type Props = {
   onSelect: (diff: BeatmapData, audioFile: Blob) => void;
@@ -16,8 +17,8 @@ export default function Local({ onSelect }: Props) {
   );
 
   const _onSelect = React.useCallback(
-    (beatmap: BeatmapFiles, diffId: number) => {
-      const diff = beatmap.difficulties[diffId];
+    (beatmap: BeatmapFiles, diffID: number) => {
+      const diff = beatmap.difficulties.find(d => d.beatmapID === diffID);
       if (diff == null) {
         console.error('Missing difficulty');
         return;
@@ -36,7 +37,10 @@ export default function Local({ onSelect }: Props) {
 
   return (
     <>
-      <BeatmapUpload onSelect={onLoad} />
+      <div className={style.localHeader}>
+        <h2>Local Beatmaps</h2>
+        <BeatmapUpload onSelect={onLoad} />
+      </div>
       <div>
         {beatmaps.map(b => (
           <BeatmapCard

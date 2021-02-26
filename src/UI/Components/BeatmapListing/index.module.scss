@@ -1,0 +1,16 @@
+@import '../../variables.scss';
+
+.header {
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 12px;
+}
+
+.toggleButton {
+  background-color: transparent;
+  outline: none;
+  font: 1em 'Exo 2';
+  border: 1px solid $light-color;
+  color: $light-accent;
+  margin-left: 12px;
+}

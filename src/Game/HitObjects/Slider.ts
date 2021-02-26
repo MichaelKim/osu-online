@@ -267,8 +267,8 @@ export default class Slider {
         // arc centered at l1.end from l2's v2 (l2.angle + Math.PI / 2) to l1's v4 (l1.angle + Math.PI / 2)
         this.updateCap(
           line.end,
-          line.angle - Math.PI / 2,
-          nextLine.angle - Math.PI / 2,
+          nextLine.angle + Math.PI / 2,
+          line.angle + Math.PI / 2,
           vertices,
           textureVertices,
           j + 5, // p2

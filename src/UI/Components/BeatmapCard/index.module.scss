@@ -1,9 +1,10 @@
+@import '../../variables.scss';
+
 .beatmapCard {
   float: left;
   width: 50%;
   box-sizing: border-box;
   padding: 4px;
-  color: white;
 
   &:nth-child(odd) {
     float: right;
@@ -11,15 +12,16 @@
 }
 
 .cardBox {
-  background-color: #66676d;
+  background-color: $light-color;
   border-radius: 4px;
   box-shadow: 0 1px 3px rgb(0 0 0 / 25%);
 }
 
 .cardUpper {
   height: 120px;
-  background-image: url(https://osu.ppy.sh/assets/images/default-bg.7594e945.png);
+  background-image: url('default-bg.png');
   background-size: cover;
+  border-radius: 4px 4px 0 0;
 }
 
 .cardUpperBox {
@@ -28,7 +30,6 @@
   height: 100%;
   box-sizing: border-box;
   padding: 4px;
-  border-radius: 4px 4px 0 0;
   background: linear-gradient(transparent, #000000aa);
 }
 
@@ -38,6 +39,7 @@
 
 .cardLower {
   height: 60px;
+  color: $dark-accent;
   padding: 0 4px;
   display: flex;
   flex-direction: column;

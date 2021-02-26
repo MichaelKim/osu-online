@@ -1,0 +1,19 @@
+@import '../../variables.scss';
+
+.searchInput {
+  background-color: transparent;
+  border: none;
+  border-bottom: 2px solid darken($light-accent, 30%);
+  color: $light-accent;
+  width: 100%;
+  outline: none;
+  font: 1.3em 'Exo 2';
+
+  &:focus {
+    border-bottom: 2px solid $light-color;
+  }
+
+  &::placeholder {
+    color: darken($light-accent, 30%);
+  }
+}

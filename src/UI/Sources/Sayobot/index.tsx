@@ -4,7 +4,7 @@ import {
   getBeatmapList,
   SayobotBeatmapInfo
 } from '../../API/SayobotAPI';
-import BeatmapCard from '../../BeatmapCard';
+import BeatmapCard from '../../Components/BeatmapCard';
 import JSZip from 'jszip';
 import { BeatmapData, parseBeatmap } from '../../../Game/Loader/BeatmapLoader';
 
@@ -42,7 +42,7 @@ async function fetchOsz(url: string) {
   };
 }
 
-function SayobotHot({ onSelect }: Props) {
+export default function Sayobot({ onSelect }: Props) {
   const [beatmaps, setBeatmaps] = React.useState<SayobotBeatmapInfo[]>([]);
 
   React.useEffect(() => {
@@ -106,14 +106,6 @@ function SayobotHot({ onSelect }: Props) {
           onSelect={diffID => _onSelect(b, diffID)}
         />
       ))}
-    </div>
-  );
-}
-
-export function Sayobot({ onSelect }: Props) {
-  return (
-    <div>
-      <SayobotHot onSelect={onSelect} />
     </div>
   );
 }

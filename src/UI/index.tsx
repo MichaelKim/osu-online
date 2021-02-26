@@ -1,11 +1,11 @@
 import React from 'react';
 import Game from '../Game';
 import { BeatmapData } from '../Game/Loader/BeatmapLoader';
-import { BeatmapFiles } from './Sources/Local/BeatmapUpload';
-import style from './index.module.scss';
+import Search from './Components/Search';
+import Section from './Components/Section';
 import './index.scss';
-import { Sayobot } from './Sources/Sayobot';
 import Local from './Sources/Local';
+import Sayobot from './Sources/Sayobot';
 
 type Props = Record<string, never>;
 
@@ -13,7 +13,6 @@ type State = {
   gameLoaded: boolean;
   beatmapLoaded: boolean;
   playing: boolean;
-  beatmaps: BeatmapFiles[];
 };
 
 export default class Root extends React.Component<Props, State> {
@@ -21,17 +20,12 @@ export default class Root extends React.Component<Props, State> {
   state: State = {
     gameLoaded: false,
     beatmapLoaded: false,
-    playing: false,
-    beatmaps: []
+    playing: false
   };
 
   componentDidMount() {
     this.game.init().then(() => this.setState({ gameLoaded: true }));
   }
-
-  onLoad = (beatmaps: BeatmapFiles[]) => {
-    this.setState({ beatmaps });
-  };
 
   onSelect = async (data: BeatmapData, audioFile: Blob) => {
     this.game.loadBeatmap(data);
@@ -42,6 +36,10 @@ export default class Root extends React.Component<Props, State> {
     this.setState({ beatmapLoaded: true });
   };
 
+  onSearch = (keyword: string) => {
+    console.log(keyword);
+  };
+
   render() {
     return (
       <div
@@ -50,10 +48,17 @@ export default class Root extends React.Component<Props, State> {
         }}
       >
         <h1>osu!</h1>
-        <Local onSelect={this.onSelect} />
-        <div className={style.beatmapSection}>
+
+        <Section>
+          <Search onChange={this.onSearch} />
+        </Section>
+        <Section>
+          <Local onSelect={this.onSelect} />
+        </Section>
+        <Section>
           <Sayobot onSelect={this.onSelect} />
-        </div>
+        </Section>
+
         {this.state.gameLoaded ? (
           <>
             <p>Game loaded</p>

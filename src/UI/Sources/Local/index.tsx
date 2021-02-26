@@ -1,8 +1,7 @@
 import React from 'react';
 import { BeatmapData } from '../../../Game/Loader/BeatmapLoader';
-import BeatmapCard from '../../BeatmapCard';
+import BeatmapCard from '../../Components/BeatmapCard';
 import BeatmapUpload, { BeatmapFiles } from './BeatmapUpload';
-import style from '../../index.module.scss';
 
 type Props = {
   onSelect: (diff: BeatmapData, audioFile: Blob) => void;
@@ -36,7 +35,7 @@ export default function Local({ onSelect }: Props) {
   );
 
   return (
-    <div className={style.beatmapSection}>
+    <>
       <BeatmapUpload onSelect={onLoad} />
       <div>
         {beatmaps.map(b => (
@@ -57,6 +56,6 @@ export default function Local({ onSelect }: Props) {
           />
         ))}
       </div>
-    </div>
+    </>
   );
 }

@@ -54,6 +54,7 @@ module.exports = async (env, argv) => {
               loader: 'css-loader',
               options: {
                 sourceMap: !isDev,
+                url: false,
                 modules: {
                   localIdentName: isDev
                     ? '[path][name]__[local]'
@@ -77,7 +78,8 @@ module.exports = async (env, argv) => {
             {
               loader: 'css-loader',
               options: {
-                sourceMap: !isDev
+                sourceMap: !isDev,
+                url: false
               }
             },
             {
@@ -89,7 +91,7 @@ module.exports = async (env, argv) => {
           ]
         },
         {
-          test: /\.ttf$/i,
+          test: /\.(ttf|png)$/i,
           type: 'asset/resource'
         }
       ]

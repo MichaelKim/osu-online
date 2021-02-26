@@ -79,7 +79,7 @@ export default function BeatmapUpload({ onSelect }: Props) {
 
   return (
     <div>
-      <h1>Upload Beatmaps</h1>
+      <h1>Local Beatmaps</h1>
       <label className={style.uploadLabel}>
         <input
           type='file'

@@ -1,8 +1,10 @@
+@import 'variables.scss';
+
 @font-face {
   font-family: 'Exo 2';
-  src: url('../fonts/Exo2-VariableFont_wght.ttf')
+  src: url('fonts/Exo2-VariableFont_wght.ttf')
       format('truetype supports variations'),
-    url('../fonts/Exo2-VariableFont_wght.ttf') format('truetype-variations');
+    url('fonts/Exo2-VariableFont_wght.ttf') format('truetype-variations');
   font-display: swap;
   font-weight: 100 900;
   font-style: normal;
@@ -10,10 +12,9 @@
 
 @font-face {
   font-family: 'Exo 2';
-  src: url('../fonts/Exo2-Italic-VariableFont_wght.ttf')
+  src: url('fonts/Exo2-Italic-VariableFont_wght.ttf')
       format('truetype supports variations'),
-    url('../fonts/Exo2-Italic-VariableFont_wght.ttf')
-      format('truetype-variations');
+    url('fonts/Exo2-Italic-VariableFont_wght.ttf') format('truetype-variations');
   font-display: swap;
   font-weight: 100 900;
   font-style: italic;
@@ -23,6 +24,8 @@ body {
   margin: 0;
   padding: 0;
   font-family: 'Exo 2';
+  background-color: $dark-accent;
+  color: $light-accent;
 }
 
 #pixi {

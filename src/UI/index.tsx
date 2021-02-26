@@ -1,10 +1,10 @@
 import React from 'react';
 import Game from '../Game';
 import { BeatmapData } from '../Game/Loader/BeatmapLoader';
-import { BeatmapFiles } from './BeatmapUpload';
+import { BeatmapFiles } from './Sources/Local/BeatmapUpload';
 import style from './index.module.scss';
 import './index.scss';
-import { Sayobot } from './Sayobot';
+import { Sayobot } from './Sources/Sayobot';
 import Local from './Sources/Local';
 
 type Props = Record<string, never>;

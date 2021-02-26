@@ -1,8 +1,8 @@
 import React from 'react';
-import { BeatmapData } from '../../Game/Loader/BeatmapLoader';
-import BeatmapCard from '../BeatmapCard';
-import BeatmapUpload, { BeatmapFiles } from '../BeatmapUpload';
-import style from '../index.module.scss';
+import { BeatmapData } from '../../../Game/Loader/BeatmapLoader';
+import BeatmapCard from '../../BeatmapCard';
+import BeatmapUpload, { BeatmapFiles } from './BeatmapUpload';
+import style from '../../index.module.scss';
 
 type Props = {
   onSelect: (diff: BeatmapData, audioFile: Blob) => void;

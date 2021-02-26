@@ -3,10 +3,10 @@ import {
   getBeatmapInfo,
   getBeatmapList,
   SayobotBeatmapInfo
-} from '../API/SayobotAPI';
-import BeatmapCard from '../BeatmapCard';
+} from '../../API/SayobotAPI';
+import BeatmapCard from '../../BeatmapCard';
 import JSZip from 'jszip';
-import { BeatmapData, parseBeatmap } from '../../Game/Loader/BeatmapLoader';
+import { BeatmapData, parseBeatmap } from '../../../Game/Loader/BeatmapLoader';
 
 type Props = {
   onSelect: (diff: BeatmapData, audioFile: Blob) => void;
@@ -48,9 +48,7 @@ function SayobotHot({ onSelect }: Props) {
   React.useEffect(() => {
     getBeatmapList({ limit: 4, mode: 1 })
       .then(list => Promise.all(list.data.map(d => getBeatmapInfo(d.sid))))
-      .then(data => {
-        setBeatmaps(data.map(d => d.data));
-      });
+      .then(data => setBeatmaps(data.map(d => d.data)));
   }, []);
 
   const _onSelect = React.useCallback(
@@ -102,7 +100,8 @@ function SayobotHot({ onSelect }: Props) {
               id: d.bid,
               version: d.version,
               stars: d.star
-            }))
+            })),
+            bg: `https://cdn.sayobot.cn:25225/beatmaps/${b.sid}/covers/cover.webp`
           }}
           onSelect={diffID => _onSelect(b, diffID)}
         />

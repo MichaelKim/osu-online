@@ -33,6 +33,7 @@
     "pixi.js": "^5.3.7",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
+    "react-tooltip": "^4.2.14",
     "sass": "^1.32.8",
     "sass-loader": "^11.0.1",
     "style-loader": "^2.0.0",

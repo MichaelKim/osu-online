@@ -1,6 +1,6 @@
 import React from 'react';
-import { BeatmapData, parseBeatmap } from '../../Game/Loader/BeatmapLoader';
-import style from './index.module.scss';
+import { BeatmapData, parseBeatmap } from '../../../Game/Loader/BeatmapLoader';
+import style from './BeatmapUpload.module.scss';
 
 type Props = {
   onSelect: (beatmaps: BeatmapFiles[]) => void;

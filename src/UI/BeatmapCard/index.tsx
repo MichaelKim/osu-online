@@ -1,4 +1,5 @@
 import React from 'react';
+import DifficultyCircle from '../DifficultyCircle';
 import style from './index.module.scss';
 
 export type BeatmapInfo = {
@@ -11,6 +12,7 @@ export type BeatmapInfo = {
     version: string;
     stars: number;
   }[];
+  bg?: string;
 };
 
 type Props = {
@@ -22,7 +24,10 @@ export default function BeatmapCard({ beatmap, onSelect }: Props) {
   return (
     <div className={style.beatmapCard}>
       <div className={style.cardBox}>
-        <div className={style.cardUpper}>
+        <div
+          className={style.cardUpper}
+          style={beatmap.bg ? { backgroundImage: `url(${beatmap.bg})` } : {}}
+        >
           <div className={style.cardUpperBox}>
             <p>{beatmap.artist}</p>
             <p className={style.cardTitle}>{beatmap.title}</p>
@@ -32,10 +37,10 @@ export default function BeatmapCard({ beatmap, onSelect }: Props) {
           <p>Mapped by {beatmap.creator}</p>
           <div className={style.cardLowerBox}>
             {beatmap.diffs.map(d => (
-              <div
+              <DifficultyCircle
                 key={`${d.id}-${d.version}`}
-                onClick={() => onSelect(d.id)}
-                className={style.difficultyCircle}
+                onClick={onSelect}
+                {...d}
               />
             ))}
           </div>

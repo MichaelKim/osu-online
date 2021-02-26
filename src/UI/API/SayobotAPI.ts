@@ -114,5 +114,10 @@ type BeatmapInfo = {
 
 export async function getBeatmapInfo(sid: number): Promise<BeatmapInfo> {
   const res = await fetch('https://api.sayobot.cn/v2/beatmapinfo?K=' + sid);
-  return res.json();
+  const json: BeatmapInfo = await res.json();
+
+  // Sort difficulties by stars
+  json.data.bid_data.sort((a, b) => a.star - b.star);
+
+  return json;
 }

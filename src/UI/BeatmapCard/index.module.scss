@@ -11,13 +11,15 @@
 }
 
 .cardBox {
-  background-color: #777;
+  background-color: #66676d;
   border-radius: 4px;
   box-shadow: 0 1px 3px rgb(0 0 0 / 25%);
 }
 
 .cardUpper {
   height: 120px;
+  background-image: url(https://osu.ppy.sh/assets/images/default-bg.7594e945.png);
+  background-size: cover;
 }
 
 .cardUpperBox {
@@ -26,9 +28,8 @@
   height: 100%;
   box-sizing: border-box;
   padding: 4px;
-  background-image: url(https://osu.ppy.sh/assets/images/default-bg.7594e945.png);
-  background-size: cover;
   border-radius: 4px 4px 0 0;
+  background: linear-gradient(transparent, #000000aa);
 }
 
 .cardTitle {
@@ -47,14 +48,4 @@
   display: flex;
   flex-direction: row;
   margin: 2px 0;
-}
-
-.difficultyCircle {
-  width: 12px;
-  height: 12px;
-  margin-right: 2px;
-  border-radius: 50%;
-  border: 3px solid;
-  border-color: #88b300;
-  background-color: white;
 }

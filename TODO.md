@@ -4,3 +4,4 @@
 - current time / remaining time
 - pausing
 - end / quit game
+- breaks

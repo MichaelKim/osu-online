@@ -2,7 +2,7 @@ import React from 'react';
 import DifficultyCircle from '../DifficultyCircle';
 import style from './index.module.scss';
 
-export type BeatmapInfo = {
+type BeatmapInfo = {
   id: number;
   title: string;
   artist: string;

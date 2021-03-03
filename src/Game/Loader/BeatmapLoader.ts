@@ -28,6 +28,13 @@ export interface BeatmapData {
   beatmapID: number; // Old versions don't have this ID
   beatmapSetID: number;
 
+  // [Events]
+  background: {
+    filename: string;
+    xoffset: number;
+    yoffset: number;
+  };
+
   // [Difficulty]
   cs: number;
   od: number;
@@ -40,14 +47,12 @@ export interface BeatmapData {
 }
 
 const DEFAULTS: BeatmapData = {
+  file: [],
   formatVersion: 14,
+  audioFilename: '',
   audioLeadIn: 0,
   sampleSet: SampleSetType.NORMAL,
   stackLeniency: 0.7,
-  ar: 5,
-  sliderMultiplier: 1.4,
-  sliderTickRate: 1,
-  colors: [],
   mode: GameMode.STANDARD,
   title: '',
   artist: '',
@@ -55,10 +60,17 @@ const DEFAULTS: BeatmapData = {
   version: '',
   beatmapID: 0,
   beatmapSetID: 0,
-  file: [],
-  audioFilename: '',
+  background: {
+    filename: '',
+    xoffset: 0,
+    yoffset: 0
+  },
   cs: 5,
-  od: 5
+  od: 5,
+  ar: 5,
+  sliderMultiplier: 1.4,
+  sliderTickRate: 1,
+  colors: []
 };
 
 // Alternative to switch-case
@@ -118,6 +130,25 @@ export function parseBeatmap(file: string[]) {
         for (const line of section) {
           const [key, value] = parseKeyValue(line);
           parseDifficulty(key, value);
+        }
+        break;
+      }
+      case '[Events]': {
+        for (const line of section) {
+          const [eventType, startTime, ...eventParams] = line.split(',');
+          if (parseInt(eventType) === 0 && parseInt(startTime) === 0) {
+            const [filename, xoffset, yoffset] = eventParams;
+
+            // Trim quotes
+            if (filename[0] === '"' && filename[filename.length - 1] === '"') {
+              b.background.filename = filename.slice(1, -1);
+            } else {
+              b.background.filename = filename;
+            }
+
+            b.background.xoffset ??= parseInt(xoffset);
+            b.background.yoffset ??= parseInt(yoffset);
+          }
         }
         break;
       }

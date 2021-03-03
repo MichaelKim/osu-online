@@ -1,8 +1,8 @@
 import React from 'react';
 import { BeatmapData } from '../../../Game/Loader/BeatmapLoader';
-import BeatmapCard from '../../Components/BeatmapCard';
 import BeatmapUpload, { BeatmapFiles } from './BeatmapUpload';
 import style from './BeatmapUpload.module.scss';
+import LocalBeatmapCard from './LocalBeatmapCard';
 
 type Props = {
   onSelect: (diff: BeatmapData, audioFile: Blob) => void;
@@ -43,21 +43,7 @@ export default function Local({ onSelect }: Props) {
       </div>
       <div>
         {beatmaps.map(b => (
-          <BeatmapCard
-            key={b.id}
-            onSelect={diffID => _onSelect(b, diffID)}
-            beatmap={{
-              id: b.id,
-              title: b.difficulties[0].title,
-              artist: b.difficulties[0].artist,
-              creator: b.difficulties[0].creator,
-              diffs: b.difficulties.map(d => ({
-                id: d.beatmapID,
-                version: d.version,
-                stars: 0
-              }))
-            }}
-          />
+          <LocalBeatmapCard key={b.id} b={b} onSelect={_onSelect} />
         ))}
       </div>
     </>

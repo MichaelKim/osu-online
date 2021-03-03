@@ -1,4 +1,5 @@
 import * as PIXI from 'pixi.js';
+import PIXISound from 'pixi-sound';
 import {
   BaseHitSound,
   HitSoundType,
@@ -28,12 +29,10 @@ export function parseHitSample(line: string): Tuple<SampleSetType, 2> {
   return [parseInt(sampleTokens[0]), parseInt(sampleTokens[1])];
 }
 
-type SoundResources = Record<keyof typeof soundAssets, PIXI.LoaderResource>;
-
 export default class SampleSetData {
   private loader: PIXI.Loader = new PIXI.Loader();
 
-  sounds: Partial<Record<HitSoundType, PIXI.sound.Sound>> = {};
+  sounds: Partial<Record<HitSoundType, PIXISound.Sound>> = {};
 
   constructor(private name: string) {}
 
@@ -42,7 +41,7 @@ export default class SampleSetData {
       this.loader.add(name, `assets/audio/${this.name}-${url}.wav`);
     }
 
-    const resources: Partial<SoundResources> = await loader(this.loader);
+    const resources = await loader<keyof typeof soundAssets>(this.loader);
     this.sounds[BaseHitSound.CLAP] = resources['hitClap']?.sound;
     this.sounds[BaseHitSound.FINISH] = resources['hitFinish']?.sound;
     this.sounds[BaseHitSound.NORMAL] = resources['hitNormal']?.sound;

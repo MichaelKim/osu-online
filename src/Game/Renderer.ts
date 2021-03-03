@@ -1,4 +1,5 @@
 import * as PIXI from 'pixi.js';
+import { IPointData } from '@pixi/math';
 
 type ResizeCallback = (width: number, height: number) => void;
 
@@ -81,7 +82,7 @@ export default class Renderer {
   }
 
   // Converts real pixels to osu!pixels
-  toOsuPixels(point: PIXI.Point) {
+  toOsuPixels(point: IPointData) {
     return this.gameStage.toLocal(point, undefined, undefined, true);
   }
 

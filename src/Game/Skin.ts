@@ -4,6 +4,7 @@ import SampleSetData, { SampleSetType } from './SampleSet';
 import {
   getSections,
   loader,
+  LoaderResource,
   parseColor,
   parseKeyValue,
   readFile,
@@ -53,8 +54,6 @@ const assets = {
   scoreComma: 'score-comma.png',
   scoreX: 'score-x.png'
 };
-
-type Resources = Record<keyof typeof assets, PIXI.LoaderResource>;
 
 export default class Skin {
   // [General]
@@ -187,14 +186,12 @@ export default class Skin {
       PIXI.Loader.shared.add(name, 'assets/' + url);
     }
 
-    const resources: Partial<Resources> = await loader(
-      PIXI.Loader.shared.use(
-        (resource: PIXI.LoaderResource, next: () => void) => {
-          // Center textures
-          resource.texture.defaultAnchor.set(0.5);
-          next();
-        }
-      )
+    const resources = await loader<keyof typeof assets>(
+      PIXI.Loader.shared.use((resource: LoaderResource, next: () => void) => {
+        // Center textures
+        resource.texture?.defaultAnchor.set(0.5);
+        next();
+      })
     );
 
     // TODO: check for missing / error texture

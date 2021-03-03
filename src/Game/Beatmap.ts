@@ -1,9 +1,10 @@
 import * as PIXI from 'pixi.js';
-import GameState from './State/GameState';
+import { IPointData } from '@pixi/math';
 import { HitObject, HitObjectTypes } from './HitObjects';
 import { BeatmapData } from './Loader/BeatmapLoader';
 import { loadHitObjects } from './Loader/HitObjectLoader';
 import Skin from './Skin';
+import GameState from './State/GameState';
 
 export default class Beatmap {
   notes: HitObject[] = [];
@@ -55,7 +56,7 @@ export default class Beatmap {
     }
   }
 
-  mousedown(time: number, position: PIXI.Point) {
+  mousedown(time: number, position: IPointData) {
     // Ignore if no notes are currently visible
     if (this.left >= this.right) return;
 
@@ -67,7 +68,7 @@ export default class Beatmap {
     this.notes[index].hit(time, position);
   }
 
-  mousemove(time: number, position: PIXI.Point) {
+  mousemove(time: number, position: IPointData) {
     // Ignore if no notes are currently visible
     if (this.left >= this.right) return;
 
@@ -81,7 +82,7 @@ export default class Beatmap {
     object.move(time, position);
   }
 
-  mouseup(time: number, position: PIXI.Point) {
+  mouseup(time: number, position: IPointData) {
     // Ignore if no notes are currently visible
     if (this.left >= this.right) return;
 

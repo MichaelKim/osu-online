@@ -1,4 +1,4 @@
-import * as PIXI from 'pixi.js';
+import { Point } from '@pixi/math';
 import Clock from './Clock';
 import { clamp } from './util';
 
@@ -11,12 +11,12 @@ export enum InputType {
 interface InputEvent {
   time: number;
   type: InputType;
-  position: PIXI.Point;
+  position: Point;
 }
 
 // Handles click / tap
 export default class InputController {
-  private position: PIXI.Point;
+  private position: Point;
   key1 = '1';
   key2 = '2';
   cursorSensitivity = 2;
@@ -25,10 +25,7 @@ export default class InputController {
 
   // Needs clock to log input event timings
   constructor(private clock: Clock) {
-    this.position = new PIXI.Point(
-      window.innerWidth / 2,
-      window.innerHeight / 2
-    );
+    this.position = new Point(window.innerWidth / 2, window.innerHeight / 2);
   }
 
   start() {

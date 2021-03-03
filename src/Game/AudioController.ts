@@ -4,12 +4,12 @@ import { loader } from './util';
 
 export default class AudioController {
   private loader: PIXI.Loader = new PIXI.Loader();
-  private sounds: Record<string, PIXI.sound.Sound> = {};
+  private sounds: Record<string, PIXISound.Sound> = {};
 
   private elapsedTime = 0; // Offset due to resuming
   private resumeTime = 0; // When the audio was last resumed
   private pausedTime = Infinity; // When the audio was paused (Infinity if currently playing)
-  private current?: PIXI.sound.Sound;
+  private current?: PIXISound.Sound;
 
   async load(filename: string) {
     console.log('load', filename);
@@ -28,9 +28,8 @@ export default class AudioController {
 
     const res = await loader(this.loader.add(url, url));
     const data = res[url];
-    if (data?.sound == null || data?.error !== null) {
+    if (data?.sound == null) {
       console.error('Error while loading audio:', url);
-      console.error(data?.error);
     } else {
       this.sounds[url] = data.sound;
     }

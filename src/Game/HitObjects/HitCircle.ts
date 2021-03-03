@@ -1,11 +1,11 @@
 import * as PIXI from 'pixi.js';
+import { IPointData } from '@pixi/math';
 import {
   APPROACH_R,
   FADE_OUT_MS,
   HitObjectTypes,
   HIT_CIRCLE_DIAMETER
 } from '.';
-import GameState from '../State/GameState';
 import { HitResultType } from '../HitResultController';
 import { BeatmapData } from '../Loader/BeatmapLoader';
 import {
@@ -14,6 +14,7 @@ import {
   loadHitCircleSprites
 } from '../Loader/HitCircleLoader';
 import Skin from '../Skin';
+import GameState from '../State/GameState';
 import { arToMS, odToMS } from '../timing';
 import { clerp, clerp01, within } from '../util';
 
@@ -138,7 +139,7 @@ export default class HitCircle {
     return HitResultType.MISS;
   }
 
-  hit(time: number, position: PIXI.Point) {
+  hit(time: number, position: IPointData) {
     if (within(position, this.o.position, this.o.size / 2)) {
       this.finished = time;
 

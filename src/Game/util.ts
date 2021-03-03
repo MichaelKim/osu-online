@@ -1,3 +1,7 @@
+import { ILoaderResource, Loader } from '@pixi/loaders';
+import { IPointData } from '@pixi/math';
+import PIXISound from 'pixi-sound';
+
 /* Numeric Functions */
 export function clamp(val: number, min: number, max: number) {
   if (val < min) return min;
@@ -53,7 +57,7 @@ export type Tuple<
 > = R['length'] extends N ? R : Tuple<T, N, [T, ...R]>;
 
 // If points a and b are within maxDist of each other
-export function within(a: PIXI.Point, b: PIXI.Point, maxDist: number) {
+export function within(a: IPointData, b: IPointData, maxDist: number) {
   const dx = a.x - b.x;
   const dy = a.y - b.y;
   return Math.hypot(dx, dy) < maxDist;
@@ -104,9 +108,15 @@ export function parseColor(rgb: string) {
 }
 
 /* PIXI Specific */
+
+// Adds sound to loader resource (broken in v6.0.0)
+export interface LoaderResource extends ILoaderResource {
+  sound: PIXISound.Sound;
+}
+
 // Loads a PIXI Loader as a promise
 export async function loader<K extends string>(
-  loader: PIXI.Loader
-): Promise<Partial<Record<K, PIXI.LoaderResource>>> {
+  loader: Loader
+): Promise<Partial<Record<K, LoaderResource>>> {
   return new Promise(resolve => loader.load((_, res) => resolve(res)));
 }

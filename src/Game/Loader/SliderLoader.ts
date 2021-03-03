@@ -186,13 +186,10 @@ class CustomMesh extends PIXI.Mesh {
   protected _renderDefault(renderer: PIXI.Renderer): void {
     const shader = this.shader;
 
-    // @ts-expect-error: PIXI type error
     shader.alpha = this.worldAlpha;
-    // @ts-expect-error: PIXI type error
     shader.update?.();
 
     renderer.batch.flush();
-    // @ts-expect-error: PIXI type error
     if (shader.program.uniformData.translationMatrix) {
       shader.uniforms.translationMatrix = this.transform.worldTransform.toArray(
         true

@@ -1,4 +1,5 @@
 import * as PIXI from 'pixi.js';
+import { IPointData } from '@pixi/math';
 import { HitObjectTypes } from '.';
 import { HitResultType } from '../HitResultController';
 import {
@@ -54,7 +55,7 @@ export default class Spinner {
   // All times are in ms (except for rpm) and angles are in radians
   private down = false; // Whether the spinner is held down or not
   private rotations = 0; // Number of rotations made so far
-  private position: PIXI.Point = new PIXI.Point(); // Position of cursor
+  private position: IPointData = { x: 0, y: 0 }; // Position of cursor
   private lastAngle = 0; // Angle of cursor last frame
   private lastTime = 0; // Time of last frame
   private currentRotations = 0; // Actual rotation of sprites (before dampen)
@@ -206,16 +207,16 @@ export default class Spinner {
     return false;
   }
 
-  hit(time: number, position: PIXI.Point) {
+  hit(time: number, position: IPointData) {
     this.down = true;
     this.position = position;
   }
 
-  move(time: number, position: PIXI.Point) {
+  move(time: number, position: IPointData) {
     this.position = position;
   }
 
-  up(time: number, position: PIXI.Point) {
+  up(time: number, position: IPointData) {
     this.down = false;
     this.position = position;
   }

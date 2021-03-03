@@ -1,4 +1,5 @@
 import * as PIXI from 'pixi.js';
+import { IPointData } from '@pixi/math';
 import {
   APPROACH_R,
   FADE_OUT_MS,
@@ -7,7 +8,6 @@ import {
   SLIDER_FADE_OUT_MS
 } from '.';
 import { pointAt } from '../Curve';
-import GameState from '../State/GameState';
 import { HitResultType } from '../HitResultController';
 import { BeatmapData } from '../Loader/BeatmapLoader';
 import {
@@ -16,6 +16,7 @@ import {
   SliderSprites
 } from '../Loader/SliderLoader';
 import Skin from '../Skin';
+import GameState from '../State/GameState';
 import { arToMS, odToMS } from '../timing';
 import { clamp, clerp, clerp01, within } from '../util';
 
@@ -486,7 +487,7 @@ export default class Slider {
     return HitResultType.MISS;
   }
 
-  hit(time: number, position: PIXI.Point) {
+  hit(time: number, position: IPointData) {
     // Hitbox follows the slider head after slider starts
     if (this.state !== State.ACTIVE) {
       if (within(position, this.position, this.o.size / 2)) {
@@ -504,7 +505,7 @@ export default class Slider {
     }
   }
 
-  move(time: number, position: PIXI.Point) {
+  move(time: number, position: IPointData) {
     if (this.state === State.DOWN) {
       if (within(position, this.position, this.o.size / 2)) {
         // Re-enter slider

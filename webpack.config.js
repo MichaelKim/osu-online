@@ -32,13 +32,9 @@ module.exports = async (env, argv) => {
           use: {
             loader: 'babel-loader',
             options: {
+              targets: '> 1%, not ie 11',
               presets: [
-                [
-                  '@babel/preset-env',
-                  {
-                    targets: '> 1%, not ie 11'
-                  }
-                ],
+                '@babel/preset-env',
                 '@babel/preset-react',
                 '@babel/preset-typescript'
               ],

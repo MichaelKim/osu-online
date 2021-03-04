@@ -4,67 +4,61 @@ import { BeatmapData } from '../Game/Loader/BeatmapLoader';
 import BeatmapListing from './Components/BeatmapListing';
 import './index.scss';
 
-type Props = Record<string, never>;
+export default function Root() {
+  const game = React.useRef(
+    new Game(document.getElementsByTagName('canvas')[0])
+  );
+  const [gameLoaded, setGameLoaded] = React.useState(false);
+  const [beatmapLoaded, setBeatmapLoaded] = React.useState(false);
+  const [playing, setPlaying] = React.useState(false);
 
-type State = {
-  gameLoaded: boolean;
-  beatmapLoaded: boolean;
-  playing: boolean;
-};
+  React.useEffect(() => {
+    game.current.init().then(() => setGameLoaded(true));
+  }, []);
 
-export default class Root extends React.Component<Props, State> {
-  game = new Game(document.getElementsByTagName('canvas')[0]);
-  state: State = {
-    gameLoaded: false,
-    beatmapLoaded: false,
-    playing: false
-  };
+  const onSelect = React.useCallback(
+    async (data: BeatmapData, files: BeatmapFile[]) => {
+      // Load beatmap
+      setBeatmapLoaded(false);
+      if (await game.current.loadBeatmap(data, files)) {
+        setBeatmapLoaded(true);
+      }
+    },
+    []
+  );
 
-  componentDidMount() {
-    this.game.init().then(() => this.setState({ gameLoaded: true }));
-  }
+  return (
+    <div
+      style={{
+        display: playing ? 'none' : 'block'
+      }}
+    >
+      <h1>osu!</h1>
 
-  onSelect = async (data: BeatmapData, files: BeatmapFile[]) => {
-    // Load beatmap
-    if (this.game.loadBeatmap(data, files)) {
-      this.setState({ beatmapLoaded: true });
-    }
-  };
+      <BeatmapListing onSelect={onSelect} />
 
-  render() {
-    return (
-      <div
-        style={{
-          display: this.state.playing ? 'none' : 'block'
-        }}
-      >
-        <h1>osu!</h1>
-
-        <BeatmapListing onSelect={this.onSelect} />
-
-        {this.state.gameLoaded ? (
-          <>
-            <p>Game loaded</p>
-            {this.state.beatmapLoaded ? (
-              <>
-                <p>Beatmap loaded</p>
-                <button
-                  onClick={() => {
-                    this.setState({ playing: true });
-                    this.game.play();
-                  }}
-                >
-                  Start!
-                </button>
-              </>
-            ) : (
-              <p>Beatmap loading</p>
-            )}
-          </>
-        ) : (
-          <p>Game loading</p>
-        )}
-      </div>
-    );
-  }
+      {gameLoaded ? (
+        <>
+          <p>Game loaded</p>
+          {beatmapLoaded ? (
+            <>
+              <p>Beatmap loaded</p>
+              <button
+                onClick={() => {
+                  setPlaying(true);
+                  game.current.play();
+                }}
+              >
+                Start!
+              </button>
+            </>
+          ) : (
+            <p>Beatmap loading</p>
+          )}
+        </>
+      ) : (
+        <p>Game loading</p>
+      )}
+    </div>
+  );
 }

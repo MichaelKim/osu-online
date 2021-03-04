@@ -9,7 +9,6 @@ import {
   SayobotListMode,
   SayobotListType
 } from '../../API/SayobotAPI';
-import BeatmapCard from '../../Components/BeatmapCard';
 import LoadingCircle from '../../Components/LoadingCircle';
 import SayobotBeatmapCard from './SayobotBeatmapCard';
 
@@ -54,6 +53,7 @@ export default function Sayobot({ search, onSelect }: Props) {
   const [beatmaps, setBeatmaps] = React.useState<SayobotBeatmapInfo[]>([]);
 
   React.useEffect(() => {
+    return;
     setLoading(true);
 
     // Debounce

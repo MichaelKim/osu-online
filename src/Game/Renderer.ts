@@ -18,7 +18,8 @@ export default class Renderer {
   notesStage: PIXI.Container; // Stage for hit objects
   hitResultStage: PIXI.Container; // Stage for hit results
   followStage: PIXI.Container; // Stage for follow points
-  displayStage: PIXI.Container; // Stage for other game elements
+  displayStage: PIXI.Container; // Stage for HUD elements
+  bgStage: PIXI.Container; // Stage for background elements
 
   constructor(view: HTMLCanvasElement) {
     this.renderer = new PIXI.Renderer({
@@ -38,7 +39,13 @@ export default class Renderer {
     this.cursorStage = new PIXI.Container();
     this.gameStage = new PIXI.Container();
     this.displayStage = new PIXI.Container();
-    this.stage.addChild(this.gameStage, this.cursorStage, this.displayStage);
+    this.bgStage = new PIXI.Container();
+    this.stage.addChild(
+      this.bgStage,
+      this.gameStage,
+      this.cursorStage,
+      this.displayStage
+    );
 
     this.notesStage = new PIXI.Container();
     this.hitResultStage = new PIXI.Container();
@@ -90,6 +97,7 @@ export default class Renderer {
   //   return [window.innerWidth, window.innerHeight];
   // }
 
+  // Immediately calls callback on register
   onResize(callback: (width: number, height: number) => void) {
     callback(window.innerWidth, window.innerHeight);
     this.resizeCallbacks.add(callback);

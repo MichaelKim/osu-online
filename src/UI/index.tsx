@@ -1,5 +1,5 @@
 import React from 'react';
-import Game from '../Game';
+import Game, { BeatmapFile } from '../Game';
 import { BeatmapData } from '../Game/Loader/BeatmapLoader';
 import BeatmapListing from './Components/BeatmapListing';
 import './index.scss';
@@ -24,13 +24,11 @@ export default class Root extends React.Component<Props, State> {
     this.game.init().then(() => this.setState({ gameLoaded: true }));
   }
 
-  onSelect = async (data: BeatmapData, audioFile: Blob) => {
-    this.game.loadBeatmap(data);
-
-    // Load audio
-    const buffer = await audioFile.arrayBuffer();
-    await this.game.audio.loadBlob(data.audioFilename, buffer);
-    this.setState({ beatmapLoaded: true });
+  onSelect = async (data: BeatmapData, files: BeatmapFile[]) => {
+    // Load beatmap
+    if (this.game.loadBeatmap(data, files)) {
+      this.setState({ beatmapLoaded: true });
+    }
   };
 
   render() {

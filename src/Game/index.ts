@@ -9,6 +9,12 @@ import { BeatmapData } from './Loader/BeatmapLoader';
 import { initLock, lockPointer } from './lock';
 import Renderer from './Renderer';
 import Skin from './Skin';
+import BackgroundController from './BackgroundController';
+
+export type BeatmapFile = {
+  name: string;
+  blob: Blob;
+};
 
 export default class Game {
   renderer: Renderer;
@@ -16,6 +22,7 @@ export default class Game {
   skin: Skin;
   clock: Clock;
   audio: AudioController;
+  background: BackgroundController;
 
   // Based on skin
   cursor!: Cursor; // TODO: is there a better way than using !
@@ -30,6 +37,7 @@ export default class Game {
     this.audio = new AudioController();
     this.clock = new Clock(this.audio, this.update);
     this.input = new InputController(this.clock);
+    this.background = new BackgroundController(this.renderer);
   }
 
   async init() {
@@ -40,7 +48,28 @@ export default class Game {
     this.gameState = new GameState(this.renderer, this.skin);
   }
 
-  loadBeatmap(data: BeatmapData) {
+  async loadBeatmap(data: BeatmapData, files: BeatmapFile[]) {
+    // Get background image
+    const bgFile = files.find(f => f.name === data.background.filename);
+    if (bgFile == null) {
+      console.warn('Missing background image:', data.background.filename);
+    }
+
+    // Get audio
+    const audioFile = files.find(f => f.name === data.audioFilename);
+    if (audioFile == null) {
+      console.error('Missing audio file!');
+      return false;
+    }
+
+    // Load background image
+    bgFile && (await this.background.loadBeatmap(bgFile.blob));
+
+    // Load audio
+    const buffer = await audioFile.blob.arrayBuffer();
+    await this.audio.loadBlob(data.audioFilename, buffer);
+
+    // Load beatmap
     this.beatmap = new Beatmap(
       data,
       this.gameState,
@@ -53,6 +82,8 @@ export default class Game {
       this.beatmap.notes,
       this.skin
     );
+
+    return true;
   }
 
   async play() {

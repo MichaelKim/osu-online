@@ -1,36 +1,36 @@
 import React from 'react';
+import { BeatmapFile } from '../../../Game';
 import { BeatmapData } from '../../../Game/Loader/BeatmapLoader';
-import BeatmapUpload, { BeatmapFiles } from './BeatmapUpload';
+import BeatmapUpload, { LocalBeatmapFiles } from './BeatmapUpload';
 import style from './BeatmapUpload.module.scss';
 import LocalBeatmapCard from './LocalBeatmapCard';
 
 type Props = {
-  onSelect: (diff: BeatmapData, audioFile: Blob) => void;
+  onSelect: (diff: BeatmapData, files: BeatmapFile[]) => void;
 };
 
 export default function Local({ onSelect }: Props) {
-  const [beatmaps, setBeatmaps] = React.useState<BeatmapFiles[]>([]);
+  const [beatmaps, setBeatmaps] = React.useState<LocalBeatmapFiles[]>([]);
 
   const onLoad = React.useCallback(
-    (beatmaps: BeatmapFiles[]) => setBeatmaps(beatmaps),
+    (beatmaps: LocalBeatmapFiles[]) => setBeatmaps(beatmaps),
     []
   );
 
   const _onSelect = React.useCallback(
-    (beatmap: BeatmapFiles, diffID: number) => {
+    (beatmap: LocalBeatmapFiles, diffID: number) => {
       const diff = beatmap.difficulties.find(d => d.beatmapID === diffID);
       if (diff == null) {
         console.error('Missing difficulty');
         return;
       }
 
-      const audioFile = beatmap.files.find(f => f.name === diff.audioFilename);
-      if (audioFile == null) {
-        console.error('Missing audio file!');
-        return;
-      }
+      const files = beatmap.files.map(f => ({
+        name: f.name,
+        blob: f
+      }));
 
-      onSelect(diff, audioFile);
+      onSelect(diff, files);
     },
     [onSelect]
   );

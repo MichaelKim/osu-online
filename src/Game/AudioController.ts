@@ -1,9 +1,9 @@
 import PIXISound from 'pixi-sound';
-import * as PIXI from 'pixi.js';
-import { loader } from './util';
+// import * as PIXI from 'pixi.js';
+// import { loader } from './util';
 
 export default class AudioController {
-  private loader: PIXI.Loader = new PIXI.Loader();
+  // private loader: PIXI.Loader = new PIXI.Loader();
   private sounds: Record<string, PIXISound.Sound> = {};
 
   private elapsedTime = 0; // Offset due to resuming
@@ -11,29 +11,29 @@ export default class AudioController {
   private pausedTime = Infinity; // When the audio was paused (Infinity if currently playing)
   private current?: PIXISound.Sound;
 
-  async load(filename: string) {
-    console.log('load', filename);
-    if (!filename) {
-      console.error('Missing audio filename');
-      return;
-    }
+  // async load(filename: string) {
+  //   console.log('load', filename);
+  //   if (!filename) {
+  //     console.error('Missing audio filename');
+  //     return;
+  //   }
 
-    const url = 'beatmaps/' + filename;
+  //   const url = 'beatmaps/' + filename;
 
-    // Cached
-    if (this.sounds[url] != null) {
-      this.current = this.sounds[url];
-      return;
-    }
+  //   // Cached
+  //   if (this.sounds[url] != null) {
+  //     this.current = this.sounds[url];
+  //     return;
+  //   }
 
-    const res = await loader(this.loader.add(url, url));
-    const data = res[url];
-    if (data?.sound == null) {
-      console.error('Error while loading audio:', url);
-    } else {
-      this.sounds[url] = data.sound;
-    }
-  }
+  //   const res = await loader(this.loader.add(url, url));
+  //   const data = res[url];
+  //   if (data?.sound == null) {
+  //     console.error('Error while loading audio:', url);
+  //   } else {
+  //     this.sounds[url] = data.sound;
+  //   }
+  // }
 
   async loadBlob(filename: string, audioFile: ArrayBuffer) {
     console.log('load blob', filename);

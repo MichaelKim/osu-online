@@ -7,7 +7,13 @@ import Section from '../Section';
 import style from './index.module.scss';
 
 type Props = {
-  onSelect: (data: BeatmapData, audioFile: Blob) => void;
+  onSelect: (
+    data: BeatmapData,
+    files: {
+      name: string;
+      blob: Blob;
+    }[]
+  ) => void;
 };
 
 export default function BeatmapListing({ onSelect }: Props) {

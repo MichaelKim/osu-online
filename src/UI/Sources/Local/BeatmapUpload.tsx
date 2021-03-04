@@ -3,10 +3,10 @@ import { BeatmapData, parseBeatmap } from '../../../Game/Loader/BeatmapLoader';
 import style from './BeatmapUpload.module.scss';
 
 type Props = {
-  onSelect: (beatmaps: BeatmapFiles[]) => void;
+  onSelect: (beatmaps: LocalBeatmapFiles[]) => void;
 };
 
-export type BeatmapFiles = {
+export type LocalBeatmapFiles = {
   id: number;
   difficulties: BeatmapData[];
   files: File[];
@@ -22,7 +22,7 @@ export default function BeatmapUpload({ onSelect }: Props) {
         return;
       }
 
-      const directories: Record<string, BeatmapFiles> = {};
+      const directories: Record<string, LocalBeatmapFiles> = {};
       const beatmaps: { id: number; file: File }[] = [];
 
       for (let i = 0; i < files.length; i++) {

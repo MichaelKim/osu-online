@@ -1,10 +1,10 @@
 import React from 'react';
 import BeatmapCard from '../../Components/BeatmapCard';
-import { BeatmapFiles } from './BeatmapUpload';
+import { LocalBeatmapFiles } from './BeatmapUpload';
 
 type Props = {
-  b: BeatmapFiles;
-  onSelect: (beatmap: BeatmapFiles, diffID: number) => void;
+  b: LocalBeatmapFiles;
+  onSelect: (beatmap: LocalBeatmapFiles, diffID: number) => void;
 };
 
 export default function LocalBeatmapCard({ b, onSelect }: Props) {
@@ -23,9 +23,14 @@ export default function LocalBeatmapCard({ b, onSelect }: Props) {
     }
   }, [bgFile]);
 
+  const _onSelect = React.useCallback((diffID: number) => onSelect(b, diffID), [
+    b,
+    onSelect
+  ]);
+
   return (
     <BeatmapCard
-      onSelect={diffID => onSelect(b, diffID)}
+      onSelect={_onSelect}
       beatmap={{
         id: b.id,
         title: b.difficulties[0].title,

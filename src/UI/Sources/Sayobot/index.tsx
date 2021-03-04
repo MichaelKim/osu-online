@@ -1,5 +1,6 @@
 import JSZip from 'jszip';
 import React from 'react';
+import { BeatmapFile } from '../../../Game';
 import { BeatmapData, parseBeatmap } from '../../../Game/Loader/BeatmapLoader';
 import {
   getBeatmapInfo,
@@ -10,10 +11,11 @@ import {
 } from '../../API/SayobotAPI';
 import BeatmapCard from '../../Components/BeatmapCard';
 import LoadingCircle from '../../Components/LoadingCircle';
+import SayobotBeatmapCard from './SayobotBeatmapCard';
 
 type Props = {
   search: string;
-  onSelect: (diff: BeatmapData, audioFile: Blob) => void;
+  onSelect: (diff: BeatmapData, files: BeatmapFile[]) => void;
 };
 
 async function fetchOsz(url: string) {
@@ -83,16 +85,12 @@ export default function Sayobot({ search, onSelect }: Props) {
         return;
       }
 
-      // Get audio
-      const audioFile = otherFiles.find(
-        f => f.file.name === diff.audioFilename
-      );
-      if (audioFile == null) {
-        console.error('Missing audio file!');
-        return;
-      }
+      const files = otherFiles.map(f => ({
+        name: f.file.name,
+        blob: f.blob
+      }));
 
-      onSelect(diff, audioFile.blob);
+      onSelect(diff, files);
     },
     [onSelect]
   );
@@ -104,22 +102,7 @@ export default function Sayobot({ search, onSelect }: Props) {
   return (
     <div>
       {beatmaps.map(b => (
-        <BeatmapCard
-          key={b.sid}
-          beatmap={{
-            id: b.sid,
-            title: b.title,
-            artist: b.artist,
-            creator: b.creator,
-            diffs: b.bid_data.map(d => ({
-              id: d.bid,
-              version: d.version,
-              stars: d.star
-            })),
-            bg: `https://cdn.sayobot.cn:25225/beatmaps/${b.sid}/covers/cover.webp`
-          }}
-          onSelect={diffID => _onSelect(b, diffID)}
-        />
+        <SayobotBeatmapCard key={b.sid} b={b} onSelect={_onSelect} />
       ))}
     </div>
   );

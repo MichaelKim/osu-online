@@ -1,6 +1,6 @@
 import React from 'react';
 import { BeatmapData, parseBeatmap } from '../../../Game/Loader/BeatmapLoader';
-import style from './BeatmapUpload.module.scss';
+import style from './index.module.scss';
 
 type Props = {
   onSelect: (beatmaps: LocalBeatmapFiles[]) => void;
@@ -77,6 +77,16 @@ export default function BeatmapUpload({ onSelect }: Props) {
     [onSelect]
   );
 
+  if (total > 0) {
+    return (
+      <div className={style.dragDrop}>
+        <p>
+          Loaded {progress} of {total}...
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className={style.dragDrop}>
       <p>Drag & drop a beatmap folder here</p>
@@ -92,12 +102,6 @@ export default function BeatmapUpload({ onSelect }: Props) {
         />
         Browse files
       </label>
-
-      {total > 0 && (
-        <p>
-          Loaded {progress} of {total}...
-        </p>
-      )}
     </div>
   );
 }

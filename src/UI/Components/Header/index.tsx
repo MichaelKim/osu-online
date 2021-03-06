@@ -1,5 +1,5 @@
 import React from 'react';
-import BeatmapUpload, { LocalBeatmapFiles } from './BeatmapUpload';
+import BeatmapUpload, { LocalBeatmapFiles } from '../BeatmapUpload';
 import style from './index.module.scss';
 
 type Props = {
@@ -15,11 +15,17 @@ export default function Header({ onLoad }: Props) {
     []
   );
 
+  const _onLoad = React.useCallback(
+    (beatmaps: LocalBeatmapFiles[]) => {
+      setModal(false);
+      onLoad(beatmaps);
+    },
+    [onLoad]
+  );
+
   return (
     <div className={style.header}>
-      <div>
-        <h1>osu!</h1>
-      </div>
+      <h1>osu!</h1>
       <button className={style.headerButton} onClick={onToggle}>
         Load Unpacked Beatmap
       </button>
@@ -28,7 +34,7 @@ export default function Header({ onLoad }: Props) {
           <div className={style.modalBox} onClick={onModalClick}>
             <h1 className={style.title}>Load Unpacked Beatmap</h1>
             <p>Play beatmaps stored on your computer</p>
-            <BeatmapUpload onSelect={onLoad} />
+            <BeatmapUpload onSelect={_onLoad} />
           </div>
         </div>
       )}

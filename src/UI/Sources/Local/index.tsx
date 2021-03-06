@@ -1,7 +1,7 @@
 import React from 'react';
 import { BeatmapFile } from '../../../Game';
 import { BeatmapData } from '../../../Game/Loader/BeatmapLoader';
-import { LocalBeatmapFiles } from '../../Components/Header/BeatmapUpload';
+import { LocalBeatmapFiles } from '../../Components/BeatmapUpload';
 import Section from '../../Components/Section';
 import LocalBeatmapCard from './LocalBeatmapCard';
 

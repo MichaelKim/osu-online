@@ -2,10 +2,10 @@ import React from 'react';
 import Game, { BeatmapFile } from '../Game';
 import { BeatmapData } from '../Game/Loader/BeatmapLoader';
 import BeatmapListing from './Components/BeatmapListing';
+import { LocalBeatmapFiles } from './Components/BeatmapUpload';
 import Header from './Components/Header';
-import { LocalBeatmapFiles } from './Components/Header/BeatmapUpload';
-import Local from './Sources/Local';
 import './index.scss';
+import Local from './Sources/Local';
 
 export default function Root() {
   const game = React.useRef(

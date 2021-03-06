@@ -4,6 +4,7 @@
   background-color: $dark-color;
   display: flex;
   flex-direction: row;
+  padding: 8px 16px;
 }
 
 .headerButton {
@@ -27,6 +28,7 @@
   justify-content: center;
   background-color: #000000aa;
   cursor: pointer;
+  z-index: 1;
 }
 
 .modalBox {

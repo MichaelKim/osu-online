@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import BeatmapUpload, { LocalBeatmapFiles } from '../BeatmapUpload';
 import style from './index.module.scss';
 

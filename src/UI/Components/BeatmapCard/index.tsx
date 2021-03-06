@@ -1,4 +1,3 @@
-import React from 'react';
 import DifficultyCircle from '../DifficultyCircle';
 import style from './index.module.scss';
 

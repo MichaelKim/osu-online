@@ -1,4 +1,4 @@
-import React from 'react';
+import { useCallback } from 'react';
 import style from './index.module.scss';
 import ReactTooltip from 'react-tooltip';
 
@@ -33,7 +33,7 @@ export default function DifficultyCircle({
   stars,
   onClick
 }: Props) {
-  const _onClick = React.useCallback(() => onClick(id), [id, onClick]);
+  const _onClick = useCallback(() => onClick(id), [id, onClick]);
 
   const color = getDiffColor(stars);
   const roundedStars = Math.floor(stars * 100) / 100;

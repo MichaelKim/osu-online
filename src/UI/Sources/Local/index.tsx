@@ -1,4 +1,4 @@
-import React from 'react';
+import { useCallback } from 'react';
 import { BeatmapFile } from '../../../Game';
 import { BeatmapData } from '../../../Game/Loader/BeatmapLoader';
 import { LocalBeatmapFiles } from '../../Components/BeatmapUpload';
@@ -11,7 +11,7 @@ type Props = {
 };
 
 export default function Local({ beatmaps, onSelect }: Props) {
-  const _onSelect = React.useCallback(
+  const _onSelect = useCallback(
     (beatmap: LocalBeatmapFiles, diffID: number) => {
       const diff = beatmap.difficulties.find(d => d.beatmapID === diffID);
       if (diff == null) {

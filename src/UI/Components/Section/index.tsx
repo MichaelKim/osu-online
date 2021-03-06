@@ -1,8 +1,8 @@
-import React from 'react';
+import { ReactNode } from 'react';
 import style from './index.module.scss';
 
 type Props = {
-  children: React.ReactNode;
+  children: ReactNode;
 };
 
 export default function Section({ children }: Props) {

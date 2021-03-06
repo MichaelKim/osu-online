@@ -1,4 +1,4 @@
-import React from 'react';
+import { useCallback } from 'react';
 import { SayobotBeatmapInfo } from '../../API/SayobotAPI';
 import BeatmapCard from '../../Components/BeatmapCard';
 
@@ -8,7 +8,7 @@ type Props = {
 };
 
 export default function SayobotBeatmapCard({ b, onSelect }: Props) {
-  const _onSelect = React.useCallback((diffID: number) => onSelect(b, diffID), [
+  const _onSelect = useCallback((diffID: number) => onSelect(b, diffID), [
     b,
     onSelect
   ]);

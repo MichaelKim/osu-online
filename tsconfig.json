@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "jsx": "react",
+    "jsx": "react-jsx",
     "isolatedModules": true,
     "lib": ["ES2019", "DOM"],
     "target": "ES2019",

@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { BeatmapData, parseBeatmap } from '../../../Game/Loader/BeatmapLoader';
 import style from './index.module.scss';
 

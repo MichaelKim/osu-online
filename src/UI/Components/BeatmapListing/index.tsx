@@ -1,4 +1,4 @@
-import React from 'react';
+import { useState } from 'react';
 import { BeatmapData } from '../../../Game/Loader/BeatmapLoader';
 import Sayobot from '../../Sources/Sayobot';
 import Search from '../Search';
@@ -16,7 +16,7 @@ type Props = {
 };
 
 export default function BeatmapListing({ onSelect }: Props) {
-  const [keyword, setKeyword] = React.useState('');
+  const [keyword, setKeyword] = useState('');
 
   return (
     <>

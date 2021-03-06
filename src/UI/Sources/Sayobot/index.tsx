@@ -1,5 +1,5 @@
 import JSZip from 'jszip';
-import React from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import { BeatmapFile } from '../../../Game';
 import { BeatmapData, parseBeatmap } from '../../../Game/Loader/BeatmapLoader';
 import {
@@ -48,11 +48,11 @@ async function fetchOsz(url: string) {
 }
 
 export default function Sayobot({ search, onSelect }: Props) {
-  const timeoutID = React.useRef<number | undefined>();
-  const [loading, setLoading] = React.useState(true);
-  const [beatmaps, setBeatmaps] = React.useState<SayobotBeatmapInfo[]>([]);
+  const timeoutID = useRef<number | undefined>();
+  const [loading, setLoading] = useState(true);
+  const [beatmaps, setBeatmaps] = useState<SayobotBeatmapInfo[]>([]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     return;
     setLoading(true);
 
@@ -72,7 +72,7 @@ export default function Sayobot({ search, onSelect }: Props) {
     }, 500);
   }, [search]);
 
-  const _onSelect = React.useCallback(
+  const _onSelect = useCallback(
     async (beatmap: SayobotBeatmapInfo, diffID: number) => {
       const url =
         'https://txy1.sayobot.cn/beatmaps/download/mini/' + beatmap.sid;

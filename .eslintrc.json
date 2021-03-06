@@ -12,7 +12,10 @@
     // Using TypeScript for types
     "react/prop-types": "off",
     // Allow implicit function return types
-    "@typescript-eslint/explicit-module-boundary-types": "off"
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    // Use the new JSX Transform
+    "react/jsx-uses-react": "off",
+    "react/react-in-jsx-scope": "off"
   },
   "settings": {
     "react": {

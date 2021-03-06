@@ -1,4 +1,4 @@
-import React from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import BeatmapCard from '../../Components/BeatmapCard';
 import { LocalBeatmapFiles } from '../../Components/BeatmapUpload';
 
@@ -8,12 +8,12 @@ type Props = {
 };
 
 export default function LocalBeatmapCard({ b, onSelect }: Props) {
-  const [bg, setBg] = React.useState('');
+  const [bg, setBg] = useState('');
 
   // Load background image
   const bgFilename = b.difficulties[0].background.filename;
   const bgFile = b.files.find(f => f.name === bgFilename);
-  React.useEffect(() => {
+  useEffect(() => {
     if (bgFile != null) {
       const objectURL = URL.createObjectURL(bgFile);
       setBg(objectURL);
@@ -23,7 +23,7 @@ export default function LocalBeatmapCard({ b, onSelect }: Props) {
     }
   }, [bgFile]);
 
-  const _onSelect = React.useCallback((diffID: number) => onSelect(b, diffID), [
+  const _onSelect = useCallback((diffID: number) => onSelect(b, diffID), [
     b,
     onSelect
   ]);

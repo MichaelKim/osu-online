@@ -35,7 +35,12 @@ module.exports = async (env, argv) => {
               targets: '> 1%, not ie 11',
               presets: [
                 '@babel/preset-env',
-                '@babel/preset-react',
+                [
+                  '@babel/preset-react',
+                  {
+                    runtime: 'automatic'
+                  }
+                ],
                 '@babel/preset-typescript'
               ],
               plugins: ['@babel/plugin-proposal-class-properties', 'const-enum']

@@ -1,4 +1,4 @@
-import React from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import Game, { BeatmapFile } from '../Game';
 import { BeatmapData } from '../Game/Loader/BeatmapLoader';
 import BeatmapListing from './Components/BeatmapListing';
@@ -8,27 +8,27 @@ import './index.scss';
 import Local from './Sources/Local';
 
 export default function Root() {
-  const game = React.useRef(
+  const game = useRef(
     new Game(document.getElementsByTagName('canvas')[0])
   );
-  const [gameLoaded, setGameLoaded] = React.useState(false);
-  const [beatmapLoaded, setBeatmapLoaded] = React.useState(false);
-  const [playing, setPlaying] = React.useState(false);
+  const [gameLoaded, setGameLoaded] = useState(false);
+  const [beatmapLoaded, setBeatmapLoaded] = useState(false);
+  const [playing, setPlaying] = useState(false);
 
-  const [localBeatmaps, setLocalBeatmaps] = React.useState<LocalBeatmapFiles[]>(
+  const [localBeatmaps, setLocalBeatmaps] = useState<LocalBeatmapFiles[]>(
     []
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     game.current.init().then(() => setGameLoaded(true));
   }, []);
 
-  const onLoad = React.useCallback(
+  const onLoad = useCallback(
     (beatmaps: LocalBeatmapFiles[]) => setLocalBeatmaps(beatmaps),
     []
   );
 
-  const onSelect = React.useCallback(
+  const onSelect = useCallback(
     async (data: BeatmapData, files: BeatmapFile[]) => {
       // Load beatmap
       setBeatmapLoaded(false);

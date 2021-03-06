@@ -2,6 +2,9 @@ import React from 'react';
 import Game, { BeatmapFile } from '../Game';
 import { BeatmapData } from '../Game/Loader/BeatmapLoader';
 import BeatmapListing from './Components/BeatmapListing';
+import Header from './Components/Header';
+import { LocalBeatmapFiles } from './Components/Header/BeatmapUpload';
+import Local from './Sources/Local';
 import './index.scss';
 
 export default function Root() {
@@ -12,9 +15,18 @@ export default function Root() {
   const [beatmapLoaded, setBeatmapLoaded] = React.useState(false);
   const [playing, setPlaying] = React.useState(false);
 
+  const [localBeatmaps, setLocalBeatmaps] = React.useState<LocalBeatmapFiles[]>(
+    []
+  );
+
   React.useEffect(() => {
     game.current.init().then(() => setGameLoaded(true));
   }, []);
+
+  const onLoad = React.useCallback(
+    (beatmaps: LocalBeatmapFiles[]) => setLocalBeatmaps(beatmaps),
+    []
+  );
 
   const onSelect = React.useCallback(
     async (data: BeatmapData, files: BeatmapFile[]) => {
@@ -33,8 +45,8 @@ export default function Root() {
         display: playing ? 'none' : 'block'
       }}
     >
-      <h1>osu!</h1>
-
+      <Header onLoad={onLoad} />
+      <Local beatmaps={localBeatmaps} onSelect={onSelect} />
       <BeatmapListing onSelect={onSelect} />
 
       {gameLoaded ? (

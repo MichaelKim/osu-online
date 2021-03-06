@@ -1,0 +1,41 @@
+@import '../../variables.scss';
+
+.header {
+  background-color: $dark-color;
+  display: flex;
+  flex-direction: row;
+}
+
+.headerButton {
+  background-color: transparent;
+  outline: none;
+  font: 1em 'Exo 2';
+  border: 0;
+  color: $light-accent;
+  cursor: pointer;
+  margin-left: 12px;
+}
+
+.modal {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #000000aa;
+  cursor: pointer;
+}
+
+.modalBox {
+  background-color: $dark-color;
+  padding: 30px;
+  text-align: center;
+  cursor: default;
+}
+
+.title {
+  margin-bottom: 12px;
+}

@@ -78,8 +78,11 @@ export default function BeatmapUpload({ onSelect }: Props) {
   );
 
   return (
-    <div>
-      <label className={style.uploadLabel}>
+    <div className={style.dragDrop}>
+      <p>Drag & drop a beatmap folder here</p>
+      <p className={style.or}>OR</p>
+
+      <label className={style.browseButton}>
         <input
           type='file'
           // @ts-expect-error: non-standard API
@@ -87,7 +90,7 @@ export default function BeatmapUpload({ onSelect }: Props) {
           onChange={onChange}
           multiple
         />
-        Upload Beatmaps
+        Browse files
       </label>
 
       {total > 0 && (

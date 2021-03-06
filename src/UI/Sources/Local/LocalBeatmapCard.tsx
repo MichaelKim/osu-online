@@ -1,6 +1,6 @@
 import React from 'react';
 import BeatmapCard from '../../Components/BeatmapCard';
-import { LocalBeatmapFiles } from './BeatmapUpload';
+import { LocalBeatmapFiles } from '../../Components/Header/BeatmapUpload';
 
 type Props = {
   b: LocalBeatmapFiles;

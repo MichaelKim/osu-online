@@ -1,22 +1,16 @@
 import React from 'react';
 import { BeatmapFile } from '../../../Game';
 import { BeatmapData } from '../../../Game/Loader/BeatmapLoader';
-import BeatmapUpload, { LocalBeatmapFiles } from './BeatmapUpload';
-import style from './BeatmapUpload.module.scss';
+import { LocalBeatmapFiles } from '../../Components/Header/BeatmapUpload';
+import Section from '../../Components/Section';
 import LocalBeatmapCard from './LocalBeatmapCard';
 
 type Props = {
+  beatmaps: LocalBeatmapFiles[];
   onSelect: (diff: BeatmapData, files: BeatmapFile[]) => void;
 };
 
-export default function Local({ onSelect }: Props) {
-  const [beatmaps, setBeatmaps] = React.useState<LocalBeatmapFiles[]>([]);
-
-  const onLoad = React.useCallback(
-    (beatmaps: LocalBeatmapFiles[]) => setBeatmaps(beatmaps),
-    []
-  );
-
+export default function Local({ beatmaps, onSelect }: Props) {
   const _onSelect = React.useCallback(
     (beatmap: LocalBeatmapFiles, diffID: number) => {
       const diff = beatmap.difficulties.find(d => d.beatmapID === diffID);
@@ -35,17 +29,18 @@ export default function Local({ onSelect }: Props) {
     [onSelect]
   );
 
+  if (beatmaps.length === 0) {
+    return null;
+  }
+
   return (
-    <>
-      <div className={style.localHeader}>
-        <h2>Local Beatmaps</h2>
-        <BeatmapUpload onSelect={onLoad} />
-      </div>
+    <Section>
+      <h2>Local Beatmaps</h2>
       <div>
         {beatmaps.map(b => (
           <LocalBeatmapCard key={b.id} b={b} onSelect={_onSelect} />
         ))}
       </div>
-    </>
+    </Section>
   );
 }

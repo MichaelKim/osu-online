@@ -79,7 +79,7 @@ function switchcase<T = string>(cases: Record<string, (value: T) => void>) {
 }
 
 export function parseBeatmap(file: string[]) {
-  const b: BeatmapData = { ...DEFAULTS, file };
+  const b: BeatmapData = { ...JSON.parse(JSON.stringify(DEFAULTS)), file };
 
   const parseGeneral = switchcase({
     AudioFilename: value => (b.audioFilename = value),

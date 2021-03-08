@@ -3,19 +3,19 @@ import BeatmapCard from '../../Components/BeatmapCard';
 import { LocalBeatmapFiles } from '../../Components/BeatmapUpload';
 
 type Props = {
-  b: LocalBeatmapFiles;
+  beatmap: LocalBeatmapFiles;
   onSelect: (beatmap: LocalBeatmapFiles, diffID: number) => void;
 };
 
-export default function LocalBeatmapCard({ b, onSelect }: Props) {
+export default function LocalBeatmapCard({ beatmap, onSelect }: Props) {
   const [bg, setBg] = useState('');
 
   // Load background image
-  const bgFilename = b.difficulties[0].background.filename;
-  const bgFile = b.files.find(f => f.name === bgFilename);
+  const bgFilename = beatmap.difficulties[0].background.filename;
+  const bgFile = beatmap.files.find(f => f.name === bgFilename);
   useEffect(() => {
     if (bgFile != null) {
-      const objectURL = URL.createObjectURL(bgFile);
+      const objectURL = URL.createObjectURL(bgFile.blob);
       setBg(objectURL);
       return () => {
         URL.revokeObjectURL(objectURL);
@@ -23,8 +23,8 @@ export default function LocalBeatmapCard({ b, onSelect }: Props) {
     }
   }, [bgFile]);
 
-  const _onSelect = useCallback((diffID: number) => onSelect(b, diffID), [
-    b,
+  const _onSelect = useCallback((diffID: number) => onSelect(beatmap, diffID), [
+    beatmap,
     onSelect
   ]);
 
@@ -32,11 +32,10 @@ export default function LocalBeatmapCard({ b, onSelect }: Props) {
     <BeatmapCard
       onSelect={_onSelect}
       beatmap={{
-        id: b.id,
-        title: b.difficulties[0].title,
-        artist: b.difficulties[0].artist,
-        creator: b.difficulties[0].creator,
-        diffs: b.difficulties.map(d => ({
+        title: beatmap.difficulties[0].title,
+        artist: beatmap.difficulties[0].artist,
+        creator: beatmap.difficulties[0].creator,
+        diffs: beatmap.difficulties.map(d => ({
           id: d.beatmapID,
           version: d.version,
           stars: 0

@@ -2,7 +2,6 @@ import DifficultyCircle from '../DifficultyCircle';
 import style from './index.module.scss';
 
 type BeatmapInfo = {
-  id: number;
   title: string;
   artist: string;
   creator: string;

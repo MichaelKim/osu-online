@@ -19,12 +19,7 @@ export default function Local({ beatmaps, onSelect }: Props) {
         return;
       }
 
-      const files = beatmap.files.map(f => ({
-        name: f.name,
-        blob: f
-      }));
-
-      onSelect(diff, files);
+      onSelect(diff, beatmap.files);
     },
     [onSelect]
   );
@@ -38,7 +33,11 @@ export default function Local({ beatmaps, onSelect }: Props) {
       <h2>Local Beatmaps</h2>
       <div>
         {beatmaps.map(b => (
-          <LocalBeatmapCard key={b.id} b={b} onSelect={_onSelect} />
+          <LocalBeatmapCard
+            key={b.difficulties[0].beatmapID + '-' + b.difficulties[0].version}
+            beatmap={b}
+            onSelect={_onSelect}
+          />
         ))}
       </div>
     </Section>

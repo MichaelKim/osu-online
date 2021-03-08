@@ -175,6 +175,10 @@ export default class Slider {
       endTheta += 2 * Math.PI;
     }
 
+    if (endTheta < startTheta) {
+      endTheta += 2 * Math.PI;
+    }
+
     const startI = Math.ceil((startTheta * MAX_RES) / (2 * Math.PI));
     const endI = Math.ceil((endTheta * MAX_RES) / (2 * Math.PI));
 

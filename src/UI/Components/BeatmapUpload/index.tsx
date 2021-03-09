@@ -53,7 +53,7 @@ export default function BeatmapUpload({ onSelect }: Props) {
   );
 
   const onChange = React.useCallback(
-    async ({ target: { files } }: React.ChangeEvent<HTMLInputElement>) => {
+    ({ target: { files } }: React.ChangeEvent<HTMLInputElement>) => {
       if (files == null) {
         return;
       }

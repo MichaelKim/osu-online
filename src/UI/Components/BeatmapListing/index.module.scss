@@ -5,3 +5,15 @@
   flex-direction: row;
   margin-bottom: 12px;
 }
+
+.container {
+  flex: 1;
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+}
+
+.list {
+  flex: 1;
+  overflow-y: scroll;
+}

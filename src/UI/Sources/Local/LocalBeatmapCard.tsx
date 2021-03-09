@@ -1,32 +1,30 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback } from 'react';
+import { BeatmapFile } from '../../../Game';
+import { BeatmapData } from '../../../Game/Loader/BeatmapLoader';
 import BeatmapCard from '../../Components/BeatmapCard';
 import { LocalBeatmapFiles } from '../../Components/BeatmapUpload';
+import { useBackgroundImage } from './localUtil';
 
 type Props = {
   beatmap: LocalBeatmapFiles;
-  onSelect: (beatmap: LocalBeatmapFiles, diffID: number) => void;
+  onSelect: (diff: BeatmapData, files: BeatmapFile[]) => void;
 };
 
 export default function LocalBeatmapCard({ beatmap, onSelect }: Props) {
-  const [bg, setBg] = useState('');
+  const bg = useBackgroundImage(beatmap);
 
-  // Load background image
-  const bgFilename = beatmap.difficulties[0].background.filename;
-  const bgFile = beatmap.files.find(f => f.name === bgFilename);
-  useEffect(() => {
-    if (bgFile != null) {
-      const objectURL = URL.createObjectURL(bgFile.blob);
-      setBg(objectURL);
-      return () => {
-        URL.revokeObjectURL(objectURL);
-      };
-    }
-  }, [bgFile]);
+  const _onSelect = useCallback(
+    (version: string) => {
+      const diff = beatmap.difficulties.find(d => d.version === version);
+      if (diff == null) {
+        console.error('Missing difficulty');
+        return;
+      }
 
-  const _onSelect = useCallback((diffID: number) => onSelect(beatmap, diffID), [
-    beatmap,
-    onSelect
-  ]);
+      onSelect(diff, beatmap.files);
+    },
+    [beatmap, onSelect]
+  );
 
   return (
     <BeatmapCard

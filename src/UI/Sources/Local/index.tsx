@@ -1,4 +1,3 @@
-import { useCallback } from 'react';
 import { BeatmapFile } from '../../../Game';
 import { BeatmapData } from '../../../Game/Loader/BeatmapLoader';
 import { LocalBeatmapFiles } from '../../Components/BeatmapUpload';
@@ -11,19 +10,6 @@ type Props = {
 };
 
 export default function Local({ beatmaps, onSelect }: Props) {
-  const _onSelect = useCallback(
-    (beatmap: LocalBeatmapFiles, diffID: number) => {
-      const diff = beatmap.difficulties.find(d => d.beatmapID === diffID);
-      if (diff == null) {
-        console.error('Missing difficulty');
-        return;
-      }
-
-      onSelect(diff, beatmap.files);
-    },
-    [onSelect]
-  );
-
   if (beatmaps.length === 0) {
     return null;
   }
@@ -36,7 +22,7 @@ export default function Local({ beatmaps, onSelect }: Props) {
           <LocalBeatmapCard
             key={b.difficulties[0].beatmapID + '-' + b.difficulties[0].version}
             beatmap={b}
-            onSelect={_onSelect}
+            onSelect={onSelect}
           />
         ))}
       </div>

@@ -1,0 +1,63 @@
+@import '../../variables.scss';
+
+.bar {
+  height: 110px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  background-image: url('default-bg.png');
+  background-size: cover;
+  background-position: center;
+  cursor: pointer;
+}
+
+.fade {
+  background: linear-gradient(to right, #000000aa 50%, transparent);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding-left: 16px;
+  justify-content: center;
+}
+
+.title {
+  font-size: 1.4em;
+  margin-bottom: 4px;
+}
+
+.artist {
+  font-size: 1.1em;
+  margin-bottom: 4px;
+}
+
+.diffCircleBox {
+  display: flex;
+  flex-direction: row;
+  margin: 2px 0;
+}
+
+.diff {
+  height: 70px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background-color: $dark-color;
+  padding-left: 4px;
+}
+
+.diffInfo {
+  padding-left: 4px;
+}
+
+.diffMeta {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+}
+
+.version {
+  font-size: 1.2em;
+  margin-right: 8px;
+}

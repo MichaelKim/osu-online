@@ -21,19 +21,21 @@ function getDiffColor(stars: number) {
 }
 
 type Props = {
-  id: number;
+  key: string;
   version: string;
   stars: number;
-  onClick: (diffID: number) => void;
+  size: number;
+  onClick?: (version: string) => void;
 };
 
 export default function DifficultyCircle({
-  id,
+  key,
   version,
   stars,
+  size = 12,
   onClick
 }: Props) {
-  const _onClick = useCallback(() => onClick(id), [id, onClick]);
+  const _onClick = useCallback(() => onClick?.(version), [version, onClick]);
 
   const color = getDiffColor(stars);
   const roundedStars = Math.floor(stars * 100) / 100;
@@ -43,15 +45,16 @@ export default function DifficultyCircle({
       <div
         onClick={_onClick}
         className={style.difficultyCircle}
-        style={{ borderColor: color }}
+        style={{
+          borderColor: color,
+          width: size,
+          height: size,
+          borderWidth: size / 5
+        }}
         data-tip
-        data-for={`${id}-${version}`}
+        data-for={key}
       />
-      <ReactTooltip
-        id={`${id}-${version}`}
-        effect='solid'
-        className={style.tooltip}
-      >
+      <ReactTooltip id={key} effect='solid' className={style.tooltip}>
         <p>{version}</p>
         <p>{roundedStars} *</p>
       </ReactTooltip>

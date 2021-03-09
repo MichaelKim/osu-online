@@ -73,13 +73,13 @@ export default function Sayobot({ search, onSelect }: Props) {
   }, [search]);
 
   const _onSelect = useCallback(
-    async (beatmap: SayobotBeatmapInfo, diffID: number) => {
+    async (beatmap: SayobotBeatmapInfo, version: string) => {
       const url =
         'https://txy1.sayobot.cn/beatmaps/download/mini/' + beatmap.sid;
       const { diffs, otherFiles } = await fetchOsz(url);
 
       // Find selected diff
-      const diff = diffs.find(d => d.beatmapID === diffID);
+      const diff = diffs.find(d => d.version === version);
       if (diff == null) {
         console.error('Missing difficulty');
         return;

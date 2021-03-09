@@ -15,7 +15,7 @@ type BeatmapInfo = {
 
 type Props = {
   beatmap: BeatmapInfo;
-  onSelect: (diffID: number) => void;
+  onSelect: (version: string) => void;
 };
 
 export default function BeatmapCard({ beatmap, onSelect }: Props) {

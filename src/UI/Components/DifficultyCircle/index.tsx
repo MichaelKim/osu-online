@@ -24,7 +24,7 @@ type Props = {
   key: string;
   version: string;
   stars: number;
-  size: number;
+  size?: number;
   onClick?: (version: string) => void;
 };
 

@@ -7,7 +7,7 @@ export default class BackgroundController {
 
   constructor(renderer: Renderer) {
     const dim = new PIXI.filters.ColorMatrixFilter();
-    dim.brightness(0.8, false);
+    dim.brightness(0.5, false);
 
     const blur = new PIXI.filters.BlurFilter(16);
     this.container.filters = [blur, dim];

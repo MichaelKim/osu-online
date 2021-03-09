@@ -1,5 +1,6 @@
-import * as React from 'react';
+import { useCallback, useState } from 'react';
 import BeatmapUpload, { LocalBeatmapFiles } from '../BeatmapUpload';
+import Modal from '../Modal';
 import style from './index.module.scss';
 
 type Props = {
@@ -7,15 +8,11 @@ type Props = {
 };
 
 export default function Header({ onLoad }: Props) {
-  const [showModal, setModal] = React.useState(false);
+  const [showModal, setModal] = useState(false);
 
-  const onToggle = React.useCallback(() => setModal(m => !m), []);
-  const onModalClick = React.useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => e.stopPropagation(),
-    []
-  );
+  const onToggle = useCallback(() => setModal(m => !m), []);
 
-  const _onLoad = React.useCallback(
+  const _onLoad = useCallback(
     (beatmaps: LocalBeatmapFiles[]) => {
       setModal(false);
       onLoad(beatmaps);
@@ -29,15 +26,11 @@ export default function Header({ onLoad }: Props) {
       <button className={style.headerButton} onClick={onToggle}>
         Load Unpacked Beatmap
       </button>
-      {showModal && (
-        <div className={style.modal} onClick={onToggle}>
-          <div className={style.modalBox} onClick={onModalClick}>
-            <h1 className={style.title}>Load Unpacked Beatmap</h1>
-            <p>Play beatmaps stored on your computer</p>
-            <BeatmapUpload onSelect={_onLoad} />
-          </div>
-        </div>
-      )}
+      <Modal visible={showModal} onExit={onToggle}>
+        <h1 className={style.title}>Load Unpacked Beatmap</h1>
+        <p>Play beatmaps stored on your computer</p>
+        <BeatmapUpload onSelect={_onLoad} />
+      </Modal>
     </div>
   );
 }

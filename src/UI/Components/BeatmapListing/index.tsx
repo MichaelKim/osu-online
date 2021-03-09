@@ -67,17 +67,5 @@ export default function BeatmapListing({ beatmaps, onSelect }: Props) {
         ))}
       </div>
     </div>
-    // <>
-    //   <Local beatmaps={beatmaps} onSelect={onSelect} />
-    //   <Section>
-    //     <div className={style.header}>
-    //       <h1>Beatmap Listing</h1>
-    //     </div>
-    //     <Search value={keyword} onChange={setKeyword} />
-    //   </Section>
-    //   <Section>
-    //     <Sayobot search={keyword} onSelect={onSelect} />
-    //   </Section>
-    // </>
   );
 }

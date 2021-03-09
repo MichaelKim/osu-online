@@ -20,3 +20,22 @@
 .title {
   margin-bottom: 12px;
 }
+
+.load {
+  position: relative;
+  background-color: $dark-color;
+  width: 1000px;
+  display: flex;
+  flex-direction: column;
+}
+
+.close {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.section {
+  min-height: 100px;
+  margin-top: 16px;
+}

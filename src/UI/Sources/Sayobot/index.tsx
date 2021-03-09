@@ -53,7 +53,6 @@ export default function Sayobot({ search, onSelect }: Props) {
   const [beatmaps, setBeatmaps] = useState<SayobotBeatmapInfo[]>([]);
 
   useEffect(() => {
-    return;
     setLoading(true);
 
     // Debounce

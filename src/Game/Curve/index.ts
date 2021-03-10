@@ -18,10 +18,13 @@ export interface Line {
 
 function getCurve(type: CurveTypes, points: PIXI.Point[], length: number) {
   if (type === CurveTypes.PERFECT && points.length === 3) {
-    return getCircleCurve(points, length);
-  } else {
-    return getBezierCurve(points, type === CurveTypes.LINEAR, length);
+    const circle = getCircleCurve(points, length);
+
+    if (circle.length > 0) return circle;
+    // Fallback to bezier
   }
+
+  return getBezierCurve(points, type === CurveTypes.LINEAR, length);
 }
 
 export function getSliderCurve(

@@ -1,3 +1,5 @@
+import { BeatmapFiles } from '../Components/BeatmapUpload';
+
 export enum SayobotListType {
   HOT = 1,
   NEW = 2,
@@ -12,6 +14,14 @@ export enum SayobotListMode {
   MANIA = 4
 }
 
+export enum SayobotListClass {
+  RANKED = 1 << 0, // + Approved
+  QUALIFIED = 1 << 1,
+  LOVED = 1 << 2,
+  PENDING = 1 << 3, // + WIP
+  GRAVEYARD = 1 << 4
+}
+
 type BeatmapListOptions = {
   limit: number;
   offset: number;
@@ -19,7 +29,7 @@ type BeatmapListOptions = {
   keyword: string;
   subType: number;
   mode: SayobotListMode;
-  class: number;
+  class: number; // Bit flags of SayobotListClass
   genre: number;
   language: number;
 };
@@ -63,6 +73,9 @@ export async function getBeatmapList(
   }
   if (options.mode != null) {
     args.push('M=' + options.mode);
+  }
+  if (options.class != null) {
+    args.push('C=' + options.class);
   }
 
   const res = await fetch(
@@ -124,6 +137,11 @@ export type SayobotBeatmapInfo = {
   title: string;
   titleU: string;
   video: number;
+};
+
+export type SayobotBeatmapFiles = {
+  info: SayobotBeatmapInfo;
+  beatmap: BeatmapFiles;
 };
 
 type BeatmapInfo = {

@@ -1,12 +1,12 @@
 import { useCallback, useState } from 'react';
+import { SayobotBeatmapFiles } from '../../API/SayobotAPI';
 import Sayobot from '../../Sources/Sayobot';
-import { BeatmapFiles } from '../BeatmapUpload';
 import Modal from '../Modal';
 import Search from '../Search';
 import style from './index.module.scss';
 
 type Props = {
-  onLoad: (beatmaps: BeatmapFiles[]) => void;
+  onLoad: (beatmap: SayobotBeatmapFiles) => void;
 };
 
 export default function AddModal({ onLoad }: Props) {

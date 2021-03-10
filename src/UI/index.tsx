@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Game, { BeatmapFile } from '../Game';
 import { BeatmapData } from '../Game/Loader/BeatmapLoader';
+import { SayobotBeatmapFiles } from './API/SayobotAPI';
 import BeatmapListing from './Components/BeatmapListing';
 import { BeatmapFiles } from './Components/BeatmapUpload';
 import Header from './Components/Header';
@@ -13,13 +14,16 @@ export default function Root() {
   const [playing, setPlaying] = useState(false);
 
   const [localBeatmaps, setLocalBeatmaps] = useState<BeatmapFiles[]>([]);
+  const [sayobotBeatmaps, setSayobotBeatmaps] = useState<SayobotBeatmapFiles[]>(
+    []
+  );
 
   useEffect(() => {
     game.current.init().then(() => setGameLoaded(true));
   }, []);
 
-  const onLoad = useCallback(
-    (beatmaps: BeatmapFiles[]) => setLocalBeatmaps(beatmaps),
+  const onSayobotAdd = useCallback(
+    (beatmap: SayobotBeatmapFiles) => setSayobotBeatmaps(b => [...b, beatmap]),
     []
   );
 
@@ -42,8 +46,12 @@ export default function Root() {
         flexDirection: 'column'
       }}
     >
-      <Header onLoad={onLoad} />
-      <BeatmapListing beatmaps={localBeatmaps} onSelect={onSelect} />
+      <Header onLoad={setLocalBeatmaps} onSayobotAdd={onSayobotAdd} />
+      <BeatmapListing
+        beatmaps={localBeatmaps}
+        sayobot={sayobotBeatmaps}
+        onSelect={onSelect}
+      />
 
       {gameLoaded ? (
         <>

@@ -4,7 +4,9 @@ import { parseBeatmap } from '../../../Game/Loader/BeatmapLoader';
 import {
   getBeatmapInfo,
   getBeatmapList,
+  SayobotBeatmapFiles,
   SayobotBeatmapInfo,
+  SayobotListClass,
   SayobotListMode,
   SayobotListType
 } from '../../API/SayobotAPI';
@@ -14,7 +16,7 @@ import SayobotBeatmapCard from './SayobotBeatmapCard';
 
 type Props = {
   search: string;
-  onSelect: (beatmaps: BeatmapFiles[]) => void;
+  onSelect: (beatmap: SayobotBeatmapFiles) => void;
 };
 
 async function fetchOsz(url: string): Promise<BeatmapFiles> {
@@ -67,7 +69,8 @@ export default function Sayobot({ search, onSelect }: Props) {
         limit: 4,
         type: search === '' ? SayobotListType.NEW : SayobotListType.SEARCH,
         keyword: search,
-        mode: SayobotListMode.STD
+        mode: SayobotListMode.STD,
+        class: SayobotListClass.RANKED
       });
       const data = await Promise.all(list.data.map(d => getBeatmapInfo(d.sid)));
 
@@ -77,11 +80,10 @@ export default function Sayobot({ search, onSelect }: Props) {
   }, [search]);
 
   const _onSelect = useCallback(
-    async (beatmapInfo: SayobotBeatmapInfo) => {
-      const url =
-        'https://txy1.sayobot.cn/beatmaps/download/mini/' + beatmapInfo.sid;
+    async (info: SayobotBeatmapInfo) => {
+      const url = 'https://txy1.sayobot.cn/beatmaps/download/mini/' + info.sid;
       const beatmap = await fetchOsz(url);
-      onSelect([beatmap]);
+      onSelect({ info, beatmap });
     },
     [onSelect]
   );

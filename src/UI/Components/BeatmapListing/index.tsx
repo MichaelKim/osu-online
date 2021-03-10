@@ -1,18 +1,20 @@
 import * as React from 'react';
 import { BeatmapFile } from '../../../Game';
 import { BeatmapData } from '../../../Game/Loader/BeatmapLoader';
+import { SayobotBeatmapFiles } from '../../API/SayobotAPI';
 import LocalBeatmapBar from '../../Sources/Local/LocalBeatmapBar';
+import SayobotBeatmapBar from '../../Sources/Sayobot/SayobotBeatmapBar';
 import BeatmapInfo from '../BeatmapInfo';
 import { BeatmapFiles } from '../BeatmapUpload';
 import style from './index.module.scss';
 
 type Props = {
   beatmaps: BeatmapFiles[];
+  sayobot: SayobotBeatmapFiles[];
   onSelect: (data: BeatmapData, files: BeatmapFile[]) => void;
 };
 
-export default function BeatmapListing({ beatmaps, onSelect }: Props) {
-  // const [keyword, setKeyword] = React.useState('');
+export default function BeatmapListing({ beatmaps, sayobot, onSelect }: Props) {
   const [selectedBeatmap, setSelected] = React.useState<BeatmapFiles>();
   const [selectedVersion, setVersion] = React.useState<string>();
 
@@ -63,6 +65,15 @@ export default function BeatmapListing({ beatmaps, onSelect }: Props) {
             onClick={onClick}
             onClickDiff={onClickDiff}
             expanded={selectedBeatmap === b}
+          />
+        ))}
+        {sayobot.map(b => (
+          <SayobotBeatmapBar
+            key={b.info.sid}
+            beatmap={b}
+            onClick={onClick}
+            onClickDiff={onClickDiff}
+            expanded={selectedBeatmap === b.beatmap}
           />
         ))}
       </div>

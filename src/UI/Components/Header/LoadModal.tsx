@@ -1,10 +1,10 @@
 import { useCallback, useState } from 'react';
-import BeatmapUpload, { LocalBeatmapFiles } from '../BeatmapUpload';
+import BeatmapUpload, { BeatmapFiles } from '../BeatmapUpload';
 import Modal from '../Modal';
 import style from './index.module.scss';
 
 type Props = {
-  onLoad: (beatmaps: LocalBeatmapFiles[]) => void;
+  onLoad: (beatmaps: BeatmapFiles[]) => void;
 };
 
 export default function LoadModal({ onLoad }: Props) {
@@ -12,7 +12,7 @@ export default function LoadModal({ onLoad }: Props) {
 
   const onToggle = useCallback(() => setModal(m => !m), []);
   const onSelect = useCallback(
-    (beatmaps: LocalBeatmapFiles[]) => {
+    (beatmaps: BeatmapFiles[]) => {
       onToggle();
       onLoad(beatmaps);
     },

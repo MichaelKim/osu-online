@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { LocalBeatmapFiles } from '../../Components/BeatmapUpload';
+import { BeatmapFiles } from '../../Components/BeatmapUpload';
 
-export function useBackgroundImage(beatmap: LocalBeatmapFiles) {
+export function useBackgroundImage(beatmap: BeatmapFiles) {
   const [bg, setBg] = useState('');
 
   // Load background image

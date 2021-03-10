@@ -1,10 +1,10 @@
-import { LocalBeatmapFiles } from '../BeatmapUpload';
+import { BeatmapFiles } from '../BeatmapUpload';
 import AddModal from './AddModal';
 import style from './index.module.scss';
 import LoadModal from './LoadModal';
 
 type Props = {
-  onLoad: (beatmaps: LocalBeatmapFiles[]) => void;
+  onLoad: (beatmaps: BeatmapFiles[]) => void;
 };
 
 export default function Header({ onLoad }: Props) {
@@ -13,11 +13,7 @@ export default function Header({ onLoad }: Props) {
       <h1>osu!</h1>
 
       <LoadModal onLoad={onLoad} />
-      <AddModal
-        onLoad={() => {
-          /**/
-        }}
-      />
+      <AddModal onLoad={onLoad} />
     </div>
   );
 }

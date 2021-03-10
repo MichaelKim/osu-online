@@ -30,7 +30,7 @@ function BeatmapDiffBar({ creator, diff, onClick }: DiffProps) {
 
   return (
     <div className={style.diff} onClick={_onClick}>
-      <DifficultyCircle size={40} {...diff} />
+      <DifficultyCircle size={40} {...diff} id={diff.key} />
       <div className={style.diffInfo}>
         <div className={style.diffMeta}>
           <p className={style.version}>{diff.version}</p>
@@ -68,6 +68,7 @@ export default function BeatmapBar({
             {beatmap.diffs.map(d => (
               <DifficultyCircle
                 key={d.key}
+                id={d.key}
                 size={16}
                 version={d.version}
                 stars={d.stars}

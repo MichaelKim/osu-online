@@ -1,12 +1,12 @@
 import { useCallback } from 'react';
 import BeatmapBar from '../../Components/BeatmapBar';
-import { LocalBeatmapFiles } from '../../Components/BeatmapUpload';
+import { BeatmapFiles } from '../../Components/BeatmapUpload';
 import { useBackgroundImage } from './localUtil';
 
 type Props = {
-  beatmap: LocalBeatmapFiles;
+  beatmap: BeatmapFiles;
   expanded: boolean;
-  onClick: (beatmap: LocalBeatmapFiles) => void;
+  onClick: (beatmap: BeatmapFiles) => void;
   onClickDiff: (version: string) => void;
 };
 

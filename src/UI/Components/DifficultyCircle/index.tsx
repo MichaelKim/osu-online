@@ -1,6 +1,5 @@
-import { useCallback } from 'react';
-import style from './index.module.scss';
 import ReactTooltip from 'react-tooltip';
+import style from './index.module.scss';
 
 enum DifficultyColor {
   EASY = '#88b300',
@@ -21,29 +20,24 @@ function getDiffColor(stars: number) {
 }
 
 type Props = {
-  key: string;
+  id: string;
   version: string;
   stars: number;
   size?: number;
-  onClick?: (version: string) => void;
 };
 
 export default function DifficultyCircle({
-  key,
+  id,
   version,
   stars,
-  size = 12,
-  onClick
+  size = 12
 }: Props) {
-  const _onClick = useCallback(() => onClick?.(version), [version, onClick]);
-
   const color = getDiffColor(stars);
   const roundedStars = Math.floor(stars * 100) / 100;
 
   return (
     <>
       <div
-        onClick={_onClick}
         className={style.difficultyCircle}
         style={{
           borderColor: color,
@@ -52,9 +46,9 @@ export default function DifficultyCircle({
           borderWidth: size / 5
         }}
         data-tip
-        data-for={key}
+        data-for={id}
       />
-      <ReactTooltip id={key} effect='solid' className={style.tooltip}>
+      <ReactTooltip id={id} effect='solid' className={style.tooltip}>
         <p>{version}</p>
         <p>{roundedStars} *</p>
       </ReactTooltip>

@@ -1,12 +1,12 @@
 import { useCallback, useState } from 'react';
-import { SayobotBeatmapInfo } from '../../API/SayobotAPI';
 import Sayobot from '../../Sources/Sayobot';
+import { BeatmapFiles } from '../BeatmapUpload';
 import Modal from '../Modal';
 import Search from '../Search';
 import style from './index.module.scss';
 
 type Props = {
-  onLoad: (beatmaps: SayobotBeatmapInfo[]) => void;
+  onLoad: (beatmaps: BeatmapFiles[]) => void;
 };
 
 export default function AddModal({ onLoad }: Props) {
@@ -28,12 +28,7 @@ export default function AddModal({ onLoad }: Props) {
           </button>
           <Search value={keyword} onChange={setKeyword} />
           <div className={style.section}>
-            <Sayobot
-              search={keyword}
-              onSelect={() => {
-                /**/
-              }}
-            />
+            <Sayobot search={keyword} onSelect={onLoad} />
           </div>
         </div>
       </Modal>

@@ -15,7 +15,7 @@ type BeatmapInfo = {
 
 type Props = {
   beatmap: BeatmapInfo;
-  onSelect: (version: string) => void;
+  onSelect: () => void;
 };
 
 export default function BeatmapCard({ beatmap, onSelect }: Props) {
@@ -32,15 +32,21 @@ export default function BeatmapCard({ beatmap, onSelect }: Props) {
           </div>
         </div>
         <div className={style.cardLower}>
-          <p>Mapped by {beatmap.creator}</p>
-          <div className={style.cardLowerBox}>
-            {beatmap.diffs.map(d => (
-              <DifficultyCircle
-                key={`${d.id}-${d.version}`}
-                onClick={onSelect}
-                {...d}
-              />
-            ))}
+          <div className={style.cardLowerInfo}>
+            <p>Mapped by {beatmap.creator}</p>
+            <div className={style.cardLowerDiffs}>
+              {beatmap.diffs.map(d => (
+                <DifficultyCircle
+                  key={`${d.id}-${d.version}`}
+                  id={`${d.id}-${d.version}`}
+                  version={d.version}
+                  stars={d.stars}
+                />
+              ))}
+            </div>
+          </div>
+          <div className={style.addBox}>
+            <button onClick={onSelect}>Add</button>
           </div>
         </div>
       </div>

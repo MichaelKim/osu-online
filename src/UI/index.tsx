@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Game, { BeatmapFile } from '../Game';
 import { BeatmapData } from '../Game/Loader/BeatmapLoader';
 import BeatmapListing from './Components/BeatmapListing';
-import { LocalBeatmapFiles } from './Components/BeatmapUpload';
+import { BeatmapFiles } from './Components/BeatmapUpload';
 import Header from './Components/Header';
 import './index.scss';
 
@@ -12,14 +12,14 @@ export default function Root() {
   const [beatmapLoaded, setBeatmapLoaded] = useState(false);
   const [playing, setPlaying] = useState(false);
 
-  const [localBeatmaps, setLocalBeatmaps] = useState<LocalBeatmapFiles[]>([]);
+  const [localBeatmaps, setLocalBeatmaps] = useState<BeatmapFiles[]>([]);
 
   useEffect(() => {
     game.current.init().then(() => setGameLoaded(true));
   }, []);
 
   const onLoad = useCallback(
-    (beatmaps: LocalBeatmapFiles[]) => setLocalBeatmaps(beatmaps),
+    (beatmaps: BeatmapFiles[]) => setLocalBeatmaps(beatmaps),
     []
   );
 

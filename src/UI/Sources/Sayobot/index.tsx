@@ -1,7 +1,6 @@
 import JSZip from 'jszip';
-import { useRef, useState, useEffect, useCallback } from 'react';
-import { BeatmapFile } from '../../../Game';
-import { BeatmapData, parseBeatmap } from '../../../Game/Loader/BeatmapLoader';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { parseBeatmap } from '../../../Game/Loader/BeatmapLoader';
 import {
   getBeatmapInfo,
   getBeatmapList,
@@ -9,15 +8,16 @@ import {
   SayobotListMode,
   SayobotListType
 } from '../../API/SayobotAPI';
+import { BeatmapFiles } from '../../Components/BeatmapUpload';
 import LoadingCircle from '../../Components/LoadingCircle';
 import SayobotBeatmapCard from './SayobotBeatmapCard';
 
 type Props = {
   search: string;
-  onSelect: (diff: BeatmapData, files: BeatmapFile[]) => void;
+  onSelect: (beatmaps: BeatmapFiles[]) => void;
 };
 
-async function fetchOsz(url: string) {
+async function fetchOsz(url: string): Promise<BeatmapFiles> {
   const res = await fetch(url);
   const blob = await res.blob();
   const zip = await JSZip.loadAsync(blob);
@@ -31,7 +31,12 @@ async function fetchOsz(url: string) {
 
   // Find all .osu files
   const diffFiles = files.filter(f => f.file.name.endsWith('.osu'));
-  const otherFiles = files.filter(f => !f.file.name.endsWith('.osu'));
+  const otherFiles = files
+    .filter(f => !f.file.name.endsWith('.osu'))
+    .map(f => ({
+      name: f.file.name,
+      blob: f.blob
+    }));
 
   // Parse diffs
   const diffs = await Promise.all(
@@ -42,8 +47,8 @@ async function fetchOsz(url: string) {
   );
 
   return {
-    diffs,
-    otherFiles
+    difficulties: diffs,
+    files: otherFiles
   };
 }
 
@@ -72,24 +77,11 @@ export default function Sayobot({ search, onSelect }: Props) {
   }, [search]);
 
   const _onSelect = useCallback(
-    async (beatmap: SayobotBeatmapInfo, version: string) => {
+    async (beatmapInfo: SayobotBeatmapInfo) => {
       const url =
-        'https://txy1.sayobot.cn/beatmaps/download/mini/' + beatmap.sid;
-      const { diffs, otherFiles } = await fetchOsz(url);
-
-      // Find selected diff
-      const diff = diffs.find(d => d.version === version);
-      if (diff == null) {
-        console.error('Missing difficulty');
-        return;
-      }
-
-      const files = otherFiles.map(f => ({
-        name: f.file.name,
-        blob: f.blob
-      }));
-
-      onSelect(diff, files);
+        'https://txy1.sayobot.cn/beatmaps/download/mini/' + beatmapInfo.sid;
+      const beatmap = await fetchOsz(url);
+      onSelect([beatmap]);
     },
     [onSelect]
   );

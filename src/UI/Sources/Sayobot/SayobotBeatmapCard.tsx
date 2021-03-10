@@ -4,14 +4,11 @@ import BeatmapCard from '../../Components/BeatmapCard';
 
 type Props = {
   b: SayobotBeatmapInfo;
-  onSelect: (beatmap: SayobotBeatmapInfo, version: string) => void;
+  onSelect: (beatmap: SayobotBeatmapInfo) => void;
 };
 
 export default function SayobotBeatmapCard({ b, onSelect }: Props) {
-  const _onSelect = useCallback((version: string) => onSelect(b, version), [
-    b,
-    onSelect
-  ]);
+  const _onSelect = useCallback(() => onSelect(b), [b, onSelect]);
 
   return (
     <BeatmapCard

@@ -7,10 +7,10 @@ import { Directory, getBeatmaps } from './loadBeatmaps';
 import { getFilesFromInput } from './webkitDirectory';
 
 type Props = {
-  onSelect: (beatmaps: LocalBeatmapFiles[]) => void;
+  onSelect: (beatmaps: BeatmapFiles[]) => void;
 };
 
-export type LocalBeatmapFiles = {
+export type BeatmapFiles = {
   difficulties: BeatmapData[];
   files: BeatmapFile[];
 };

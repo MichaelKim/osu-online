@@ -3,17 +3,17 @@ import { BeatmapFile } from '../../../Game';
 import { BeatmapData } from '../../../Game/Loader/BeatmapLoader';
 import LocalBeatmapBar from '../../Sources/Local/LocalBeatmapBar';
 import BeatmapInfo from '../BeatmapInfo';
-import { LocalBeatmapFiles } from '../BeatmapUpload';
+import { BeatmapFiles } from '../BeatmapUpload';
 import style from './index.module.scss';
 
 type Props = {
-  beatmaps: LocalBeatmapFiles[];
+  beatmaps: BeatmapFiles[];
   onSelect: (data: BeatmapData, files: BeatmapFile[]) => void;
 };
 
 export default function BeatmapListing({ beatmaps, onSelect }: Props) {
   // const [keyword, setKeyword] = React.useState('');
-  const [selectedBeatmap, setSelected] = React.useState<LocalBeatmapFiles>();
+  const [selectedBeatmap, setSelected] = React.useState<BeatmapFiles>();
   const [selectedVersion, setVersion] = React.useState<string>();
 
   // Find diff
@@ -22,7 +22,7 @@ export default function BeatmapListing({ beatmaps, onSelect }: Props) {
   );
 
   const onClick = React.useCallback(
-    (beatmap: LocalBeatmapFiles) => {
+    (beatmap: BeatmapFiles) => {
       if (beatmap === selectedBeatmap) {
         return;
       }

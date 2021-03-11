@@ -34,6 +34,16 @@ body {
   color: $light-accent;
 }
 
+a {
+  color: $link-color;
+  text-decoration: underline $link-color 2px;
+
+  &:visited {
+    color: $visited-color;
+    text-decoration-color: $visited-color;
+  }
+}
+
 #pixi {
   position: fixed;
   top: 0;

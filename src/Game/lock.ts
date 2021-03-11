@@ -1,9 +1,17 @@
 // Locks pointer and enables fullscreen
-export async function lockPointer(view: HTMLCanvasElement): Promise<void> {
+export async function lockPointer(
+  view: HTMLCanvasElement,
+  rawInput: boolean
+): Promise<void> {
   await document.documentElement.requestFullscreen();
-  // @ts-expect-error: ignore mouse acceleration
+
+  if (!rawInput) {
+    view.requestPointerLock();
+    return;
+  }
+
+  // @ts-expect-error: Chrome-only
   const promise = view.requestPointerLock({
-    // TODO: apparently this only works in Chrome
     unadjustedMovement: true
   });
   // @ts-expect-error: promise is not void in Chrome 88+ (?)
@@ -11,9 +19,30 @@ export async function lockPointer(view: HTMLCanvasElement): Promise<void> {
   await promise;
 }
 
+// Check if browser supports unadjusted movement pointer lock
+export async function checkUnadjusted() {
+  // @ts-expect-error: Chrome-only
+  const promise = document.documentElement.requestPointerLock({
+    unadjustedMovement: true
+  }) as Promise<void> | undefined;
+  document.exitPointerLock();
+
+  if (!promise) {
+    return false;
+  }
+
+  try {
+    await promise;
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 // Display out of focus error
 export function initLock(
   view: HTMLCanvasElement,
+  rawInput: boolean,
   callback: (paused: boolean) => void
 ): void {
   const pointerLockWarning = document.getElementById('lock');
@@ -23,7 +52,7 @@ export function initLock(
   }
 
   pointerLockWarning.addEventListener('click', () => {
-    lockPointer(view);
+    lockPointer(view, rawInput);
     pointerLockWarning.style.display = 'none';
     callback(false);
   });

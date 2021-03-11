@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Game, { BeatmapFile } from '../Game';
 import { BeatmapData } from '../Game/Loader/BeatmapLoader';
+import { checkUnadjusted } from '../Game/lock';
 import { SayobotBeatmapFiles } from './API/SayobotAPI';
 import BeatmapListing from './Components/BeatmapListing';
 import { BeatmapFiles } from './Components/BeatmapUpload';
@@ -24,10 +25,25 @@ export default function Root() {
     []
   );
 
+  // Update game options
   useEffect(() => {
     game.current.options.set(options);
   }, [options]);
 
+  // Check if browser supports raw input
+  useEffect(() => {
+    checkUnadjusted().then(supportsRawInput => {
+      if (!supportsRawInput) {
+        setOptions(o => ({
+          ...o,
+          rawInput: false,
+          supportsRawInput: false
+        }));
+      }
+    });
+  }, []);
+
+  // Load game
   useEffect(() => {
     game.current.init().then(() => setGameLoaded(true));
   }, []);

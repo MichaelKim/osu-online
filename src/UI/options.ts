@@ -2,6 +2,7 @@ import { createContext } from 'react';
 
 export type Options = {
   rawInput: boolean;
+  supportsRawInput: boolean;
   cursorSensitivity: number;
   leftButton: string;
   rightButton: string;
@@ -9,6 +10,7 @@ export type Options = {
 
 export const defaultOptions: Options = {
   rawInput: true,
+  supportsRawInput: true,
   cursorSensitivity: 2,
   leftButton: '1',
   rightButton: '2'

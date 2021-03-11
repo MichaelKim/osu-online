@@ -4,22 +4,27 @@ import style from './index.module.scss';
 type Props = {
   children: ReactNode;
   visible: boolean;
+  keepOpen?: boolean;
   onExit: () => void;
 };
 
-export default function Modal({ children, visible, onExit }: Props) {
+export default function Modal({
+  children,
+  visible,
+  keepOpen = false,
+  onExit
+}: Props) {
   const [loaded, setLoaded] = useState(false);
   const onModalClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => e.stopPropagation(),
     []
   );
 
-  // Lazily load
   useEffect(() => {
     if (visible) setLoaded(true);
   }, [visible]);
 
-  if (!loaded) return null;
+  if (!(loaded && (keepOpen || visible))) return null;
 
   return (
     <div

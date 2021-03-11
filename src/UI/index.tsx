@@ -6,17 +6,26 @@ import BeatmapListing from './Components/BeatmapListing';
 import { BeatmapFiles } from './Components/BeatmapUpload';
 import Header from './Components/Header';
 import './index.scss';
+import OptionsContext, { defaultOptions, Options } from './options';
 
 export default function Root() {
   const game = useRef(new Game(document.getElementsByTagName('canvas')[0]));
   const [gameLoaded, setGameLoaded] = useState(false);
   const [beatmapLoaded, setBeatmapLoaded] = useState(false);
   const [playing, setPlaying] = useState(false);
+  const [options, setOptions] = useState({
+    ...defaultOptions,
+    setOptions: (o: Partial<Options>) => setOptions({ ...options, ...o })
+  });
 
   const [localBeatmaps, setLocalBeatmaps] = useState<BeatmapFiles[]>([]);
   const [sayobotBeatmaps, setSayobotBeatmaps] = useState<SayobotBeatmapFiles[]>(
     []
   );
+
+  useEffect(() => {
+    game.current.options.set(options);
+  }, [options]);
 
   useEffect(() => {
     game.current.init().then(() => setGameLoaded(true));
@@ -46,7 +55,9 @@ export default function Root() {
         flexDirection: 'column'
       }}
     >
-      <Header onLoad={setLocalBeatmaps} onSayobotAdd={onSayobotAdd} />
+      <OptionsContext.Provider value={options}>
+        <Header onLoad={setLocalBeatmaps} onSayobotAdd={onSayobotAdd} />
+      </OptionsContext.Provider>
       <BeatmapListing
         beatmaps={localBeatmaps}
         sayobot={sayobotBeatmaps}

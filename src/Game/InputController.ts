@@ -1,5 +1,6 @@
 import { Point } from '@pixi/math';
 import Clock from './Clock';
+import OptionsController from './OptionsController';
 import { clamp } from './util';
 
 export enum InputType {
@@ -19,12 +20,11 @@ export default class InputController {
   private position: Point;
   key1 = '1';
   key2 = '2';
-  cursorSensitivity = 2;
   private numDown = 0; // Number of inputs currently pressing down
   events: InputEvent[] = [];
 
   // Needs clock to log input event timings
-  constructor(private clock: Clock) {
+  constructor(private clock: Clock, private options: OptionsController) {
     this.position = new Point(window.innerWidth / 2, window.innerHeight / 2);
   }
 
@@ -59,12 +59,12 @@ export default class InputController {
 
   private onMove = (e: MouseEvent) => {
     const x = clamp(
-      this.position.x + e.movementX * this.cursorSensitivity,
+      this.position.x + e.movementX * this.options.options.cursorSensitivity,
       0,
       window.innerWidth
     );
     const y = clamp(
-      this.position.y + e.movementY * this.cursorSensitivity,
+      this.position.y + e.movementY * this.options.options.cursorSensitivity,
       0,
       window.innerHeight
     );

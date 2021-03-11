@@ -10,6 +10,7 @@ import { initLock, lockPointer } from './lock';
 import Renderer from './Renderer';
 import Skin from './Skin';
 import BackgroundController from './BackgroundController';
+import OptionsController from './OptionsController';
 
 export type BeatmapFile = {
   name: string;
@@ -23,6 +24,7 @@ export default class Game {
   clock: Clock;
   audio: AudioController;
   background: BackgroundController;
+  options: OptionsController;
 
   // Based on skin
   cursor!: Cursor; // TODO: is there a better way than using !
@@ -32,11 +34,12 @@ export default class Game {
 
   constructor(private view: HTMLCanvasElement) {
     this.renderer = new Renderer(view);
+    this.options = new OptionsController();
     // TODO: what about switching skins?
     this.skin = new Skin('assets/skin.ini');
     this.audio = new AudioController();
     this.clock = new Clock(this.audio, this.update);
-    this.input = new InputController(this.clock);
+    this.input = new InputController(this.clock, this.options);
     this.background = new BackgroundController(this.renderer);
   }
 

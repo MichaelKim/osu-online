@@ -21,7 +21,7 @@ export default function AddModal({ onLoad }: Props) {
         Add Beatmap
       </button>
       <Modal visible={showModal} keepOpen onExit={onToggle}>
-        <div className={style.load}>
+        <div className={style.sayobot}>
           <h1 className={style.title}>Beatmap Listing</h1>
           <button onClick={onToggle} className={style.close}>
             Close

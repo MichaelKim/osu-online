@@ -1,13 +1,17 @@
 import { createContext } from 'react';
 
 export type Options = {
+  rawInput: boolean;
   cursorSensitivity: number;
-  test: string;
+  leftButton: string;
+  rightButton: string;
 };
 
 export const defaultOptions: Options = {
+  rawInput: true,
   cursorSensitivity: 2,
-  test: ''
+  leftButton: '1',
+  rightButton: '2'
 };
 
 const OptionsContext = createContext<

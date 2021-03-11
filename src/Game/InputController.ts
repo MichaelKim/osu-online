@@ -18,8 +18,6 @@ interface InputEvent {
 // Handles click / tap
 export default class InputController {
   private position: Point;
-  key1 = '1';
-  key2 = '2';
   private numDown = 0; // Number of inputs currently pressing down
   events: InputEvent[] = [];
 
@@ -43,7 +41,11 @@ export default class InputController {
 
   private onKeyDown = (e: KeyboardEvent) => {
     // Ignore repeated events from holding key down
-    if (!e.repeat && (e.key === this.key1 || e.key === this.key2)) {
+    if (
+      !e.repeat &&
+      (e.key === this.options.options.leftButton ||
+        e.key === this.options.options.rightButton)
+    ) {
       this.onDown();
     }
   };
@@ -78,7 +80,10 @@ export default class InputController {
   };
 
   private onKeyUp = (e: KeyboardEvent) => {
-    if (e.key === this.key1 || e.key === this.key2) {
+    if (
+      e.key === this.options.options.leftButton ||
+      e.key === this.options.options.rightButton
+    ) {
       this.onUp();
     }
   };

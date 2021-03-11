@@ -15,7 +15,8 @@ export default function Root() {
   const [playing, setPlaying] = useState(false);
   const [options, setOptions] = useState({
     ...defaultOptions,
-    setOptions: (o: Partial<Options>) => setOptions({ ...options, ...o })
+    setOptions: (o: Partial<Options>) =>
+      setOptions(options => ({ ...options, ...o }))
   });
 
   const [localBeatmaps, setLocalBeatmaps] = useState<BeatmapFiles[]>([]);

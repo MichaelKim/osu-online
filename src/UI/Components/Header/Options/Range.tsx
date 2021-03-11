@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { FormEvent, useState } from 'react';
 import ReactTooltip from 'react-tooltip';
+import style from './index.module.scss';
 
 function useDebounce<T extends unknown[]>(
   fn: (...args: T) => void,
@@ -12,31 +13,45 @@ function useDebounce<T extends unknown[]>(
   };
 }
 
+type Props = {
+  initialValue: number;
+  min: number;
+  max: number;
+  step: number;
+  disabled?: boolean;
+  onChange: (value: number) => void;
+};
+
 export default function Range({
   initialValue,
+  min,
+  max,
+  step,
+  disabled = false,
   onChange
-}: {
-  initialValue: number;
-  onChange: (value: number) => void;
-}) {
+}: Props) {
   const [value, setValue] = useState(initialValue);
-  const _onChange = useDebounce(onChange, 25);
+  const _onChange = useDebounce(onChange, 50);
+
+  const onInput = (e: FormEvent<HTMLInputElement>) => {
+    const newValue = parseFloat(e.currentTarget.value);
+    setValue(newValue);
+    _onChange(newValue);
+  };
 
   return (
     <>
       <input
         type='range'
-        min={0.1}
-        max={6}
-        step={0.01}
         value={value}
-        onInput={e => {
-          const newValue = parseFloat(e.currentTarget.value);
-          setValue(newValue);
-          _onChange(newValue);
-        }}
+        min={min}
+        max={max}
+        step={step}
+        onInput={onInput}
         data-tip
         data-for='range'
+        disabled={disabled}
+        className={style.range}
       />
       <ReactTooltip id='range'>
         <p>

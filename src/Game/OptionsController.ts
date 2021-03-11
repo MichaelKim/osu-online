@@ -14,6 +14,8 @@ export default class OptionsController {
       ...this._options,
       ...o
     };
+
+    this.callbacks.forEach(cb => cb(this._options));
   }
 
   register(callback: (o: Options) => void) {

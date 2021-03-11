@@ -1,0 +1,32 @@
+@import '../../../variables.scss';
+
+.options {
+  position: relative;
+  width: 500px;
+}
+
+.optionsItem {
+  padding: 4px;
+  &:hover {
+    background-color: lighten($dark-color, 10);
+  }
+}
+
+.rowItem {
+  @extend .optionsItem;
+
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+
+.range {
+  width: 100%;
+  margin: 4px 0 0 0;
+}
+
+.keyBindingModal {
+  text-align: center;
+}

@@ -1,4 +1,4 @@
-import { ReactNode, useCallback, useEffect, useState } from 'react';
+import { MouseEvent, ReactNode, useEffect, useState } from 'react';
 import style from './index.module.scss';
 
 type Props = {
@@ -15,10 +15,14 @@ export default function Modal({
   onExit
 }: Props) {
   const [loaded, setLoaded] = useState(false);
-  const onModalClick = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => e.stopPropagation(),
-    []
-  );
+
+  const onModalClick = (e: React.MouseEvent<HTMLDivElement>) =>
+    e.stopPropagation();
+
+  const _onExit = (e: MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    onExit();
+  };
 
   useEffect(() => {
     if (visible) setLoaded(true);
@@ -30,7 +34,7 @@ export default function Modal({
     <div
       className={style.modal}
       style={{ display: visible ? 'flex' : 'none' }}
-      onClick={onExit}
+      onClick={_onExit}
     >
       <div className={style.modalBox} onClick={onModalClick}>
         {children}

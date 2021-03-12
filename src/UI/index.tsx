@@ -15,10 +15,10 @@ type Props = {
 export default function Root({ supportsRawInput }: Props) {
   const game = useRef(new Game(document.getElementsByTagName('canvas')[0]));
   const [gameLoaded, setGameLoaded] = useState(false);
-  const [beatmapLoaded, setBeatmapLoaded] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [options, setOptions] = useState({
     ...defaultOptions,
+    rawInput: supportsRawInput ? defaultOptions.rawInput : false,
     supportsRawInput,
     setOptions: (o: Partial<Options>) =>
       setOptions(options => ({ ...options, ...o }))
@@ -34,11 +34,6 @@ export default function Root({ supportsRawInput }: Props) {
     game.current.options.set(options);
   }, [options]);
 
-  // Load game
-  useEffect(() => {
-    game.current.init().then(() => setGameLoaded(true));
-  }, []);
-
   const onSayobotAdd = useCallback(
     (beatmap: SayobotBeatmapFiles) => setSayobotBeatmaps(b => [...b, beatmap]),
     []
@@ -46,21 +41,26 @@ export default function Root({ supportsRawInput }: Props) {
 
   const onSelect = useCallback(
     async (data: BeatmapData, files: BeatmapFile[]) => {
+      // Load game
+      if (!gameLoaded) {
+        await game.current.init();
+        setGameLoaded(true);
+      }
+
       // Load beatmap
-      setBeatmapLoaded(false);
       if (await game.current.loadBeatmap(data, files)) {
-        setBeatmapLoaded(true);
+        setPlaying(true);
+        game.current.play();
       }
     },
-    []
+    [gameLoaded]
   );
 
   return (
     <div
+      className='root'
       style={{
-        display: playing ? 'none' : 'flex',
-        height: '100%',
-        flexDirection: 'column'
+        display: playing ? 'none' : 'flex'
       }}
     >
       <OptionsContext.Provider value={options}>
@@ -71,29 +71,6 @@ export default function Root({ supportsRawInput }: Props) {
         sayobot={sayobotBeatmaps}
         onSelect={onSelect}
       />
-
-      {gameLoaded ? (
-        <>
-          <p>Game loaded</p>
-          {beatmapLoaded ? (
-            <>
-              <p>Beatmap loaded</p>
-              <button
-                onClick={() => {
-                  setPlaying(true);
-                  game.current.play();
-                }}
-              >
-                Start!
-              </button>
-            </>
-          ) : (
-            <p>Beatmap loading</p>
-          )}
-        </>
-      ) : (
-        <p>Game loading</p>
-      )}
     </div>
   );
 }

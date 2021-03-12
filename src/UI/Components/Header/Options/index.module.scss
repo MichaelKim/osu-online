@@ -21,9 +21,32 @@
   cursor: pointer;
 }
 
+.disabledOptionsItem {
+  @extend .optionsItem;
+
+  filter: brightness(0.5);
+  cursor: default;
+
+  &:hover {
+    background-color: transparent;
+  }
+}
+
+.disabledRowItem {
+  @extend .rowItem;
+  @extend .disabledOptionsItem;
+}
+
 .range {
   width: 100%;
   margin: 4px 0 0 0;
+  cursor: pointer;
+}
+
+.disabledRange {
+  @extend .range;
+
+  cursor: default;
 }
 
 .keyBindingModal {

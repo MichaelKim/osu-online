@@ -1,19 +1,19 @@
 import { useContext } from 'react';
-import OptionsContext from '../../../options';
+import OptionsContext, { CursorType } from '../../../options';
 import style from './index.module.scss';
 import Range from './Range';
 
 export default function CursorSensitivityOption() {
-  const { rawInput, cursorSensitivity, setOptions } = useContext(
+  const { cursorType, cursorSensitivity, setOptions } = useContext(
     OptionsContext
   );
 
+  const disabled = cursorType === CursorType.DEFAULT;
+
   return (
     <div
-      className={style.optionsItem}
-      style={{
-        filter: rawInput ? 'none' : 'brightness(0.5)'
-      }}
+      className={disabled ? style.disabledOptionsItem : style.optionsItem}
+      title='How much the cursor moves relative to input movement (requires Raw Input enabled)'
     >
       <p>Cursor Sensitivity</p>
       <Range
@@ -21,7 +21,7 @@ export default function CursorSensitivityOption() {
         min={0.1}
         max={6}
         step={0.01}
-        disabled={!rawInput}
+        disabled={disabled}
         onChange={value =>
           setOptions({
             cursorSensitivity: value

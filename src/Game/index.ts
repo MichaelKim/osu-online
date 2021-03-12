@@ -96,14 +96,14 @@ export default class Game {
     }
 
     this.view.style.display = 'block';
-    initLock(this.view, this.options.options.rawInput, paused => {
+    initLock(this.view, this.options.options.cursorType, paused => {
       if (paused) {
         this.audio.pause();
       } else {
         this.audio.resume();
       }
     });
-    await lockPointer(this.view, this.options.options.rawInput);
+    await lockPointer(this.view, this.options.options.cursorType);
 
     await this.audio.play(this.beatmap.data.audioFilename);
     this.clock.start();

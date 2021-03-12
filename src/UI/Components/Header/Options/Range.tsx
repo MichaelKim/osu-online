@@ -51,13 +51,14 @@ export default function Range({
         data-tip
         data-for='range'
         disabled={disabled}
-        className={style.range}
+        className={disabled ? style.disabledRange : style.range}
       />
       <ReactTooltip id='range'>
         <p>
           {value.toLocaleString('en-US', {
             minimumFractionDigits: 2
           })}
+          x
         </p>
       </ReactTooltip>
     </>

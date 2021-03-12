@@ -1,7 +1,13 @@
 import { createContext } from 'react';
 
+export enum CursorType {
+  DEFAULT, // Nothing
+  LOCKED, // Pointer lock
+  UNADJUSTED // Pointer lock with unadjusted movement
+}
+
 export type Options = {
-  rawInput: boolean;
+  cursorType: CursorType;
   supportsRawInput: boolean;
   cursorSensitivity: number;
   leftButton: string;
@@ -9,7 +15,7 @@ export type Options = {
 };
 
 export const defaultOptions: Options = {
-  rawInput: true,
+  cursorType: CursorType.DEFAULT,
   supportsRawInput: true,
   cursorSensitivity: 2,
   leftButton: '1',

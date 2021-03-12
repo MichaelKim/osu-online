@@ -6,7 +6,7 @@ import BeatmapListing from './Components/BeatmapListing';
 import { BeatmapFiles } from './Components/BeatmapUpload';
 import Header from './Components/Header';
 import './index.scss';
-import OptionsContext, { defaultOptions, Options } from './options';
+import OptionsContext, { CursorType, defaultOptions, Options } from './options';
 
 type Props = {
   supportsRawInput: boolean;
@@ -18,7 +18,10 @@ export default function Root({ supportsRawInput }: Props) {
   const [playing, setPlaying] = useState(false);
   const [options, setOptions] = useState({
     ...defaultOptions,
-    rawInput: supportsRawInput ? defaultOptions.rawInput : false,
+    rawInput:
+      !supportsRawInput && defaultOptions.cursorType === CursorType.UNADJUSTED
+        ? CursorType.LOCKED
+        : defaultOptions.cursorType,
     supportsRawInput,
     setOptions: (o: Partial<Options>) =>
       setOptions(options => ({ ...options, ...o }))

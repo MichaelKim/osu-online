@@ -1,20 +1,25 @@
+import { CursorType } from '../UI/options';
+
 // Locks pointer and enables fullscreen
 export async function lockPointer(
   view: HTMLCanvasElement,
-  rawInput: boolean
+  cursorType: CursorType
 ): Promise<void> {
   await document.documentElement.requestFullscreen();
 
-  if (!rawInput) {
-    view.requestPointerLock();
+  if (cursorType === CursorType.DEFAULT) {
+    return;
+  }
+
+  if (cursorType === CursorType.LOCKED) {
+    console.log(view.requestPointerLock());
     return;
   }
 
   // @ts-expect-error: Chrome-only
   const promise = view.requestPointerLock({
     unadjustedMovement: true
-  });
-  // @ts-expect-error: promise is not void in Chrome 88+ (?)
+  }) as Promise<void> | undefined;
   console.log(promise ? 'locked unadjusted' : 'locked normal');
   await promise;
 }
@@ -66,7 +71,7 @@ export async function checkUnadjusted(): Promise<boolean> {
 // Display out of focus error
 export function initLock(
   view: HTMLCanvasElement,
-  rawInput: boolean,
+  cursorType: CursorType,
   callback: (paused: boolean) => void
 ): void {
   const pointerLockWarning = document.getElementById('lock');
@@ -76,7 +81,7 @@ export function initLock(
   }
 
   pointerLockWarning.addEventListener('click', () => {
-    lockPointer(view, rawInput);
+    lockPointer(view, cursorType);
     pointerLockWarning.style.display = 'none';
     callback(false);
   });

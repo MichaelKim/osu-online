@@ -1,4 +1,5 @@
 import { Point } from '@pixi/math';
+import { CursorType } from '../UI/options';
 import Clock from './Clock';
 import OptionsController from './OptionsController';
 import { clamp } from './util';
@@ -59,7 +60,14 @@ export default class InputController {
     });
   };
 
-  private onMove = (e: MouseEvent) => {
+  private getPosition(e: MouseEvent) {
+    if (this.options.options.cursorType === CursorType.DEFAULT) {
+      return {
+        x: e.clientX,
+        y: e.clientY
+      };
+    }
+
     const x = clamp(
       this.position.x + e.movementX * this.options.options.cursorSensitivity,
       0,
@@ -70,8 +78,11 @@ export default class InputController {
       0,
       window.innerHeight
     );
+    return { x, y };
+  }
 
-    this.position.set(x, y);
+  private onMove = (e: MouseEvent) => {
+    this.position.copyFrom(this.getPosition(e));
     this.events.push({
       time: this.clock.getTime(),
       type: InputType.MOVE,

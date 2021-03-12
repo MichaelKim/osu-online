@@ -16,20 +16,21 @@ export default function AddModal({ onLoad }: Props) {
   const onToggle = useCallback(() => setModal(m => !m), []);
 
   return (
-    <div className={style.headerItem}>
-      <button className={style.headerButton} onClick={onToggle}>
-        Add Beatmap
-      </button>
-      <Modal visible={showModal} keepOpen onExit={onToggle}>
-        <div className={style.sayobot}>
+    <div className={style.headerItem} onClick={onToggle}>
+      <p>Add Beatmap</p>
+      <Modal
+        visible={showModal}
+        keepOpen
+        onExit={onToggle}
+        className={style.sayobot}
+      >
+        <div className={style.modalHeader}>
           <h1 className={style.title}>Beatmap Listing</h1>
-          <button onClick={onToggle} className={style.close}>
-            Close
-          </button>
-          <Search value={keyword} onChange={setKeyword} />
-          <div className={style.section}>
-            <Sayobot search={keyword} onSelect={onLoad} />
-          </div>
+          <button onClick={onToggle}>Close</button>
+        </div>
+        <Search value={keyword} onChange={setKeyword} />
+        <div className={style.section}>
+          <Sayobot search={keyword} onSelect={onLoad} />
         </div>
       </Modal>
     </div>

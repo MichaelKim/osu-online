@@ -44,6 +44,20 @@ a {
   }
 }
 
+button {
+  background-color: $dark-color;
+  color: $light-accent;
+  outline: none;
+  font: 1em 'Exo 2';
+  border: 1px solid $light-color;
+  padding: 4px 8px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: lighten($dark-color, 10);
+  }
+}
+
 *::-webkit-scrollbar-track {
   background-color: transparent;
   width: 10px;

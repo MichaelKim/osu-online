@@ -5,6 +5,7 @@ type Props = {
   children: ReactNode;
   visible: boolean;
   keepOpen?: boolean;
+  className?: string;
   onExit: () => void;
 };
 
@@ -12,6 +13,7 @@ export default function Modal({
   children,
   visible,
   keepOpen = false,
+  className = '',
   onExit
 }: Props) {
   const [loaded, setLoaded] = useState(false);
@@ -36,7 +38,7 @@ export default function Modal({
       style={{ display: visible ? 'flex' : 'none' }}
       onClick={_onExit}
     >
-      <div className={style.modalBox} onClick={onModalClick}>
+      <div className={style.modalBox + ' ' + className} onClick={onModalClick}>
         {children}
       </div>
     </div>

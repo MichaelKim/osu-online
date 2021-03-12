@@ -14,24 +14,21 @@
   align-items: center;
   margin-left: 4px;
   padding: 0 8px;
+  cursor: default;
+
+  P {
+    user-select: none;
+  }
 }
 
 .headerItem {
   @extend .headerLogo;
 
+  cursor: pointer;
+
   &:hover {
     background-color: lighten($dark-color, 10);
   }
-}
-
-.headerButton {
-  background-color: transparent;
-  color: $light-accent;
-  outline: none;
-  font: 1em 'Exo 2';
-  border: 0;
-  padding: 0;
-  cursor: pointer;
 }
 
 .title {
@@ -39,16 +36,16 @@
 }
 
 .sayobot {
-  position: relative;
   width: 1000px;
   display: flex;
   flex-direction: column;
 }
 
-.close {
-  position: absolute;
-  top: 0;
-  right: 0;
+.modalHeader {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .section {

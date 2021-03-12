@@ -30,6 +30,10 @@
   cursor: pointer;
   padding: 8px 28px;
 
+  &:hover {
+    background-color: lighten($dark-color, 10);
+  }
+
   & > input {
     display: none;
   }

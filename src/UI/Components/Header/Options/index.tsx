@@ -11,24 +11,24 @@ export default function Options() {
   const onToggle = () => setModal(m => !m);
 
   return (
-    <div className={style.headerItem}>
-      <button className={style.headerButton} onClick={onToggle}>
-        Options
-      </button>
-      <Modal visible={showModal} onExit={onToggle}>
-        <div className={optionsStyle.options}>
+    <div className={style.headerItem} onClick={onToggle}>
+      <p>Options</p>
+      <Modal
+        visible={showModal}
+        onExit={onToggle}
+        className={optionsStyle.options}
+      >
+        <div className={style.modalHeader}>
           <h1 className={style.title}>Options</h1>
-          <button onClick={onToggle} className={style.close}>
-            Close
-          </button>
-
-          <h2>Mouse</h2>
-          <RawInputOption />
-          <CursorSensitivityOption />
-
-          <h2>Keyboard</h2>
-          <KeyBindingsOption />
+          <button onClick={onToggle}>Close</button>
         </div>
+
+        <h2>Mouse</h2>
+        <RawInputOption />
+        <CursorSensitivityOption />
+
+        <h2>Keyboard</h2>
+        <KeyBindingsOption />
       </Modal>
     </div>
   );

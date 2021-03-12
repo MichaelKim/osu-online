@@ -20,7 +20,7 @@ export default function LoadModal({ onLoad }: Props) {
   );
 
   return (
-    <>
+    <div className={style.headerItem}>
       <button className={style.headerButton} onClick={onToggle}>
         Load Unpacked Beatmap
       </button>
@@ -29,6 +29,6 @@ export default function LoadModal({ onLoad }: Props) {
         <p>Play beatmaps stored on your computer</p>
         <BeatmapUpload onSelect={onSelect} />
       </Modal>
-    </>
+    </div>
   );
 }

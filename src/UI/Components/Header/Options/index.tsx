@@ -11,7 +11,7 @@ export default function Options() {
   const onToggle = () => setModal(m => !m);
 
   return (
-    <>
+    <div className={style.headerItem}>
       <button className={style.headerButton} onClick={onToggle}>
         Options
       </button>
@@ -30,6 +30,6 @@ export default function Options() {
           <KeyBindingsOption />
         </div>
       </Modal>
-    </>
+    </div>
   );
 }

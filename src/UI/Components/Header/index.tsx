@@ -13,7 +13,9 @@ type Props = {
 export default function Header({ onLoad, onSayobotAdd }: Props) {
   return (
     <div className={style.header}>
-      <h1>osu!</h1>
+      <div className={style.headerLogo}>
+        <h1>osu!</h1>
+      </div>
 
       <LoadModal onLoad={onLoad} />
       <AddModal onLoad={onSayobotAdd} />

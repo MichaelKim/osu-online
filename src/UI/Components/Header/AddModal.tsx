@@ -16,7 +16,7 @@ export default function AddModal({ onLoad }: Props) {
   const onToggle = useCallback(() => setModal(m => !m), []);
 
   return (
-    <>
+    <div className={style.headerItem}>
       <button className={style.headerButton} onClick={onToggle}>
         Add Beatmap
       </button>
@@ -32,6 +32,6 @@ export default function AddModal({ onLoad }: Props) {
           </div>
         </div>
       </Modal>
-    </>
+    </div>
   );
 }

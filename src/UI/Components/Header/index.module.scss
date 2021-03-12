@@ -4,17 +4,34 @@
   background-color: $dark-color;
   display: flex;
   flex-direction: row;
-  padding: 8px 16px;
+  padding: 0 16px;
+  height: 50px;
+  align-items: stretch;
+}
+
+.headerLogo {
+  display: flex;
+  align-items: center;
+  margin-left: 4px;
+  padding: 0 8px;
+}
+
+.headerItem {
+  @extend .headerLogo;
+
+  &:hover {
+    background-color: lighten($dark-color, 10);
+  }
 }
 
 .headerButton {
   background-color: transparent;
+  color: $light-accent;
   outline: none;
   font: 1em 'Exo 2';
   border: 0;
-  color: $light-accent;
+  padding: 0;
   cursor: pointer;
-  margin-left: 12px;
 }
 
 .title {

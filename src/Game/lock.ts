@@ -20,23 +20,47 @@ export async function lockPointer(
 }
 
 // Check if browser supports unadjusted movement pointer lock
-export async function checkUnadjusted() {
-  // @ts-expect-error: Chrome-only
-  const promise = document.documentElement.requestPointerLock({
-    unadjustedMovement: true
-  }) as Promise<void> | undefined;
-  document.exitPointerLock();
+export async function checkUnadjusted(): Promise<boolean> {
+  return new Promise(resolve => {
+    function exitPointerLock() {
+      document.removeEventListener('pointerlockchange', onChange);
+      document.removeEventListener('pointerlockerror', onError);
+      document.exitPointerLock();
+    }
 
-  if (!promise) {
-    return false;
-  }
+    function onChange() {
+      exitPointerLock();
+      resolve(true);
+    }
 
-  try {
-    await promise;
-    return true;
-  } catch (e) {
-    return false;
-  }
+    function onError() {
+      exitPointerLock();
+      resolve(false);
+    }
+
+    document.addEventListener('pointerlockchange', onChange);
+    document.addEventListener('pointerlockerror', onError);
+
+    // @ts-expect-error: Chrome-only
+    const promise = document.documentElement.requestPointerLock({
+      unadjustedMovement: true
+    }) as Promise<void> | undefined;
+
+    if (!promise) {
+      return resolve(false);
+    }
+
+    exitPointerLock();
+
+    promise
+      .catch(e => {
+        console.error(e);
+        resolve(false);
+      })
+      .finally(() => {
+        resolve(true);
+      });
+  });
 }
 
 // Display out of focus error

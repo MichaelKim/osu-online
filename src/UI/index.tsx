@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Game, { BeatmapFile } from '../Game';
 import { BeatmapData } from '../Game/Loader/BeatmapLoader';
-import { checkUnadjusted } from '../Game/lock';
 import { SayobotBeatmapFiles } from './API/SayobotAPI';
 import BeatmapListing from './Components/BeatmapListing';
 import { BeatmapFiles } from './Components/BeatmapUpload';
@@ -9,13 +8,18 @@ import Header from './Components/Header';
 import './index.scss';
 import OptionsContext, { defaultOptions, Options } from './options';
 
-export default function Root() {
+type Props = {
+  supportsRawInput: boolean;
+};
+
+export default function Root({ supportsRawInput }: Props) {
   const game = useRef(new Game(document.getElementsByTagName('canvas')[0]));
   const [gameLoaded, setGameLoaded] = useState(false);
   const [beatmapLoaded, setBeatmapLoaded] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [options, setOptions] = useState({
     ...defaultOptions,
+    supportsRawInput,
     setOptions: (o: Partial<Options>) =>
       setOptions(options => ({ ...options, ...o }))
   });
@@ -29,19 +33,6 @@ export default function Root() {
   useEffect(() => {
     game.current.options.set(options);
   }, [options]);
-
-  // Check if browser supports raw input
-  useEffect(() => {
-    checkUnadjusted().then(supportsRawInput => {
-      if (!supportsRawInput) {
-        setOptions(o => ({
-          ...o,
-          rawInput: false,
-          supportsRawInput: false
-        }));
-      }
-    });
-  }, []);
 
   // Load game
   useEffect(() => {

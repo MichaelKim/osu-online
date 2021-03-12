@@ -44,6 +44,27 @@ a {
   }
 }
 
+*::-webkit-scrollbar-track {
+  background-color: transparent;
+  width: 10px;
+}
+
+*::-webkit-scrollbar {
+  background-color: transparent;
+  width: 15px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  border: 5px solid transparent;
+  background-clip: content-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
 #pixi {
   position: fixed;
   top: 0;
@@ -73,6 +94,11 @@ a {
 
 #start:hover {
   transform: scale(1.1);
+}
+
+.root {
+  height: 100%;
+  flex-direction: column;
 }
 
 #lock {

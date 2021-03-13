@@ -67,3 +67,39 @@ export async function checkUnadjusted(): Promise<boolean> {
       });
   });
 }
+
+export function onPause(callback: () => void) {
+  document.addEventListener('pointerlockchange', () => {
+    const locked = document.pointerLockElement !== null;
+    console.log('Pointer lock:', locked);
+    if (!locked) {
+      callback();
+    }
+  });
+
+  document.addEventListener('visibilitychange', () => {
+    const visible = document.visibilityState === 'visible';
+    console.log('Visible:', visible);
+    if (!visible) {
+      callback();
+    }
+  });
+
+  document.addEventListener('fullscreenchange', () => {
+    const full = document.fullscreenElement != null;
+    console.log('Fullscreen:', full);
+    if (!full) {
+      callback();
+    }
+  });
+
+  document.addEventListener('blur', () => {
+    console.log('doc blur');
+    callback();
+  });
+
+  window.addEventListener('blur', () => {
+    console.log('window blur');
+    callback();
+  });
+}

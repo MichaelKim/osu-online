@@ -50,9 +50,12 @@ export default class AudioController {
       console.log('No loaded audio');
       return;
     }
+
     this.current = this.sounds[filename];
+
     await this.current.play();
     this.resumeTime = this.getCurrentTime();
+    this.elapsedTime = 0;
   }
 
   private getCurrentTime() {
@@ -68,6 +71,10 @@ export default class AudioController {
     return this.elapsedTime;
   }
 
+  isPlaying() {
+    return this.current?.isPlaying;
+  }
+
   pause() {
     if (this.current?.isPlaying) {
       this.elapsedTime += this.getCurrentTime() - this.resumeTime;
@@ -75,10 +82,10 @@ export default class AudioController {
     }
   }
 
-  resume() {
-    this.resumeTime = this.getCurrentTime();
-    this.current?.play({
+  async resume() {
+    await this.current?.play({
       start: this.elapsedTime / 1000
     });
+    this.resumeTime = this.getCurrentTime();
   }
 }

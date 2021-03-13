@@ -13,4 +13,16 @@ export default class Cursor {
   move(position: PIXI.Point) {
     this.cursor.position.copyFrom(position);
   }
+
+  getPosition() {
+    return this.cursor.position;
+  }
+
+  hideCursor() {
+    document.body.style.cursor = 'none';
+  }
+
+  showCursor() {
+    document.body.style.cursor = 'auto';
+  }
 }

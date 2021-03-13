@@ -1,16 +1,18 @@
+import { Options } from '../UI/options';
 import AudioController from './AudioController';
+import BackgroundController from './BackgroundController';
 import Beatmap from './Beatmap';
 import Clock from './Clock';
 import Cursor from './Cursor';
 import FollowPointController from './FollowPointController';
-import GameState from './State/GameState';
 import InputController, { InputType } from './InputController';
 import { BeatmapData } from './Loader/BeatmapLoader';
 import { lockPointer } from './lock';
-import Renderer from './Renderer';
-import Skin from './Skin';
-import BackgroundController from './BackgroundController';
 import OptionsController from './OptionsController';
+import Renderer from './Renderer';
+import ResumeController from './ResumeController';
+import Skin from './Skin';
+import GameState from './State/GameState';
 
 export type BeatmapFile = {
   name: string;
@@ -24,13 +26,14 @@ export default class Game {
   private clock: Clock;
   private audio: AudioController;
   private background: BackgroundController;
-  options: OptionsController;
+  private options: OptionsController;
 
   // Based on skin
   private cursor!: Cursor; // TODO: is there a better way than using !
   private beatmap!: Beatmap;
   private gameState!: GameState;
   private followPoint!: FollowPointController;
+  private resumer!: ResumeController;
 
   constructor(private view: HTMLCanvasElement) {
     this.renderer = new Renderer(view);
@@ -49,6 +52,7 @@ export default class Game {
 
     this.cursor = new Cursor(this.renderer.cursorStage, this.skin);
     this.gameState = new GameState(this.renderer, this.skin);
+    this.resumer = new ResumeController(this.renderer, this.skin);
   }
 
   async loadBeatmap(data: BeatmapData, files: BeatmapFile[]) {
@@ -96,6 +100,7 @@ export default class Game {
 
     this.view.style.display = 'block';
     await lockPointer(this.view, this.options.options.cursorType);
+    this.cursor.hideCursor();
 
     await this.audio.play(this.beatmap.data.audioFilename);
     this.clock.start();
@@ -103,6 +108,44 @@ export default class Game {
   }
 
   update = (time: number) => {
+    if (this.resumer.isResuming()) {
+      for (const event of this.input.events) {
+        switch (event.type) {
+          case InputType.DOWN:
+            {
+              if (this.resumer.within(event.position)) {
+                this.resumer.endResume();
+                this.audio.resume();
+                this.beatmap.mousedown(
+                  event.time,
+                  this.renderer.toOsuPixels(event.position)
+                );
+              }
+            }
+            break;
+          case InputType.MOVE:
+            this.cursor.move(event.position);
+            break;
+        }
+      }
+      this.input.events = [];
+      this.renderer.render();
+      return;
+    }
+
+    if (!this.isPlaying()) {
+      for (const event of this.input.events) {
+        switch (event.type) {
+          case InputType.MOVE:
+            this.cursor.move(event.position);
+            break;
+        }
+      }
+      this.input.events = [];
+      this.renderer.render();
+      return;
+    }
+
     // Check for input events since last frame
     for (const event of this.input.events) {
       switch (event.type) {
@@ -137,19 +180,25 @@ export default class Game {
 
   async pause() {
     this.audio.pause();
+    this.cursor.showCursor();
+    this.resumer.pause(this.cursor.getPosition());
   }
 
   async resume() {
     await lockPointer(this.view, this.options.options.cursorType);
-    console.log('3');
-    setTimeout(() => console.log('2'), 1000);
-    setTimeout(() => console.log('1'), 2000);
-    setTimeout(() => {
-      this.audio.resume();
-    }, 3000);
+    this.cursor.hideCursor();
+    this.resumer.startResume();
   }
 
   retry() {
     // TODO
+  }
+
+  isPlaying() {
+    return this.audio.isPlaying();
+  }
+
+  setOptions(o: Partial<Options>) {
+    this.options.set(o);
   }
 }

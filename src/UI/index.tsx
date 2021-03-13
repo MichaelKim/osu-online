@@ -4,6 +4,7 @@ import { BeatmapData } from '../Game/Loader/BeatmapLoader';
 import Menu from './Menu';
 import { CursorType, defaultOptions, Options } from './options';
 import style from './index.module.scss';
+import { onPause } from '../Game/lock';
 
 type Props = {
   supportsRawInput: boolean;
@@ -29,7 +30,7 @@ export default function Root({ supportsRawInput }: Props) {
 
   // Update game options
   useEffect(() => {
-    game.current.options.set(options);
+    game.current.setOptions(options);
   }, [options]);
 
   const onSelect = useCallback(
@@ -55,33 +56,11 @@ export default function Root({ supportsRawInput }: Props) {
     game.current.resume();
   };
 
-  const onPause = () => {
-    setPaused(true);
-    game.current.pause();
-  };
-
   useEffect(() => {
-    document.addEventListener('pointerlockchange', () => {
-      const locked = document.pointerLockElement !== null;
-      console.log('Pointer lock:', locked);
-      if (!locked) {
-        onPause();
-      }
-    });
-
-    document.addEventListener('visibilitychange', () => {
-      const visible = document.visibilityState === 'visible';
-      console.log('Visible:', visible);
-      if (!visible) {
-        onPause();
-      }
-    });
-
-    document.addEventListener('fullscreenchange', () => {
-      const full = document.fullscreenElement != null;
-      console.log('Fullscreen:', full);
-      if (!full) {
-        onPause();
+    onPause(() => {
+      if (game.current.isPlaying()) {
+        setPaused(true);
+        game.current.pause();
       }
     });
   }, []);
@@ -91,12 +70,14 @@ export default function Root({ supportsRawInput }: Props) {
       <div className={playing ? style.playingRoot : style.root}>
         <Menu options={options} onSelect={onSelect} />
       </div>
-      <div className={paused ? style.lock : style.noLock} onClick={onResume}>
-        <div className={style.lockMessage}>
-          <p>Out of focus!</p>
-          <p>Click to return</p>
+      {paused && (
+        <div className={style.lock} onClick={onResume}>
+          <div className={style.lockMessage}>
+            <p>Out of focus!</p>
+            <p>Click to return</p>
+          </div>
         </div>
-      </div>
+      )}
     </>
   );
 }

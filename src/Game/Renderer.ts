@@ -10,16 +10,17 @@ export default class Renderer {
   private resizeCallbacks = new Set<ResizeCallback>();
 
   // Stages
-  private stage: PIXI.Container; // Base stage
-  cursorStage: PIXI.Container; // Highest stage for cursor
-  private gameStage: PIXI.Container; // Game field (osu!pixels with 4:3)
+  private stage = new PIXI.Container(); // Base stage
+  cursorStage = new PIXI.Container(); // Highest stage for cursor
+  private gameStage = new PIXI.Container(); // Game field (osu!pixels with 4:3)
 
   // Substage
-  notesStage: PIXI.Container; // Stage for hit objects
-  hitResultStage: PIXI.Container; // Stage for hit results
-  followStage: PIXI.Container; // Stage for follow points
-  displayStage: PIXI.Container; // Stage for HUD elements
-  bgStage: PIXI.Container; // Stage for background elements
+  notesStage = new PIXI.Container(); // Stage for hit objects
+  hitResultStage = new PIXI.Container(); // Stage for hit results
+  followStage = new PIXI.Container(); // Stage for follow points
+  displayStage = new PIXI.Container(); // Stage for HUD elements
+  bgStage = new PIXI.Container(); // Stage for background elements
+  resumeStage = new PIXI.Container(); // Stage for display elements below the cursor
 
   constructor(view: HTMLCanvasElement) {
     this.renderer = new PIXI.Renderer({
@@ -35,21 +36,14 @@ export default class Renderer {
     PIXI.Ticker.shared.autoStart = false;
     PIXI.Ticker.shared.stop();
 
-    this.stage = new PIXI.Container();
-    this.cursorStage = new PIXI.Container();
-    this.gameStage = new PIXI.Container();
-    this.displayStage = new PIXI.Container();
-    this.bgStage = new PIXI.Container();
     this.stage.addChild(
       this.bgStage,
       this.gameStage,
+      this.resumeStage,
       this.cursorStage,
       this.displayStage
     );
 
-    this.notesStage = new PIXI.Container();
-    this.hitResultStage = new PIXI.Container();
-    this.followStage = new PIXI.Container();
     this.gameStage.addChild(
       this.followStage,
       this.notesStage,

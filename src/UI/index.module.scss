@@ -23,11 +23,6 @@
   right: 0;
 }
 
-.noLock {
-  @extend .lock;
-  display: none;
-}
-
 .lockMessage {
   color: wheat;
   max-width: 400px;

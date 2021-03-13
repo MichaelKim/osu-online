@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import OptionsContext from '../../../options';
 import Modal from '../../Modal';
 import style from './index.module.scss';
@@ -14,7 +14,7 @@ function KeyBinding({ label, value, onChange }: Props) {
   const onClick = () => setEdit(true);
   const onExit = () => setEdit(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (edit) {
       const listener = (e: KeyboardEvent) => {
         onChange(e.key);

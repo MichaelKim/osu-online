@@ -1,8 +1,8 @@
-import { MouseEvent, ReactNode, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import style from './index.module.scss';
 
 type Props = {
-  children: ReactNode;
+  children: React.ReactNode;
   visible: boolean;
   keepOpen?: boolean;
   className?: string;
@@ -21,7 +21,7 @@ export default function Modal({
   const onModalClick = (e: React.MouseEvent<HTMLDivElement>) =>
     e.stopPropagation();
 
-  const _onExit = (e: MouseEvent<HTMLDivElement>) => {
+  const _onExit = (e: React.MouseEvent<HTMLDivElement>) => {
     e.stopPropagation();
     onExit();
   };

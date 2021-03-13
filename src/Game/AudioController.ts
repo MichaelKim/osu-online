@@ -1,5 +1,5 @@
 import PIXISound from 'pixi-sound';
-// import * as PIXI from 'pixi.js';
+// import { Loader } from 'pixi.js';
 // import { loader } from './util';
 
 export default class AudioController {
@@ -8,7 +8,6 @@ export default class AudioController {
 
   private elapsedTime = 0; // Offset due to resuming
   private resumeTime = 0; // When the audio was last resumed
-  private pausedTime = Infinity; // When the audio was paused (Infinity if currently playing)
   private current?: PIXISound.Sound;
 
   // async load(filename: string) {
@@ -35,13 +34,15 @@ export default class AudioController {
   //   }
   // }
 
-  async loadBlob(filename: string, audioFile: ArrayBuffer) {
+  async loadBlob(filename: string, audioFile: Blob) {
     console.log('load blob', filename);
     if (!filename) {
       console.error('Missing audio filename');
       return;
     }
-    this.sounds[filename] = PIXISound.add(filename, audioFile);
+
+    const buffer = await audioFile.arrayBuffer();
+    this.sounds[filename] = PIXISound.add(filename, buffer);
   }
 
   async play(filename: string) {
@@ -60,28 +61,24 @@ export default class AudioController {
   }
 
   getTime() {
-    return (
-      Math.min(this.getCurrentTime(), this.pausedTime) -
-      this.resumeTime +
-      this.elapsedTime
-    );
+    if (this.current?.isPlaying) {
+      return this.getCurrentTime() - this.resumeTime + this.elapsedTime;
+    }
+
+    return this.elapsedTime;
   }
 
   pause() {
     if (this.current?.isPlaying) {
+      this.elapsedTime += this.getCurrentTime() - this.resumeTime;
       this.current.pause();
-      if (this.pausedTime === Infinity) {
-        this.pausedTime = this.getCurrentTime();
-      }
     }
   }
 
   resume() {
-    this.current?.resume();
-    if (this.pausedTime !== Infinity) {
-      this.elapsedTime += this.pausedTime - this.resumeTime;
-      this.resumeTime = this.getCurrentTime();
-      this.pausedTime = Infinity;
-    }
+    this.resumeTime = this.getCurrentTime();
+    this.current?.play({
+      start: this.elapsedTime / 1000
+    });
   }
 }

@@ -69,8 +69,7 @@ export default class Game {
     bgFile && (await this.background.loadBeatmap(bgFile.blob));
 
     // Load audio
-    const buffer = await audioFile.blob.arrayBuffer();
-    await this.audio.loadBlob(data.audioFilename, buffer);
+    await this.audio.loadBlob(data.audioFilename, audioFile.blob);
 
     // Load beatmap
     this.beatmap = new Beatmap(
@@ -142,7 +141,12 @@ export default class Game {
 
   async resume() {
     await lockPointer(this.view, this.options.options.cursorType);
-    this.audio.resume();
+    console.log('3');
+    setTimeout(() => console.log('2'), 1000);
+    setTimeout(() => console.log('1'), 2000);
+    setTimeout(() => {
+      this.audio.resume();
+    }, 3000);
   }
 
   retry() {

@@ -3,7 +3,7 @@ import { BeatmapFile } from '../../../Game';
 import { BeatmapData, parseBeatmap } from '../../../Game/Loader/BeatmapLoader';
 import { getFilesFromDrop } from './dragDrop';
 import style from './index.module.scss';
-import { Directory, getBeatmaps } from './loadBeatmaps';
+import { Directory, getBeatmaps, loadBeatmapInfo } from './loadBeatmaps';
 import { getFilesFromInput } from './webkitDirectory';
 
 type Props = {
@@ -12,6 +12,7 @@ type Props = {
 
 type BeatmapInfo = {
   background: string;
+  length: number;
 };
 
 export type BeatmapFiles = {
@@ -41,16 +42,7 @@ export default function BeatmapUpload({ onSelect }: Props) {
           beatmap.diffs.map(async diff => {
             const text = await diff.text();
             const data = parseBeatmap(text.split('\n').map(l => l.trim()));
-
-            // Load background image
-            const bgFilename = data.background.filename;
-            const bgFile = beatmap.files.find(f => f.name === bgFilename);
-            const background =
-              bgFile != null ? URL.createObjectURL(bgFile.blob) : '';
-
-            const info = {
-              background
-            };
+            const info = loadBeatmapInfo(data, beatmap.files);
 
             setProgress(p => p + 1);
             return {

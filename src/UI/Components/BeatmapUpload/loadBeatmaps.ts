@@ -1,4 +1,6 @@
 import { BeatmapFile } from '../../../Game';
+import { BeatmapData } from '../../../Game/Loader/BeatmapLoader';
+import { loadHitObjectsData } from '../../../Game/Loader/HitObjectLoader';
 
 export type Directory = {
   name: string;
@@ -78,4 +80,23 @@ export function getBeatmaps(root: Directory) {
   const beatmaps: BeatmapInfo = {};
   searchForBeatmaps(beatmaps, root);
   return Object.values(beatmaps);
+}
+
+export function loadBeatmapInfo(data: BeatmapData, files: BeatmapFile[]) {
+  // Load background image
+  const bgFilename = data.background.filename;
+  const bgFile = files.find(f => f.name === bgFilename);
+  const background = bgFile != null ? URL.createObjectURL(bgFile.blob) : '';
+
+  // Load hit objects
+  const notes = loadHitObjectsData(data);
+  const [first, last] = notes.reduce(
+    ([min, max], note) => [Math.min(min, note.t), Math.max(max, note.t)],
+    [Infinity, 0]
+  );
+
+  return {
+    background,
+    length: (last - first) / 1000
+  };
 }

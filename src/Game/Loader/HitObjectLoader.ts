@@ -172,3 +172,9 @@ export function loadHitObjects(
     }
   });
 }
+
+export function loadHitObjectsData(beatmap: BeatmapData) {
+  const timingPoints = parseTimingPoints(beatmap.file);
+  const notes = parseHitObjects(beatmap.file, beatmap, timingPoints);
+  return notes;
+}

@@ -84,7 +84,7 @@ export async function getBeatmapList(
   return res.json();
 }
 
-type SayobotBeatmapData = {
+export type SayobotDiffInfo = {
   AR: number;
   CS: number;
   HP: number;
@@ -119,7 +119,7 @@ export type SayobotBeatmapInfo = {
   approved_date: number;
   artist: string;
   artistU: string;
-  bid_data: SayobotBeatmapData[];
+  bid_data: SayobotDiffInfo[];
   bids_amount: number;
   bpm: number;
   creator: string;

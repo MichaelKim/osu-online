@@ -96,13 +96,6 @@ export default class Game {
     }
 
     this.view.style.display = 'block';
-    initLock(this.view, this.options.options.cursorType, paused => {
-      if (paused) {
-        this.audio.pause();
-      } else {
-        this.audio.resume();
-      }
-    });
     await lockPointer(this.view, this.options.options.cursorType);
 
     await this.audio.play(this.beatmap.data.audioFilename);
@@ -142,4 +135,17 @@ export default class Game {
     this.followPoint.update(time);
     this.renderer.render();
   };
+
+  async pause() {
+    this.audio.pause();
+  }
+
+  async resume() {
+    await lockPointer(this.view, this.options.options.cursorType);
+    this.audio.resume();
+  }
+
+  retry() {
+    // TODO
+  }
 }

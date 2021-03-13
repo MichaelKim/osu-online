@@ -1,12 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Game, { BeatmapFile } from '../Game';
 import { BeatmapData } from '../Game/Loader/BeatmapLoader';
-import { SayobotBeatmapFiles } from './API/SayobotAPI';
-import BeatmapListing from './Components/BeatmapListing';
-import { BeatmapFiles } from './Components/BeatmapUpload';
-import Header from './Components/Header';
-import './index.scss';
-import OptionsContext, { CursorType, defaultOptions, Options } from './options';
+import Menu from './Menu';
+import { CursorType, defaultOptions, Options } from './options';
+import style from './index.module.scss';
 
 type Props = {
   supportsRawInput: boolean;
@@ -27,20 +24,10 @@ export default function Root({ supportsRawInput }: Props) {
       setOptions(options => ({ ...options, ...o }))
   });
 
-  const [localBeatmaps, setLocalBeatmaps] = useState<BeatmapFiles[]>([]);
-  const [sayobotBeatmaps, setSayobotBeatmaps] = useState<SayobotBeatmapFiles[]>(
-    []
-  );
-
   // Update game options
   useEffect(() => {
     game.current.options.set(options);
   }, [options]);
-
-  const onSayobotAdd = useCallback(
-    (beatmap: SayobotBeatmapFiles) => setSayobotBeatmaps(b => [...b, beatmap]),
-    []
-  );
 
   const onSelect = useCallback(
     async (data: BeatmapData, files: BeatmapFile[]) => {
@@ -60,20 +47,8 @@ export default function Root({ supportsRawInput }: Props) {
   );
 
   return (
-    <div
-      className='root'
-      style={{
-        display: playing ? 'none' : 'flex'
-      }}
-    >
-      <OptionsContext.Provider value={options}>
-        <Header onLoad={setLocalBeatmaps} onSayobotAdd={onSayobotAdd} />
-      </OptionsContext.Provider>
-      <BeatmapListing
-        beatmaps={localBeatmaps}
-        sayobot={sayobotBeatmaps}
-        onSelect={onSelect}
-      />
+    <div className={playing ? style.playingRoot : style.root}>
+      <Menu options={options} onSelect={onSelect} />
     </div>
   );
 }

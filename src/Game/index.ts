@@ -6,7 +6,7 @@ import FollowPointController from './FollowPointController';
 import GameState from './State/GameState';
 import InputController, { InputType } from './InputController';
 import { BeatmapData } from './Loader/BeatmapLoader';
-import { initLock, lockPointer } from './lock';
+import { lockPointer } from './lock';
 import Renderer from './Renderer';
 import Skin from './Skin';
 import BackgroundController from './BackgroundController';
@@ -18,19 +18,19 @@ export type BeatmapFile = {
 };
 
 export default class Game {
-  renderer: Renderer;
-  input: InputController;
-  skin: Skin;
-  clock: Clock;
-  audio: AudioController;
-  background: BackgroundController;
+  private renderer: Renderer;
+  private input: InputController;
+  private skin: Skin;
+  private clock: Clock;
+  private audio: AudioController;
+  private background: BackgroundController;
   options: OptionsController;
 
   // Based on skin
-  cursor!: Cursor; // TODO: is there a better way than using !
-  beatmap!: Beatmap;
-  gameState!: GameState;
-  followPoint!: FollowPointController;
+  private cursor!: Cursor; // TODO: is there a better way than using !
+  private beatmap!: Beatmap;
+  private gameState!: GameState;
+  private followPoint!: FollowPointController;
 
   constructor(private view: HTMLCanvasElement) {
     this.renderer = new Renderer(view);

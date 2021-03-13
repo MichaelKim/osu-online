@@ -1,0 +1,12 @@
+@import './variables.scss';
+
+.root {
+  height: 100%;
+  flex-direction: column;
+  display: flex;
+}
+
+.playingRoot {
+  @extend .root;
+  display: none;
+}

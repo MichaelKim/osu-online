@@ -1,6 +1,7 @@
 import { StrictMode, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { checkUnadjusted } from './Game/lock';
+import './index.scss';
 import Root from './UI';
 
 function App() {

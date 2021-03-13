@@ -1,4 +1,4 @@
-@import 'variables.scss';
+@import './UI/variables.scss';
 
 @font-face {
   font-family: 'Exo 2';
@@ -48,6 +48,12 @@ input[type='checkbox']:not(:disabled) {
   cursor: pointer;
 }
 
+h1,
+h2,
+p {
+  margin: 0;
+}
+
 button {
   background-color: $dark-color;
   color: $light-accent;
@@ -83,7 +89,7 @@ button {
   background-color: rgba(255, 255, 255, 0.5);
 }
 
-#pixi {
+canvas {
   position: fixed;
   top: 0;
   left: 0;
@@ -112,35 +118,4 @@ button {
 
 #start:hover {
   transform: scale(1.1);
-}
-
-.root {
-  height: 100%;
-  flex-direction: column;
-}
-
-#lock {
-  display: none;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  position: fixed;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
-}
-
-#lock-msg {
-  color: wheat;
-  max-width: 400px;
-  border: white 2px solid;
-  background-color: black;
-  padding: 1em;
-}
-
-h1,
-h2,
-p {
-  margin: 0;
 }

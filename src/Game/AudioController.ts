@@ -68,9 +68,11 @@ export default class AudioController {
   }
 
   pause() {
-    this.current?.pause();
-    if (this.pausedTime === Infinity) {
-      this.pausedTime = this.getCurrentTime();
+    if (this.current?.isPlaying) {
+      this.current.pause();
+      if (this.pausedTime === Infinity) {
+        this.pausedTime = this.getCurrentTime();
+      }
     }
   }
 

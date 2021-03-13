@@ -25,6 +25,7 @@ export interface BeatmapData {
   artist: string;
   creator: string;
   version: string;
+  source: string;
   beatmapID: number; // Old versions don't have this ID
   beatmapSetID: number;
 
@@ -58,6 +59,7 @@ const DEFAULTS: BeatmapData = {
   artist: '',
   creator: '',
   version: '',
+  source: '',
   beatmapID: 0,
   beatmapSetID: 0,
   background: {
@@ -98,6 +100,7 @@ export function parseBeatmap(file: string[]) {
     Artist: value => (b.artist = value),
     Creator: value => (b.creator = value),
     Version: value => (b.version = value),
+    Source: value => (b.source = value),
     BeatmapID: value => (b.beatmapID = parseInt(value)),
     BeatmapSetID: value => (b.beatmapSetID = parseInt(value))
   });

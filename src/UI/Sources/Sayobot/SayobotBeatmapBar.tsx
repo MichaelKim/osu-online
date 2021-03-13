@@ -29,7 +29,7 @@ export default function SayobotBeatmapBar({
           version: d.version,
           stars: d.star
         })),
-        bg: `https://cdn.sayobot.cn:25225/beatmaps/${info.sid}/covers/cover.webp`
+        bg: beatmap.difficulties[0].info.background
       }}
       expanded={expanded}
       onClick={_onClick}

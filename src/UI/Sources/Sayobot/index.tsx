@@ -19,8 +19,10 @@ type Props = {
   onSelect: (beatmap: SayobotBeatmapFiles) => void;
 };
 
-async function fetchOsz(url: string): Promise<BeatmapFiles> {
-  const res = await fetch(url);
+async function fetchOsz(sid: number): Promise<BeatmapFiles> {
+  const res = await fetch(
+    'https://txy1.sayobot.cn/beatmaps/download/mini/' + sid
+  );
   const blob = await res.blob();
   const zip = await JSZip.loadAsync(blob);
 
@@ -44,7 +46,21 @@ async function fetchOsz(url: string): Promise<BeatmapFiles> {
   const diffs = await Promise.all(
     diffFiles.map(async d => {
       const text = await d.blob.text();
-      return parseBeatmap(text.split('\n').map(l => l.trim()));
+      const data = parseBeatmap(text.split('\n').map(l => l.trim()));
+
+      // Load background image
+      const bgFilename = data.background.filename;
+      const bgFile = otherFiles.find(f => f.name === bgFilename);
+      const background = bgFile != null ? URL.createObjectURL(bgFile.blob) : '';
+
+      const info = {
+        background
+      };
+
+      return {
+        info,
+        data
+      };
     })
   );
 
@@ -81,8 +97,7 @@ export default function Sayobot({ search, onSelect }: Props) {
 
   const _onSelect = useCallback(
     async (info: SayobotBeatmapInfo) => {
-      const url = 'https://txy1.sayobot.cn/beatmaps/download/mini/' + info.sid;
-      const beatmap = await fetchOsz(url);
+      const beatmap = await fetchOsz(info.sid);
       onSelect({ info, beatmap });
     },
     [onSelect]

@@ -10,8 +10,15 @@ type Props = {
   onSelect: (beatmaps: BeatmapFiles[]) => void;
 };
 
+type BeatmapInfo = {
+  background: string;
+};
+
 export type BeatmapFiles = {
-  difficulties: BeatmapData[];
+  difficulties: {
+    info: BeatmapInfo;
+    data: BeatmapData;
+  }[];
   files: BeatmapFile[];
 };
 
@@ -34,8 +41,22 @@ export default function BeatmapUpload({ onSelect }: Props) {
           beatmap.diffs.map(async diff => {
             const text = await diff.text();
             const data = parseBeatmap(text.split('\n').map(l => l.trim()));
+
+            // Load background image
+            const bgFilename = data.background.filename;
+            const bgFile = beatmap.files.find(f => f.name === bgFilename);
+            const background =
+              bgFile != null ? URL.createObjectURL(bgFile.blob) : '';
+
+            const info = {
+              background
+            };
+
             setProgress(p => p + 1);
-            return data;
+            return {
+              info,
+              data
+            };
           })
         );
 

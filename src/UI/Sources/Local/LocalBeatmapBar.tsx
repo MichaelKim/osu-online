@@ -1,7 +1,6 @@
 import { useCallback } from 'react';
 import BeatmapBar from '../../Components/BeatmapBar';
 import { BeatmapFiles } from '../../Components/BeatmapUpload';
-import { useBackgroundImage } from './localUtil';
 
 type Props = {
   beatmap: BeatmapFiles;
@@ -16,22 +15,22 @@ export default function LocalBeatmapBar({
   onClick,
   onClickDiff
 }: Props) {
-  const bg = useBackgroundImage(beatmap);
-
   const _onClick = useCallback(() => onClick(beatmap), [beatmap, onClick]);
+
+  const diff = beatmap.difficulties[0];
 
   return (
     <BeatmapBar
       beatmap={{
-        title: beatmap.difficulties[0].title,
-        artist: beatmap.difficulties[0].artist,
-        creator: beatmap.difficulties[0].creator,
+        title: diff.data.title,
+        artist: diff.data.artist,
+        creator: diff.data.creator,
         diffs: beatmap.difficulties.map(d => ({
-          key: d.beatmapID + '-' + d.version,
-          version: d.version,
+          key: d.data.beatmapID + '-' + d.data.version,
+          version: d.data.version,
           stars: 0
         })),
-        bg
+        bg: diff.info.background
       }}
       expanded={expanded}
       onClick={_onClick}

@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { useCallback, useState } from 'react';
 import { BeatmapFile } from '../../../Game';
 import { BeatmapData } from '../../../Game/Loader/BeatmapLoader';
 import { SayobotBeatmapFiles } from '../../API/SayobotAPI';
@@ -15,33 +15,33 @@ type Props = {
 };
 
 export default function BeatmapListing({ beatmaps, sayobot, onSelect }: Props) {
-  const [selectedBeatmap, setSelected] = React.useState<BeatmapFiles>();
-  const [selectedVersion, setVersion] = React.useState<string>();
+  const [selectedBeatmap, setSelected] = useState<BeatmapFiles>();
+  const [selectedVersion, setVersion] = useState<string>();
 
   // Find diff
   const diff = selectedBeatmap?.difficulties.find(
-    d => d.version === selectedVersion
+    d => d.data.version === selectedVersion
   );
 
-  const onClick = React.useCallback(
+  const onClick = useCallback(
     (beatmap: BeatmapFiles) => {
       if (beatmap === selectedBeatmap) {
         return;
       }
 
       setSelected(beatmap);
-      setVersion(beatmap.difficulties[0].version);
+      setVersion(beatmap.difficulties[0].data.version);
     },
     [selectedBeatmap]
   );
 
-  const onPlay = React.useCallback(() => {
+  const onPlay = useCallback(() => {
     if (diff == null || selectedBeatmap == null) return;
 
-    onSelect(diff, selectedBeatmap.files);
+    onSelect(diff.data, selectedBeatmap.files);
   }, [diff, selectedBeatmap, onSelect]);
 
-  const onClickDiff = React.useCallback(
+  const onClickDiff = useCallback(
     (version: string) => {
       if (version === selectedVersion) {
         onPlay();
@@ -54,12 +54,18 @@ export default function BeatmapListing({ beatmaps, sayobot, onSelect }: Props) {
 
   return (
     <div className={style.container}>
-      <BeatmapInfo diff={diff} onSelect={onPlay} />
+      <BeatmapInfo
+        beatmap={selectedBeatmap}
+        version={selectedVersion}
+        onSelect={onPlay}
+      />
       <div className={style.list}>
         {beatmaps.map(b => (
           <LocalBeatmapBar
             key={
-              b.difficulties[0].beatmapSetID + '-' + b.difficulties[0].version
+              b.difficulties[0].data.beatmapSetID +
+              '-' +
+              b.difficulties[0].data.version
             }
             beatmap={b}
             onClick={onClick}

@@ -28,6 +28,11 @@ export default class GameState {
     this.scoreState.load(beatmap.notes);
   }
 
+  reset() {
+    this.hitResult.reset();
+    this.scoreState.reset();
+  }
+
   addResult(
     type: HitCircleHitResultType,
     object: HitCircle | Spinner,

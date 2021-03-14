@@ -5,6 +5,7 @@ import Menu from './Menu';
 import { CursorType, defaultOptions, Options } from './options';
 import style from './index.module.scss';
 import { onPause } from '../Game/lock';
+import { PauseScreen } from './Components/PauseScreen';
 
 type Props = {
   supportsRawInput: boolean;
@@ -33,7 +34,7 @@ export default function Root({ supportsRawInput }: Props) {
     game.current.setOptions(options);
   }, [options]);
 
-  const onSelect = useCallback(
+  const onPlay = useCallback(
     async (data: BeatmapData, files: BeatmapFile[]) => {
       // Load game
       if (!gameLoaded) {
@@ -44,6 +45,7 @@ export default function Root({ supportsRawInput }: Props) {
       // Load beatmap
       if (await game.current.loadBeatmap(data, files)) {
         setPlaying(true);
+        setPaused(false);
         game.current.play();
       }
     },
@@ -54,6 +56,17 @@ export default function Root({ supportsRawInput }: Props) {
   const onResume = () => {
     setPaused(false);
     game.current.resume();
+  };
+
+  const onRetry = () => {
+    setPaused(false);
+    //
+  };
+
+  const onQuit = () => {
+    setPlaying(false);
+    setPaused(false);
+    game.current.quit();
   };
 
   useEffect(() => {
@@ -68,15 +81,10 @@ export default function Root({ supportsRawInput }: Props) {
   return (
     <>
       <div className={playing ? style.playingRoot : style.root}>
-        <Menu options={options} onSelect={onSelect} />
+        <Menu options={options} onSelect={onPlay} />
       </div>
       {paused && (
-        <div className={style.lock} onClick={onResume}>
-          <div className={style.lockMessage}>
-            <p>Out of focus!</p>
-            <p>Click to return</p>
-          </div>
-        </div>
+        <PauseScreen onResume={onResume} onRetry={onRetry} onQuit={onQuit} />
       )}
     </>
   );

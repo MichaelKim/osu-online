@@ -73,4 +73,12 @@ export default class ScoreDisplay {
       this.setSprites(score);
     }
   }
+
+  reset() {
+    this.updateTime = 0;
+    this.targetScore = 0;
+    this.visibleScore = 0;
+    this.lastScore = 0;
+    this.setSprites(0);
+  }
 }

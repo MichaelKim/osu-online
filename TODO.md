@@ -1,5 +1,4 @@
 - accuracy
 - score meter (hit error)
 - current time / remaining time
-- end / quit game
 - breaks

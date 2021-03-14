@@ -41,17 +41,19 @@ export default class AudioController {
       return;
     }
 
-    const buffer = await audioFile.arrayBuffer();
-    this.sounds[filename] = PIXISound.add(filename, buffer);
-  }
-
-  async play(filename: string) {
     if (this.sounds[filename] == null) {
-      console.log('No loaded audio');
-      return;
+      const buffer = await audioFile.arrayBuffer();
+      this.sounds[filename] = PIXISound.add(filename, buffer);
     }
 
     this.current = this.sounds[filename];
+  }
+
+  async play() {
+    if (this.current == null) {
+      console.log('No loaded audio');
+      return;
+    }
 
     await this.current.play();
     this.resumeTime = this.getCurrentTime();
@@ -87,5 +89,10 @@ export default class AudioController {
       start: this.elapsedTime / 1000
     });
     this.resumeTime = this.getCurrentTime();
+  }
+
+  stop() {
+    this.current?.stop();
+    this.current = undefined;
   }
 }

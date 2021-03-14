@@ -53,6 +53,10 @@ export default class Game {
     this.cursor = new Cursor(this.renderer.cursorStage, this.skin);
     this.gameState = new GameState(this.renderer, this.skin);
     this.resumer = new ResumeController(this.renderer, this.skin);
+    this.followPoint = new FollowPointController(
+      this.renderer.followStage,
+      this.skin
+    );
   }
 
   async loadBeatmap(data: BeatmapData, files: BeatmapFile[]) {
@@ -73,7 +77,10 @@ export default class Game {
     bgFile && (await this.background.loadBeatmap(bgFile.blob));
 
     // Load audio
-    await this.audio.loadBlob(data.audioFilename, audioFile.blob);
+    await this.audio.loadBlob(
+      data.beatmapSetID + '-' + data.version,
+      audioFile.blob
+    );
 
     // Load beatmap
     this.beatmap = new Beatmap(
@@ -83,11 +90,7 @@ export default class Game {
       this.skin
     );
 
-    this.followPoint = new FollowPointController(
-      this.renderer.followStage,
-      this.beatmap.notes,
-      this.skin
-    );
+    this.followPoint.loadBeatmap(this.beatmap.notes);
 
     return true;
   }
@@ -102,7 +105,7 @@ export default class Game {
     await lockPointer(this.view, this.options.options.cursorType);
     this.cursor.hideCursor();
 
-    await this.audio.play(this.beatmap.data.audioFilename);
+    await this.audio.play();
     this.clock.start();
     this.input.start();
   }
@@ -192,6 +195,21 @@ export default class Game {
 
   retry() {
     // TODO
+  }
+
+  quit() {
+    this.view.style.display = 'none';
+
+    this.audio.stop();
+    this.cursor.showCursor();
+    this.input.stop();
+    this.clock.stop();
+    this.beatmap.unload();
+    this.followPoint.reset();
+    this.gameState.reset();
+
+    // @ts-expect-error: delete
+    this.beatmap = null;
   }
 
   isPlaying() {

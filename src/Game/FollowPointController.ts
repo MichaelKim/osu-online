@@ -146,8 +146,10 @@ export default class FollowPointController {
   left = 0;
   right = 0;
 
-  constructor(private stage: PIXI.Container, notes: HitObject[], skin: Skin) {
-    this.points = loadFollowTrails(notes, skin);
+  constructor(private stage: PIXI.Container, private skin: Skin) {}
+
+  loadBeatmap(notes: HitObject[]) {
+    this.points = loadFollowTrails(notes, this.skin);
     this.points.forEach(p => this.stage.addChild(p.sprite));
   }
 
@@ -170,5 +172,12 @@ export default class FollowPointController {
     for (let i = this.left + 1; i < this.right; i++) {
       this.points[i].update(time);
     }
+  }
+
+  reset() {
+    this.points.forEach(p => this.stage.removeChild(p.sprite));
+    this.points = [];
+    this.left = 0;
+    this.right = 0;
   }
 }

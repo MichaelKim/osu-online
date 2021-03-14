@@ -49,6 +49,17 @@ export default class ScoreState {
     }
   }
 
+  reset() {
+    this.currentCombo = 0;
+    this.highestCombo = 0;
+    this.rawScore = 0;
+    this.bonusScore = 0;
+    this.maxCombo = 0;
+    this.maxScore = 0;
+    this.comboDisplay.reset();
+    this.scoreDisplay.reset();
+  }
+
   getScore() {
     // LAZER: scorev2
     const accuracyRatio = this.rawScore / this.maxScore;

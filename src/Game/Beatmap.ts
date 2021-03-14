@@ -16,13 +16,12 @@ export default class Beatmap {
   constructor(
     readonly data: BeatmapData,
     gameState: GameState,
-    stage: PIXI.Container,
+    private stage: PIXI.Container,
     skin: Skin
   ) {
     this.notes = loadHitObjects(data, skin, gameState);
     gameState.load(this);
 
-    // stage.removeChildren();
     for (let i = this.notes.length - 1; i >= 0; i--) {
       this.notes[i].addToStage(stage);
     }
@@ -33,6 +32,10 @@ export default class Beatmap {
     let index = this.left;
     while (index < this.right && this.notes[index].finished > 0) index++;
     return index;
+  }
+
+  unload() {
+    this.stage.removeChildren();
   }
 
   update(time: number) {

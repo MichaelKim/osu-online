@@ -205,4 +205,12 @@ export default class ComboDisplay {
   update(time: number) {
     this.updates.update(time);
   }
+
+  reset() {
+    this.container.setCombo(0);
+    this.container.alpha = 0;
+
+    this.popContainer.setCombo(0);
+    this.popContainer.visible = false;
+  }
 }

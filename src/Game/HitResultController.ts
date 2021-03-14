@@ -91,6 +91,17 @@ export default class HitResultController {
     this.diameter = diameter;
   }
 
+  reset() {
+    for (let i = 0; i < this.used.length; i++) {
+      const result = this.used[i];
+      result.clean();
+      this.free[result.type].push(result);
+      this.used[i] = this.used[this.used.length - 1];
+      this.used.pop();
+      i--;
+    }
+  }
+
   addResult(type: HitCircleHitResultType, position: PIXI.Point, t: number) {
     if (this.free[type].length > 0) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

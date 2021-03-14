@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+// import CheeseGull from '../../Sources/CheeseGull';
 import Sayobot from '../../Sources/Sayobot';
 import { BeatmapFiles } from '../BeatmapUpload';
 import Modal from '../Modal';
@@ -9,11 +10,24 @@ type Props = {
   onAdd: (beatmaps: BeatmapFiles[]) => void;
 };
 
+// enum BeatmapServer {
+//   RIPPLE = 'ripple',
+//   SAYOBOT = 'sayobot'
+// }
+
 export default function AddModal({ onAdd }: Props) {
   const [showModal, setModal] = useState(false);
   const [keyword, setKeyword] = useState('');
+  // const [server, setServer] = useState(BeatmapServer.RIPPLE);
 
   const onToggle = useCallback(() => setModal(m => !m), []);
+  // const onServerChange = () =>
+  //   setServer(s =>
+  //     s === BeatmapServer.RIPPLE ? BeatmapServer.SAYOBOT : BeatmapServer.RIPPLE
+  //   );
+
+  // const Server = server === BeatmapServer.RIPPLE ? CheeseGull : Sayobot;
+
   return (
     <div className={style.headerItem} onClick={onToggle}>
       <p>Add Beatmap</p>
@@ -25,6 +39,13 @@ export default function AddModal({ onAdd }: Props) {
       >
         <div className={style.modalHeader}>
           <h1 className={style.title}>Beatmap Listing</h1>
+          {/* <label>
+            Beatmap Server:
+            <select value={server} onChange={onServerChange}>
+              <option value={BeatmapServer.RIPPLE}>Ripple</option>
+              <option value={BeatmapServer.SAYOBOT}>Sayobot</option>
+            </select>
+          </label> */}
           <button onClick={onToggle}>Close</button>
         </div>
         <Search value={keyword} onChange={setKeyword} />

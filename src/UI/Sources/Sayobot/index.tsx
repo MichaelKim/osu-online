@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   getBeatmapInfo,
   getBeatmapList,
@@ -9,6 +9,7 @@ import {
   SayobotListType
 } from '../../API/SayobotAPI';
 import LoadingCircle from '../../Components/LoadingCircle';
+import { useDebounce } from '../../util';
 import { fetchOsz } from './loadSayobotBeatmaps';
 import SayobotBeatmapCard from './SayobotBeatmapCard';
 
@@ -18,16 +19,15 @@ type Props = {
 };
 
 export default function Sayobot({ search, onSelect }: Props) {
-  const timeoutID = useRef<number | undefined>();
   const [loading, setLoading] = useState(true);
   const [beatmaps, setBeatmaps] = useState<SayobotBeatmapInfo[]>([]);
+
+  const debounce = useDebounce(500);
 
   useEffect(() => {
     setLoading(true);
 
-    // Debounce
-    clearTimeout(timeoutID.current);
-    timeoutID.current = window.setTimeout(async () => {
+    const onSearch = async () => {
       const list = await getBeatmapList({
         limit: 4,
         type: search === '' ? SayobotListType.NEW : SayobotListType.SEARCH,
@@ -39,8 +39,10 @@ export default function Sayobot({ search, onSelect }: Props) {
 
       setLoading(false);
       setBeatmaps(data.map(d => d.data));
-    }, 500);
-  }, [search]);
+    };
+
+    return debounce(onSearch);
+  }, [debounce, search]);
 
   const _onSelect = useCallback(
     async (info: SayobotBeatmapInfo) => {

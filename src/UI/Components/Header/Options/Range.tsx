@@ -1,17 +1,7 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import ReactTooltip from 'react-tooltip';
+import { useDebounce } from '../../../util';
 import style from './index.module.scss';
-
-function useDebounce<T extends unknown[]>(
-  fn: (...args: T) => void,
-  delay: number
-) {
-  const id = useRef<number>(0);
-  return (...args: T) => {
-    clearTimeout(id.current);
-    id.current = window.setTimeout(() => fn(...args), delay);
-  };
-}
 
 type Props = {
   initialValue: number;
@@ -31,12 +21,12 @@ export default function Range({
   onChange
 }: Props) {
   const [value, setValue] = useState(initialValue);
-  const _onChange = useDebounce(onChange, 50);
+  const debounce = useDebounce(50);
 
   const onInput = (e: React.FormEvent<HTMLInputElement>) => {
     const newValue = parseFloat(e.currentTarget.value);
     setValue(newValue);
-    _onChange(newValue);
+    debounce(onChange, value);
   };
 
   return (

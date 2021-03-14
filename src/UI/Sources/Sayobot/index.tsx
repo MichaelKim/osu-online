@@ -16,11 +16,13 @@ type Props = {
   onSelect: (beatmaps: BeatmapFiles[]) => void;
 };
 
+const LIMIT = 8;
+
 export default function Sayobot({ search, onSelect }: Props) {
   const onSearch = useCallback(
     (keyword: string, offset: number) =>
       getSayobotBeatmaps({
-        limit: 4,
+        limit: LIMIT,
         offset,
         type: keyword === '' ? SayobotListType.NEW : SayobotListType.SEARCH,
         keyword,
@@ -39,7 +41,7 @@ export default function Sayobot({ search, onSelect }: Props) {
   );
 
   return (
-    <BeatmapSearch search={search} limit={8} onSearch={onSearch}>
+    <BeatmapSearch search={search} limit={LIMIT} onSearch={onSearch}>
       {b => <SayobotBeatmapCard key={b.sid} b={b} onSelect={_onSelect} />}
     </BeatmapSearch>
   );

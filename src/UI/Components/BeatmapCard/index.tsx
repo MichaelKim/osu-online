@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import DifficultyCircle from '../DifficultyCircle';
+import LoadingCircle from '../LoadingCircle';
 import style from './index.module.scss';
 
 type BeatmapInfo = {
@@ -16,10 +18,24 @@ type BeatmapInfo = {
 
 type Props = {
   beatmap: BeatmapInfo;
-  onSelect: () => void;
+  onSelect: () => Promise<void>;
 };
 
+enum State {
+  NONE,
+  ADDING,
+  ADDED
+}
+
 export default function BeatmapCard({ beatmap, onSelect }: Props) {
+  const [state, setState] = useState(State.NONE);
+
+  const _onSelect = async () => {
+    setState(State.ADDING);
+    await onSelect();
+    setState(State.ADDED);
+  };
+
   return (
     <div className={style.beatmapCard}>
       <div className={style.cardBox}>
@@ -47,7 +63,13 @@ export default function BeatmapCard({ beatmap, onSelect }: Props) {
             </div>
           </div>
           <div className={style.addBox}>
-            <button onClick={onSelect}>Add</button>
+            {state === State.NONE ? (
+              <button onClick={_onSelect}>Add</button>
+            ) : state === State.ADDING ? (
+              <LoadingCircle />
+            ) : (
+              <div>Added</div>
+            )}
           </div>
         </div>
       </div>

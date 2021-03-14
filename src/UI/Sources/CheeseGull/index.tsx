@@ -15,11 +15,13 @@ type Props = {
   onSelect: (beatmaps: BeatmapFiles[]) => void;
 };
 
+const LIMIT = 8;
+
 export default function CheeseGull({ search, onSelect }: Props) {
   const onSearch = useCallback(
     (keyword: string, offset: number) =>
       getBeatmapList({
-        amount: 4,
+        amount: LIMIT,
         offset,
         status: [CheeseGullBeatmapStatus.RANKED],
         mode: [CheeseGullBeatmapMode.STD],
@@ -37,7 +39,7 @@ export default function CheeseGull({ search, onSelect }: Props) {
   );
 
   return (
-    <BeatmapSearch search={search} limit={8} onSearch={onSearch}>
+    <BeatmapSearch search={search} limit={LIMIT} onSearch={onSearch}>
       {b => <CheeseGullBeatmapCard key={b.SetID} b={b} onSelect={_onSelect} />}
     </BeatmapSearch>
   );

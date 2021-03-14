@@ -4,7 +4,7 @@ import BeatmapCard from '../../Components/BeatmapCard';
 
 type Props = {
   b: CheeseGullSet;
-  onSelect: (beatmap: CheeseGullSet) => void;
+  onSelect: (beatmap: CheeseGullSet) => Promise<void>;
 };
 
 export default function CheeseGullBeatmapCard({ b, onSelect }: Props) {

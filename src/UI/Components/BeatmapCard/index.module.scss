@@ -61,4 +61,11 @@
 
 .addBox {
   padding: 4px;
+
+  // Loading circle color
+  & > div {
+    & > div {
+      border-color: $dark-color transparent;
+    }
+  }
 }

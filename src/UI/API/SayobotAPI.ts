@@ -53,7 +53,7 @@ type BeatmapList = {
   status: number;
 };
 
-export async function getBeatmapList(
+async function getBeatmapList(
   options: Partial<BeatmapListOptions>
 ): Promise<BeatmapList> {
   const args: string[] = [];
@@ -142,7 +142,7 @@ type BeatmapInfo = {
   status: number;
 };
 
-export async function getBeatmapInfo(sid: number): Promise<BeatmapInfo> {
+async function getBeatmapInfo(sid: number): Promise<BeatmapInfo> {
   const res = await fetch('https://api.sayobot.cn/v2/beatmapinfo?K=' + sid);
   const json: BeatmapInfo = await res.json();
 
@@ -150,4 +150,10 @@ export async function getBeatmapInfo(sid: number): Promise<BeatmapInfo> {
   json.data.bid_data.sort((a, b) => a.star - b.star);
 
   return json;
+}
+
+export async function getSayobotBeatmaps(options: Partial<BeatmapListOptions>) {
+  const list = await getBeatmapList(options);
+  const data = await Promise.all(list.data.map(d => getBeatmapInfo(d.sid)));
+  return data.map(d => d.data);
 }

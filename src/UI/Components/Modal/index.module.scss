@@ -17,4 +17,6 @@
   background-color: $dark-color;
   padding: 30px;
   cursor: default;
+  max-height: 100%;
+  box-sizing: border-box;
 }

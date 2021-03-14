@@ -1,22 +1,15 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback } from 'react';
 import {
-  getBeatmapInfo,
-  getBeatmapList,
+  getSayobotBeatmaps,
   SayobotBeatmapInfo,
   SayobotListClass,
   SayobotListMode,
   SayobotListType
 } from '../../API/SayobotAPI';
 import { BeatmapFiles } from '../../Components/BeatmapUpload';
-import LoadingCircle from '../../Components/LoadingCircle';
-import { useDebounce } from '../../util';
+import BeatmapSearch from '../BeatmapSearch';
 import { fetchSayobot } from './loadSayobotBeatmaps';
 import SayobotBeatmapCard from './SayobotBeatmapCard';
-
-export type SayobotBeatmapFiles = {
-  info: SayobotBeatmapInfo;
-  beatmap: BeatmapFiles;
-};
 
 type Props = {
   search: string;
@@ -24,30 +17,18 @@ type Props = {
 };
 
 export default function Sayobot({ search, onSelect }: Props) {
-  const [loading, setLoading] = useState(true);
-  const [beatmaps, setBeatmaps] = useState<SayobotBeatmapInfo[]>([]);
-
-  const debounce = useDebounce(500);
-
-  useEffect(() => {
-    setLoading(true);
-
-    const onSearch = async () => {
-      const list = await getBeatmapList({
+  const onSearch = useCallback(
+    (keyword: string, offset: number) =>
+      getSayobotBeatmaps({
         limit: 4,
-        type: search === '' ? SayobotListType.NEW : SayobotListType.SEARCH,
-        keyword: search,
+        offset,
+        type: keyword === '' ? SayobotListType.NEW : SayobotListType.SEARCH,
+        keyword,
         mode: SayobotListMode.STD,
         class: SayobotListClass.RANKED
-      });
-      const data = await Promise.all(list.data.map(d => getBeatmapInfo(d.sid)));
-
-      setLoading(false);
-      setBeatmaps(data.map(d => d.data));
-    };
-
-    return debounce(onSearch);
-  }, [debounce, search]);
+      }),
+    []
+  );
 
   const _onSelect = useCallback(
     async (info: SayobotBeatmapInfo) => {
@@ -57,15 +38,9 @@ export default function Sayobot({ search, onSelect }: Props) {
     [onSelect]
   );
 
-  if (loading) {
-    return <LoadingCircle />;
-  }
-
   return (
-    <div>
-      {beatmaps.map(b => (
-        <SayobotBeatmapCard key={b.sid} b={b} onSelect={_onSelect} />
-      ))}
-    </div>
+    <BeatmapSearch search={search} limit={8} onSearch={onSearch}>
+      {b => <SayobotBeatmapCard key={b.sid} b={b} onSelect={_onSelect} />}
+    </BeatmapSearch>
   );
 }

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback } from 'react';
 import {
   CheeseGullBeatmapMode,
   CheeseGullBeatmapStatus,
@@ -6,15 +6,9 @@ import {
   getBeatmapList
 } from '../../API/CheeseGullAPI';
 import { BeatmapFiles } from '../../Components/BeatmapUpload';
-import LoadingCircle from '../../Components/LoadingCircle';
-import { useDebounce } from '../../util';
+import BeatmapSearch from '../BeatmapSearch';
 import CheeseGullBeatmapCard from './CheeseGullBeatmapCard';
 import { fetchRipple } from './loadRippleBeatmaps';
-
-export type CheeseGullBeatmapFiles = {
-  info: CheeseGullSet;
-  beatmap: BeatmapFiles;
-};
 
 type Props = {
   search: string;
@@ -22,28 +16,17 @@ type Props = {
 };
 
 export default function CheeseGull({ search, onSelect }: Props) {
-  const [loading, setLoading] = useState(true);
-  const [beatmaps, setBeatmaps] = useState<CheeseGullSet[]>([]);
-
-  const debounce = useDebounce(500);
-
-  useEffect(() => {
-    setLoading(true);
-
-    const onSearch = async () => {
-      const set = await getBeatmapList({
+  const onSearch = useCallback(
+    (keyword: string, offset: number) =>
+      getBeatmapList({
         amount: 4,
+        offset,
         status: [CheeseGullBeatmapStatus.RANKED],
         mode: [CheeseGullBeatmapMode.STD],
-        query: search
-      });
-
-      setLoading(false);
-      setBeatmaps(set);
-    };
-
-    return debounce(onSearch);
-  }, [debounce, search]);
+        query: keyword
+      }),
+    []
+  );
 
   const _onSelect = useCallback(
     async (info: CheeseGullSet) => {
@@ -53,15 +36,9 @@ export default function CheeseGull({ search, onSelect }: Props) {
     [onSelect]
   );
 
-  if (loading) {
-    return <LoadingCircle />;
-  }
-
   return (
-    <div>
-      {beatmaps.map(b => (
-        <CheeseGullBeatmapCard key={b.SetID} b={b} onSelect={_onSelect} />
-      ))}
-    </div>
+    <BeatmapSearch search={search} limit={8} onSearch={onSearch}>
+      {b => <CheeseGullBeatmapCard key={b.SetID} b={b} onSelect={_onSelect} />}
+    </BeatmapSearch>
   );
 }

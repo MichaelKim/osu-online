@@ -51,4 +51,10 @@
 .section {
   min-height: 100px;
   margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+
+  button {
+    margin-top: 8px;
+  }
 }

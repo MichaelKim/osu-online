@@ -10,7 +10,7 @@ import {
 import { BeatmapFiles } from '../../Components/BeatmapUpload';
 import LoadingCircle from '../../Components/LoadingCircle';
 import { useDebounce } from '../../util';
-import { fetchOsz } from './loadSayobotBeatmaps';
+import { fetchSayobot } from './loadSayobotBeatmaps';
 import SayobotBeatmapCard from './SayobotBeatmapCard';
 
 export type SayobotBeatmapFiles = {
@@ -20,7 +20,7 @@ export type SayobotBeatmapFiles = {
 
 type Props = {
   search: string;
-  onSelect: (beatmap: SayobotBeatmapFiles) => void;
+  onSelect: (beatmaps: BeatmapFiles[]) => void;
 };
 
 export default function Sayobot({ search, onSelect }: Props) {
@@ -51,8 +51,8 @@ export default function Sayobot({ search, onSelect }: Props) {
 
   const _onSelect = useCallback(
     async (info: SayobotBeatmapInfo) => {
-      const beatmap = await fetchOsz(info);
-      onSelect({ info, beatmap });
+      const beatmap = await fetchSayobot(info);
+      onSelect([beatmap]);
     },
     [onSelect]
   );

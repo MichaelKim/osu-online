@@ -1,5 +1,3 @@
-import { BeatmapFiles } from '../Components/BeatmapUpload';
-
 export enum SayobotListType {
   HOT = 1,
   NEW = 2,

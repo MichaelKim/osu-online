@@ -1,4 +1,3 @@
-import { SayobotBeatmapFiles } from '../../Sources/Sayobot';
 import { BeatmapFiles } from '../BeatmapUpload';
 import AddModal from './AddModal';
 import style from './index.module.scss';
@@ -6,19 +5,18 @@ import LoadModal from './LoadModal';
 import Options from './Options';
 
 type Props = {
-  onLoad: (beatmaps: BeatmapFiles[]) => void;
-  onSayobotAdd: (beatmap: SayobotBeatmapFiles) => void;
+  onAdd: (beatmaps: BeatmapFiles[]) => void;
 };
 
-export default function Header({ onLoad, onSayobotAdd }: Props) {
+export default function Header({ onAdd }: Props) {
   return (
     <div className={style.header}>
       <div className={style.headerLogo}>
         <h1>osu!</h1>
       </div>
 
-      <LoadModal onLoad={onLoad} />
-      <AddModal onLoad={onSayobotAdd} />
+      <LoadModal onLoad={onAdd} />
+      <AddModal onAdd={onAdd} />
       <Options />
     </div>
   );

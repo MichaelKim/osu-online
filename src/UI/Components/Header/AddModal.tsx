@@ -1,19 +1,19 @@
 import { useCallback, useState } from 'react';
-import Sayobot, { SayobotBeatmapFiles } from '../../Sources/Sayobot';
+import Sayobot from '../../Sources/Sayobot';
+import { BeatmapFiles } from '../BeatmapUpload';
 import Modal from '../Modal';
 import Search from '../Search';
 import style from './index.module.scss';
 
 type Props = {
-  onLoad: (beatmap: SayobotBeatmapFiles) => void;
+  onAdd: (beatmaps: BeatmapFiles[]) => void;
 };
 
-export default function AddModal({ onLoad }: Props) {
+export default function AddModal({ onAdd }: Props) {
   const [showModal, setModal] = useState(false);
   const [keyword, setKeyword] = useState('');
 
   const onToggle = useCallback(() => setModal(m => !m), []);
-
   return (
     <div className={style.headerItem} onClick={onToggle}>
       <p>Add Beatmap</p>
@@ -29,7 +29,7 @@ export default function AddModal({ onLoad }: Props) {
         </div>
         <Search value={keyword} onChange={setKeyword} />
         <div className={style.section}>
-          <Sayobot search={keyword} onSelect={onLoad} />
+          <Sayobot search={keyword} onSelect={onAdd} />
         </div>
       </Modal>
     </div>

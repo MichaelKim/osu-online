@@ -1,8 +1,8 @@
-import JSZip from 'jszip';
 import { BeatmapFile } from '../../../Game';
 import { BeatmapData, parseBeatmap } from '../../../Game/Loader/BeatmapLoader';
 import { SayobotBeatmapInfo, SayobotDiffInfo } from '../../API/SayobotAPI';
 import { BeatmapFiles } from '../../Components/BeatmapUpload';
+import { fetchOSZ } from '../../util';
 
 function loadBeatmapInfo(
   data: BeatmapData,
@@ -24,30 +24,12 @@ function loadBeatmapInfo(
   };
 }
 
-export async function fetchOsz(
+export async function fetchSayobot(
   sayobotInfo: SayobotBeatmapInfo
 ): Promise<BeatmapFiles> {
-  const res = await fetch(
+  const { diffFiles, otherFiles } = await fetchOSZ(
     'https://txy1.sayobot.cn/beatmaps/download/mini/' + sayobotInfo.sid
   );
-  const blob = await res.blob();
-  const zip = await JSZip.loadAsync(blob);
-
-  const files = await Promise.all(
-    Object.values(zip.files).map(async f => ({
-      file: f,
-      blob: await f.async('blob')
-    }))
-  );
-
-  // Find all .osu files
-  const diffFiles = files.filter(f => f.file.name.endsWith('.osu'));
-  const otherFiles = files
-    .filter(f => !f.file.name.endsWith('.osu'))
-    .map(f => ({
-      name: f.file.name,
-      blob: f.blob
-    }));
 
   // Parse diffs
   const diffs = await Promise.all(
@@ -66,6 +48,8 @@ export async function fetchOsz(
       };
     })
   );
+
+  diffs.sort((a, b) => a.info.stars - b.info.stars);
 
   return {
     info: {

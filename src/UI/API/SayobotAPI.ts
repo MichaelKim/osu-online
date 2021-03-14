@@ -139,11 +139,6 @@ export type SayobotBeatmapInfo = {
   video: number;
 };
 
-export type SayobotBeatmapFiles = {
-  info: SayobotBeatmapInfo;
-  beatmap: BeatmapFiles;
-};
-
 type BeatmapInfo = {
   data: SayobotBeatmapInfo;
   status: number;

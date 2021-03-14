@@ -2,16 +2,21 @@ import { useCallback, useEffect, useState } from 'react';
 import {
   getBeatmapInfo,
   getBeatmapList,
-  SayobotBeatmapFiles,
   SayobotBeatmapInfo,
   SayobotListClass,
   SayobotListMode,
   SayobotListType
 } from '../../API/SayobotAPI';
+import { BeatmapFiles } from '../../Components/BeatmapUpload';
 import LoadingCircle from '../../Components/LoadingCircle';
 import { useDebounce } from '../../util';
 import { fetchOsz } from './loadSayobotBeatmaps';
 import SayobotBeatmapCard from './SayobotBeatmapCard';
+
+export type SayobotBeatmapFiles = {
+  info: SayobotBeatmapInfo;
+  beatmap: BeatmapFiles;
+};
 
 type Props = {
   search: string;

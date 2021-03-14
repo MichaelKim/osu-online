@@ -1,6 +1,5 @@
 import { useCallback, useState } from 'react';
-import { SayobotBeatmapFiles } from '../../API/SayobotAPI';
-import Sayobot from '../../Sources/Sayobot';
+import Sayobot, { SayobotBeatmapFiles } from '../../Sources/Sayobot';
 import Modal from '../Modal';
 import Search from '../Search';
 import style from './index.module.scss';

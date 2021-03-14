@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { BeatmapFile } from '../../../Game';
 import { BeatmapData } from '../../../Game/Loader/BeatmapLoader';
-import { SayobotBeatmapFiles } from '../../API/SayobotAPI';
+import { SayobotBeatmapFiles } from '../../Sources/Sayobot';
 import BeatmapBar from '../BeatmapBar';
 import BeatmapInfo from '../BeatmapInfo';
 import { BeatmapFiles } from '../BeatmapUpload';

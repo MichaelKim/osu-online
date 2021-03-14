@@ -1,4 +1,4 @@
-import { SayobotBeatmapFiles } from '../../API/SayobotAPI';
+import { SayobotBeatmapFiles } from '../../Sources/Sayobot';
 import { BeatmapFiles } from '../BeatmapUpload';
 import AddModal from './AddModal';
 import style from './index.module.scss';

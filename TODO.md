@@ -1,7 +1,5 @@
-- game settings
 - accuracy
 - score meter (hit error)
 - current time / remaining time
-- pausing
 - end / quit game
 - breaks

@@ -96,6 +96,9 @@ export function loadBeatmapInfo(data: BeatmapData, files: BeatmapFile[]) {
   );
 
   return {
+    creator: data.creator,
+    version: data.version,
+    stars: 0,
     background,
     length: (last - first) / 1000
   };

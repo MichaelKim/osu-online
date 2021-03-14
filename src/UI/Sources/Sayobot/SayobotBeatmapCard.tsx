@@ -13,6 +13,7 @@ export default function SayobotBeatmapCard({ b, onSelect }: Props) {
   return (
     <BeatmapCard
       beatmap={{
+        id: b.sid,
         title: b.title,
         artist: b.artist,
         creator: b.creator,

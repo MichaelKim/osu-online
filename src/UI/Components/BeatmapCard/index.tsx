@@ -2,6 +2,7 @@ import DifficultyCircle from '../DifficultyCircle';
 import style from './index.module.scss';
 
 type BeatmapInfo = {
+  id: number;
   title: string;
   artist: string;
   creator: string;
@@ -37,8 +38,8 @@ export default function BeatmapCard({ beatmap, onSelect }: Props) {
             <div className={style.cardLowerDiffs}>
               {beatmap.diffs.map(d => (
                 <DifficultyCircle
-                  key={`${d.id}-${d.version}`}
-                  id={`${d.id}-${d.version}`}
+                  key={d.version}
+                  beatmapID={beatmap.id}
                   version={d.version}
                   stars={d.stars}
                 />

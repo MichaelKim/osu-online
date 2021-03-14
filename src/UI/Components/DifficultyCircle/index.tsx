@@ -20,20 +20,21 @@ function getDiffColor(stars: number) {
 }
 
 type Props = {
-  id: string;
+  beatmapID: number;
   version: string;
   stars: number;
   size?: number;
 };
 
 export default function DifficultyCircle({
-  id,
+  beatmapID,
   version,
   stars,
   size = 12
 }: Props) {
   const color = getDiffColor(stars);
   const roundedStars = Math.floor(stars * 100) / 100;
+  const key = `${beatmapID}-${version}`;
 
   return (
     <>
@@ -46,9 +47,9 @@ export default function DifficultyCircle({
           borderWidth: size / 5
         }}
         data-tip
-        data-for={id}
+        data-for={key}
       />
-      <ReactTooltip id={id} effect='solid' className={style.tooltip}>
+      <ReactTooltip id={key} effect='solid' className={style.tooltip}>
         <p>{version}</p>
         <p>{roundedStars} *</p>
       </ReactTooltip>

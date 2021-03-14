@@ -10,12 +10,23 @@ type Props = {
   onSelect: (beatmaps: BeatmapFiles[]) => void;
 };
 
-type BeatmapInfo = {
+// Unified info for beatmap info / card
+export type BeatmapInfo = {
+  creator: string;
+  version: string;
+  stars: number;
   background: string;
   length: number;
 };
 
 export type BeatmapFiles = {
+  info: {
+    id: number;
+    title: string;
+    artist: string;
+    creator: string;
+    background: string;
+  };
   difficulties: {
     info: BeatmapInfo;
     data: BeatmapData;
@@ -53,6 +64,13 @@ export default function BeatmapUpload({ onSelect }: Props) {
         );
 
         return {
+          info: {
+            id: diffs[0].data.beatmapSetID,
+            title: diffs[0].data.title,
+            artist: diffs[0].data.artist,
+            creator: diffs[0].data.creator,
+            background: diffs[0].info.background
+          },
           difficulties: diffs,
           files: beatmap.files
         };

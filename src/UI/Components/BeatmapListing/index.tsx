@@ -2,8 +2,7 @@ import { useCallback, useState } from 'react';
 import { BeatmapFile } from '../../../Game';
 import { BeatmapData } from '../../../Game/Loader/BeatmapLoader';
 import { SayobotBeatmapFiles } from '../../API/SayobotAPI';
-import LocalBeatmapBar from '../../Sources/Local/LocalBeatmapBar';
-import SayobotBeatmapBar from '../../Sources/Sayobot/SayobotBeatmapBar';
+import BeatmapBar from '../BeatmapBar';
 import BeatmapInfo from '../BeatmapInfo';
 import { BeatmapFiles } from '../BeatmapUpload';
 import style from './index.module.scss';
@@ -61,25 +60,21 @@ export default function BeatmapListing({ beatmaps, sayobot, onSelect }: Props) {
       />
       <div className={style.list}>
         {beatmaps.map(b => (
-          <LocalBeatmapBar
-            key={
-              b.difficulties[0].data.beatmapSetID +
-              '-' +
-              b.difficulties[0].data.version
-            }
+          <BeatmapBar
+            key={b.info.id + '-' + b.difficulties[0].data.version}
             beatmap={b}
+            expanded={selectedBeatmap === b}
             onClick={onClick}
             onClickDiff={onClickDiff}
-            expanded={selectedBeatmap === b}
           />
         ))}
         {sayobot.map(b => (
-          <SayobotBeatmapBar
+          <BeatmapBar
             key={b.info.sid}
-            beatmap={b}
+            beatmap={b.beatmap}
+            expanded={selectedBeatmap === b.beatmap}
             onClick={onClick}
             onClickDiff={onClickDiff}
-            expanded={selectedBeatmap === b.beatmap}
           />
         ))}
       </div>

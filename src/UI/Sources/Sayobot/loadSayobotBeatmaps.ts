@@ -16,6 +16,9 @@ function loadBeatmapInfo(
   const background = bgFile != null ? URL.createObjectURL(bgFile.blob) : '';
 
   return {
+    creator: info.creator || data.creator,
+    version: diffInfo?.version || data.version,
+    stars: diffInfo?.star || 0,
     background,
     length: diffInfo?.length ?? 0
   };
@@ -65,6 +68,13 @@ export async function fetchOsz(
   );
 
   return {
+    info: {
+      id: sayobotInfo.sid,
+      title: sayobotInfo.title,
+      artist: sayobotInfo.artist,
+      creator: sayobotInfo.creator,
+      background: diffs[0].info.background
+    },
     difficulties: diffs,
     files: otherFiles
   };

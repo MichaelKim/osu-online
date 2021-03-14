@@ -1,36 +1,25 @@
-import { useCallback } from 'react';
+import { BeatmapFiles, BeatmapInfo } from '../BeatmapUpload';
 import DifficultyCircle from '../DifficultyCircle';
 import style from './index.module.scss';
 
-type BeatmapDiffInfo = {
-  key: string;
-  version: string;
-  stars: number;
-};
-
-type BeatmapInfo = {
-  title: string;
-  artist: string;
-  creator: string;
-  diffs: BeatmapDiffInfo[];
-  bg?: string;
-};
-
 type DiffProps = {
+  beatmapID: number;
   creator: string;
-  diff: BeatmapDiffInfo;
+  diff: BeatmapInfo;
   onClick: (version: string) => void;
 };
 
-function BeatmapDiffBar({ creator, diff, onClick }: DiffProps) {
-  const _onClick = useCallback(() => onClick(diff.version), [
-    onClick,
-    diff.version
-  ]);
+function BeatmapDiffBar({ beatmapID, creator, diff, onClick }: DiffProps) {
+  const _onClick = () => onClick(diff.version);
 
   return (
     <div className={style.diff} onClick={_onClick}>
-      <DifficultyCircle size={40} {...diff} id={diff.key} />
+      <DifficultyCircle
+        size={40}
+        beatmapID={beatmapID}
+        version={diff.version}
+        stars={diff.stars}
+      />
       <div className={style.diffInfo}>
         <div className={style.diffMeta}>
           <p className={style.version}>{diff.version}</p>
@@ -42,9 +31,9 @@ function BeatmapDiffBar({ creator, diff, onClick }: DiffProps) {
 }
 
 type Props = {
-  beatmap: BeatmapInfo;
+  beatmap: BeatmapFiles;
   expanded: boolean;
-  onClick: () => void;
+  onClick: (beatmap: BeatmapFiles) => void;
   onClickDiff: (version: string) => void;
 };
 
@@ -54,35 +43,39 @@ export default function BeatmapBar({
   onClick,
   onClickDiff
 }: Props) {
+  const _onClick = () => onClick(beatmap);
+
+  const background = beatmap.info.background;
   return (
     <>
       <div
         className={style.bar}
-        style={beatmap.bg ? { backgroundImage: `url(${beatmap.bg})` } : {}}
-        onClick={onClick}
+        style={background ? { backgroundImage: `url(${background})` } : {}}
+        onClick={_onClick}
       >
         <div className={style.fade}>
-          <p className={style.title}>{beatmap.title}</p>
-          <p className={style.artist}>{beatmap.artist}</p>
+          <p className={style.title}>{beatmap.info.title}</p>
+          <p className={style.artist}>{beatmap.info.artist}</p>
           <div className={style.diffCircleBox}>
-            {beatmap.diffs.map(d => (
+            {beatmap.difficulties.map(d => (
               <DifficultyCircle
-                key={d.key}
-                id={d.key}
+                key={d.info.version}
                 size={16}
-                version={d.version}
-                stars={d.stars}
+                beatmapID={beatmap.info.id}
+                version={d.info.version}
+                stars={d.info.stars}
               />
             ))}
           </div>
         </div>
       </div>
       {expanded &&
-        beatmap.diffs.map(d => (
+        beatmap.difficulties.map(d => (
           <BeatmapDiffBar
-            key={d.key}
-            creator={beatmap.creator}
-            diff={d}
+            key={d.info.version}
+            beatmapID={beatmap.info.id}
+            creator={beatmap.info.creator}
+            diff={d.info}
             onClick={onClickDiff}
           />
         ))}

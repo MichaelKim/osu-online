@@ -1,4 +1,4 @@
-@import '../../variables.scss';
+@use '../../variables.scss';
 
 .beatmapCard {
   float: left;
@@ -12,7 +12,7 @@
 }
 
 .cardBox {
-  background-color: $light-color;
+  background-color: variables.$light-color;
   border-radius: 4px;
   box-shadow: 0 1px 3px rgb(0 0 0 / 25%);
 }
@@ -39,7 +39,7 @@
 
 .cardLower {
   height: 60px;
-  color: $dark-accent;
+  color: variables.$dark-accent;
   padding: 0 4px;
   display: flex;
   flex-direction: row;
@@ -65,7 +65,7 @@
   // Loading circle color
   & > div {
     & > div {
-      border-color: $dark-color transparent;
+      border-color: variables.$dark-color transparent;
     }
   }
 }

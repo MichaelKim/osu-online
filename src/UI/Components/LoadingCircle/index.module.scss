@@ -1,4 +1,4 @@
-@import '../../variables.scss';
+@use '../../variables.scss';
 
 .loading {
   display: flex;
@@ -11,8 +11,8 @@
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  border-top: 4px solid $light-accent;
-  border-bottom: 4px solid $light-accent;
+  border-top: 4px solid variables.$light-accent;
+  border-bottom: 4px solid variables.$light-accent;
   border-left: 4px solid transparent;
   border-right: 4px solid transparent;
   animation: rotate 2s linear infinite;

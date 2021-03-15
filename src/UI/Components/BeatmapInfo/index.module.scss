@@ -1,8 +1,8 @@
-@import '../../variables.scss';
+@use '../../variables.scss';
 
 .info {
   flex: 1;
-  background-color: $dark-accent;
+  background-color: variables.$dark-accent;
 }
 
 .bg {

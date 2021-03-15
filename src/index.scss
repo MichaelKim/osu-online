@@ -1,4 +1,4 @@
-@import './UI/variables.scss';
+@use './UI/variables.scss';
 
 @font-face {
   font-family: 'Exo 2';
@@ -30,17 +30,17 @@ body {
   margin: 0;
   padding: 0;
   font-family: 'Exo 2';
-  background-color: $dark-accent;
-  color: $light-accent;
+  background-color: variables.$dark-accent;
+  color: variables.$light-accent;
 }
 
 a {
-  color: $link-color;
-  text-decoration: underline $link-color 2px;
+  color: variables.$link-color;
+  text-decoration: underline variables.$link-color 2px;
 
   &:visited {
-    color: $visited-color;
-    text-decoration-color: $visited-color;
+    color: variables.$visited-color;
+    text-decoration-color: variables.$visited-color;
   }
 }
 
@@ -55,16 +55,16 @@ p {
 }
 
 button {
-  background-color: $dark-color;
-  color: $light-accent;
+  background-color: variables.$dark-color;
+  color: variables.$light-accent;
   outline: none;
   font: 1em 'Exo 2';
-  border: 1px solid $light-color;
+  border: 1px solid variables.$light-color;
   padding: 4px 8px;
   cursor: pointer;
 
   &:hover {
-    background-color: lighten($dark-color, 10);
+    background-color: lighten(variables.$dark-color, 10);
   }
 }
 

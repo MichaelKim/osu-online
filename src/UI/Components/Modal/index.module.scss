@@ -1,4 +1,4 @@
-@import '../../variables.scss';
+@use '../../variables.scss';
 
 .modal {
   position: fixed;
@@ -14,7 +14,7 @@
 }
 
 .modalBox {
-  background-color: $dark-color;
+  background-color: variables.$dark-color;
   padding: 30px;
   cursor: default;
   max-height: 100%;

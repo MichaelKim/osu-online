@@ -1,4 +1,4 @@
-@import '../../../variables.scss';
+@use '../../../variables.scss';
 
 .options {
   width: 500px;
@@ -7,7 +7,7 @@
 .optionsItem {
   padding: 4px;
   &:hover {
-    background-color: lighten($dark-color, 10);
+    background-color: lighten(variables.$dark-color, 10);
   }
 }
 

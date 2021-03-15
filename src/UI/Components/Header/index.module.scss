@@ -1,7 +1,7 @@
-@import '../../variables.scss';
+@use '../../variables.scss';
 
 .header {
-  background-color: $dark-color;
+  background-color: variables.$dark-color;
   display: flex;
   flex-direction: row;
   padding: 0 16px;
@@ -27,7 +27,7 @@
   cursor: pointer;
 
   &:hover {
-    background-color: lighten($dark-color, 10);
+    background-color: lighten(variables.$dark-color, 10);
   }
 }
 

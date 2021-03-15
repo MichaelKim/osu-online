@@ -1,8 +1,8 @@
-@import '../../variables.scss';
+@use '../../variables.scss';
 
 .dragDrop {
-  background-color: $dark-accent;
-  border: 2px dashed $light-color;
+  background-color: variables.$dark-accent;
+  border: 2px dashed variables.$light-color;
   margin-top: 20px;
   width: 500px;
   height: 200px;
@@ -17,21 +17,21 @@
 }
 
 .or {
-  color: darken($light-color, 20);
+  color: darken(variables.$light-color, 20);
   margin: 8px 0;
 }
 
 .browseButton {
-  background-color: $dark-color;
+  background-color: variables.$dark-color;
   outline: none;
   font: 1em 'Exo 2';
   border: 0;
-  color: $light-accent;
+  color: variables.$light-accent;
   cursor: pointer;
   padding: 8px 28px;
 
   &:hover {
-    background-color: lighten($dark-color, 10);
+    background-color: lighten(variables.$dark-color, 10);
   }
 
   & > input {

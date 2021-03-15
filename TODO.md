@@ -2,3 +2,5 @@
 - score meter (hit error)
 - current time / remaining time
 - breaks
+- preview audio
+- skin change

@@ -28,6 +28,10 @@ export default class GameState {
     this.scoreState.load(beatmap.notes);
   }
 
+  restart() {
+    this.scoreState.restart();
+  }
+
   reset() {
     this.hitResult.reset();
     this.scoreState.reset();

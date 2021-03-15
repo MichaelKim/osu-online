@@ -34,6 +34,16 @@ export default class Beatmap {
     return index;
   }
 
+  restart() {
+    this.stage.removeChildren();
+    for (let i = this.notes.length - 1; i >= 0; i--) {
+      this.notes[i].init();
+      this.notes[i].addToStage(this.stage);
+    }
+    this.left = 0;
+    this.right = 0;
+  }
+
   unload() {
     this.stage.removeChildren();
   }

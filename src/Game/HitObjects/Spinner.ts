@@ -43,27 +43,32 @@ class SpinnerCounter {
 
     this.records.push({ rotation, time });
   }
+
+  reset() {
+    this.rpm = 0;
+    this.records = [];
+  }
 }
 
 export default class Spinner {
   readonly type = HitObjectTypes.SPINNER;
 
   // Sprites
-  private s: SpinnerSprites;
+  private s!: SpinnerSprites;
 
   // Gameplay
   // All times are in ms (except for rpm) and angles are in radians
-  private down = false; // Whether the spinner is held down or not
-  private rotations = 0; // Number of rotations made so far
-  private position: IPointData = { x: 0, y: 0 }; // Position of cursor
-  private lastAngle = 0; // Angle of cursor last frame
-  private lastTime = 0; // Time of last frame
-  private currentRotations = 0; // Actual rotation of sprites (before dampen)
-  private lastSpins = 0; // Rotations made last frame
-  private counter: SpinnerCounter = new SpinnerCounter();
+  private down!: boolean; // Whether the spinner is held down or not
+  private rotations!: number; // Number of rotations made so far
+  private position!: IPointData; // Position of cursor
+  private lastAngle!: number; // Angle of cursor last frame
+  private lastTime!: number; // Time of last frame
+  private currentRotations!: number; // Actual rotation of sprites (before dampen)
+  private lastSpins!: number; // Rotations made last frame
+  private counter = new SpinnerCounter();
 
   // Rendering
-  private drawnAngle = 0; // Sprite rotation
+  private drawnAngle!: number; // Sprite rotation
   private text: PIXI.Text = new PIXI.Text('', {
     fill: 0xffffff,
     fontSize: 24,
@@ -73,13 +78,32 @@ export default class Spinner {
 
   constructor(
     readonly o: SpinnerData,
-    skin: Skin,
+    private skin: Skin,
     private gameState: GameState
   ) {
-    this.s = loadSpinnerSprites(this.o, skin);
-
     this.text.anchor.set(0.5);
     this.text.position.set(256, 356);
+
+    this.init();
+  }
+
+  init() {
+    // Sprites
+    this.s = loadSpinnerSprites(this.o, this.skin);
+    this.setVisible(false);
+
+    // Gameplay
+    this.down = false;
+    this.rotations = 0;
+    this.position = { x: 0, y: 0 };
+    this.lastAngle = 0;
+    this.lastTime = 0;
+    this.currentRotations = 0;
+    this.lastSpins = 0;
+    this.drawnAngle = 0;
+    this.text.text = '';
+
+    this.counter.reset();
   }
 
   addToStage(stage: PIXI.Container) {
@@ -89,6 +113,26 @@ export default class Spinner {
   setVisible(visible: boolean) {
     this.s.container.visible = visible;
     this.text.visible = visible;
+  }
+
+  restart(stage: PIXI.Container) {
+    this.s = loadSpinnerSprites(this.o, this.skin);
+    this.text = new PIXI.Text('', {
+      fill: 0xffffff,
+      fontSize: 24,
+      align: 'center'
+    });
+    this.addToStage(stage);
+    this.down = false;
+    this.rotations = 0;
+    this.position = { x: 0, y: 0 };
+    this.lastAngle = 0;
+    this.lastTime = 0;
+    this.currentRotations = 0;
+    this.lastSpins = 0;
+    this.counter = new SpinnerCounter();
+    this.drawnAngle = 0;
+    this.finished = 0;
   }
 
   get start() {

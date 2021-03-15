@@ -60,7 +60,7 @@ export default function Root({ supportsRawInput }: Props) {
 
   const onRetry = () => {
     setPaused(false);
-    //
+    game.current.retry();
   };
 
   const onQuit = () => {

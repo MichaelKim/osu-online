@@ -1,10 +1,5 @@
 import * as PIXI from 'pixi.js';
-import {
-  HitObject,
-  HitObjectTypes,
-  HIT_CIRCLE_DIAMETER,
-  initSprite
-} from './HitObjects';
+import { HitObject, HitObjectTypes, HIT_CIRCLE_DIAMETER } from './HitObjects';
 import Skin from './Skin';
 import { clerp01, lerp } from './util';
 
@@ -20,14 +15,19 @@ class FollowPoint {
     texture: PIXI.Texture | undefined,
     private start: PIXI.Point,
     private end: PIXI.Point,
-    angle: number,
+    private angle: number,
     public fadeInTime: number,
     private fadeOutTime: number,
     private size: number
   ) {
-    this.sprite = initSprite(texture, start);
-    this.sprite.rotation = angle;
-    this.sprite.scale.set((1.5 * size) / 128);
+    this.sprite = new PIXI.Sprite(texture);
+    this.restart();
+  }
+
+  restart() {
+    this.sprite.position.copyFrom(this.start);
+    this.sprite.rotation = this.angle;
+    this.sprite.scale.set((1.5 * this.size) / 128);
     this.sprite.alpha = 0;
     this.sprite.visible = false;
   }
@@ -172,6 +172,12 @@ export default class FollowPointController {
     for (let i = this.left + 1; i < this.right; i++) {
       this.points[i].update(time);
     }
+  }
+
+  restart() {
+    this.left = 0;
+    this.right = 0;
+    this.points.forEach(p => p.restart());
   }
 
   reset() {

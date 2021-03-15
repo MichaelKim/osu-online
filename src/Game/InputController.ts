@@ -38,6 +38,7 @@ export default class InputController {
   stop() {
     window.removeEventListener('mousedown', this.onDown);
     window.removeEventListener('mouseup', this.onUp);
+    this.events = [];
   }
 
   private onKeyDown = (e: KeyboardEvent) => {

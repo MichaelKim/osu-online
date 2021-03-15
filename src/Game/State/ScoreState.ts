@@ -49,6 +49,15 @@ export default class ScoreState {
     }
   }
 
+  restart() {
+    this.currentCombo = 0;
+    this.highestCombo = 0;
+    this.rawScore = 0;
+    this.bonusScore = 0;
+    this.comboDisplay.reset();
+    this.scoreDisplay.reset();
+  }
+
   reset() {
     this.currentCombo = 0;
     this.highestCombo = 0;

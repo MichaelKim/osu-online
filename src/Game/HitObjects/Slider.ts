@@ -44,48 +44,62 @@ export default class Slider {
   readonly type = HitObjectTypes.SLIDER;
 
   // Computed
-  fadeTime: number; // Starts to fade in
-  fullTime: number; // Fully opaque
-  hitWindows: {
+  readonly fadeTime: number; // Starts to fade in
+  readonly fullTime: number; // Fully opaque
+  readonly hitWindows: {
     [HitResultType.HIT300]: number;
     [HitResultType.HIT100]: number;
     [HitResultType.HIT50]: number;
   };
 
   // Rendering
-  s: SliderSprites;
-  positionBuffer: PIXI.Buffer;
-  texPositionBuffer: PIXI.Buffer;
-  indexBuffer: PIXI.Buffer;
+  s!: SliderSprites;
+  private positionBuffer!: PIXI.Buffer;
+  private texPositionBuffer!: PIXI.Buffer;
+  private indexBuffer!: PIXI.Buffer;
 
   // Gameplay
-  position: PIXI.Point; // Slider head position
-  finished = 0;
-  headHit = 0; // When the slider head was hit (0 if not hit)
-  state: State = State.NONE;
-  prevState: State = State.NONE;
-  followTime = 0; // Animation for follow circle
-  lastProgress = 0; // Progress of last frame
+  finished!: number;
+  private position!: PIXI.Point; // Slider head position
+  private headHit!: number; // When the slider head was hit (0 if not hit)
+  private state!: State;
+  private prevState!: State;
+  private followTime!: number; // Animation for follow circle
+  private lastProgress!: number; // Progress of last frame
 
   constructor(
     readonly o: SliderData,
-    beatmap: BeatmapData,
-    skin: Skin,
+    private beatmap: BeatmapData,
+    private skin: Skin,
     private gameState: GameState
   ) {
     // Compute timing windows
     [this.fadeTime, this.fullTime] = arToMS(beatmap.ar);
     this.hitWindows = odToMS(beatmap.od);
 
+    this.init();
+  }
+
+  init() {
     // Load sprites
-    this.s = loadSliderSprites(this.o, beatmap, skin);
+    this.s = loadSliderSprites(this.o, this.beatmap, this.skin);
+    this.setVisible(false);
 
     // Store buffers for quicker access during update
     this.positionBuffer = this.s.mesh.geometry.getBuffer('position');
     this.texPositionBuffer = this.s.mesh.geometry.getBuffer('tex_position');
     this.indexBuffer = this.s.mesh.geometry.getIndex();
 
+    // Set initial position
     this.position = this.start;
+
+    // Gameplay state
+    this.finished = 0;
+    this.headHit = 0;
+    this.state = State.NONE;
+    this.prevState = State.NONE;
+    this.followTime = 0;
+    this.lastProgress = 0;
   }
 
   get start() {

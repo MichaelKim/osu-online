@@ -93,6 +93,5 @@ export default class AudioController {
 
   stop() {
     this.current?.stop();
-    this.current = undefined;
   }
 }

@@ -137,14 +137,6 @@ export default class Game {
     }
 
     if (!this.isPlaying()) {
-      for (const event of this.input.events) {
-        switch (event.type) {
-          case InputType.MOVE:
-            this.cursor.move(event.position);
-            break;
-        }
-      }
-      this.input.events = [];
       this.renderer.render();
       return;
     }
@@ -185,6 +177,7 @@ export default class Game {
     this.audio.pause();
     this.cursor.showCursor();
     this.resumer.pause(this.cursor.getPosition());
+    this.input.stop();
   }
 
   async resume() {
@@ -193,8 +186,16 @@ export default class Game {
     this.resumer.startResume();
   }
 
-  retry() {
-    // TODO
+  async retry() {
+    this.cursor.hideCursor();
+    this.audio.stop();
+    this.gameState.restart();
+    this.followPoint.restart();
+    this.beatmap.restart();
+
+    await lockPointer(this.view, this.options.options.cursorType);
+    this.cursor.hideCursor();
+    await this.audio.play();
   }
 
   quit() {

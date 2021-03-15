@@ -31,23 +31,30 @@ export default class HitCircle {
   };
 
   // Sprites
-  s: HitCircleSprites;
+  s!: HitCircleSprites;
 
   // Gameplay
-  finished = 0;
+  finished!: number;
 
   constructor(
     readonly o: HitCircleData,
-    beatmap: BeatmapData,
-    skin: Skin,
+    private beatmap: BeatmapData,
+    private skin: Skin,
     private gameState: GameState
   ) {
     // Compute timing windows
     [this.fadeTime, this.fullTime] = arToMS(beatmap.ar);
     this.hitWindows = odToMS(beatmap.od);
 
+    this.init();
+  }
+
+  init() {
     // Load sprites
-    this.s = loadHitCircleSprites(this.o, beatmap, skin);
+    this.s = loadHitCircleSprites(this.o, this.beatmap, this.skin);
+    this.setVisible(false);
+
+    this.finished = 0;
   }
 
   get start() {
@@ -67,6 +74,13 @@ export default class HitCircle {
 
   setVisible(visible: boolean) {
     this.s.container.visible = visible;
+  }
+
+  restart(stage: PIXI.Container) {
+    this.s = loadHitCircleSprites(this.o, this.beatmap, this.skin);
+    this.addToStage(stage);
+    this.setVisible(false);
+    this.finished = 0;
   }
 
   get enter() {

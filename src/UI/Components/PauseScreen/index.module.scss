@@ -1,21 +1,63 @@
-@import '../../variables.scss';
+@use '../../variables.scss';
 
 .lock {
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
   position: fixed;
   top: 0;
   left: 0;
   bottom: 0;
   right: 0;
+  background-color: rgba(0, 0, 0, 0.5);
 }
 
 .lockMessage {
-  color: wheat;
-  max-width: 400px;
-  border: white 2px solid;
-  background-color: black;
-  padding: 1em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: variables.$dark-color;
+  color: variables.$light-color;
+  width: 100%;
+}
+
+.bar {
+  width: 100%;
+  font-size: 2em;
+  font-weight: bold;
+  cursor: pointer;
+
+  &:hover {
+    filter: brightness(1.2);
+
+    .item {
+      width: 100%;
+    }
+  }
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 95%;
+  height: 100px;
+  margin: 0 auto;
+}
+
+.resume {
+  @extend .item;
+
+  background-color: #88b300;
+}
+
+.retry {
+  @extend .item;
+  background-color: #eeaa00;
+}
+
+.quit {
+  @extend .item;
+
+  background-color: #aa1b27;
 }

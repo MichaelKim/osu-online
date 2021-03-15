@@ -10,14 +10,20 @@ export function PauseScreen({ onResume, onRetry, onQuit }: Props) {
   return (
     <div className={style.lock}>
       <div className={style.lockMessage}>
-        <div onClick={onResume}>
-          <p>Continue</p>
+        <div className={style.bar} onClick={onResume}>
+          <div className={style.resume}>
+            <p>Continue</p>
+          </div>
         </div>
-        <div onClick={onRetry}>
-          <p>Retry</p>
+        <div className={style.bar} onClick={onRetry}>
+          <div className={style.retry}>
+            <p>Retry</p>
+          </div>
         </div>
-        <div onClick={onQuit}>
-          <p>Quit</p>
+        <div className={style.bar} onClick={onQuit}>
+          <div className={style.quit}>
+            <p>Quit</p>
+          </div>
         </div>
       </div>
     </div>

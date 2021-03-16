@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import { BeatmapFile } from '../../../Game';
-import { BeatmapData, parseBeatmap } from '../../../Game/Loader/BeatmapLoader';
+import {
+  BeatmapData,
+  GameMode,
+  parseBeatmap
+} from '../../../Game/Loader/BeatmapLoader';
 import { getFilesFromDrop } from './dragDrop';
 import style from './index.module.scss';
 import { Directory, getBeatmaps, loadBeatmapInfo } from './loadBeatmaps';
@@ -19,6 +23,11 @@ export type BeatmapInfo = {
   length: number;
 };
 
+export type BeatmapDiff = {
+  info: BeatmapInfo;
+  data: BeatmapData;
+};
+
 export type BeatmapFiles = {
   info: {
     id: number;
@@ -27,10 +36,7 @@ export type BeatmapFiles = {
     creator: string;
     background: string;
   };
-  difficulties: {
-    info: BeatmapInfo;
-    data: BeatmapData;
-  }[];
+  difficulties: BeatmapDiff[];
   files: BeatmapFile[];
 };
 
@@ -40,30 +46,34 @@ export default function BeatmapUpload({ onSelect }: Props) {
   const [total, setTotal] = useState(0);
 
   const loadBeatmaps = async (root: Directory) => {
-    const beatmapFiles = getBeatmaps(root);
+    const beatmapFiles = getBeatmaps(root).slice(0, 100);
 
     const total = beatmapFiles.reduce((sum, b) => sum + b.diffs.length, 0);
     setTotal(total);
     setProgress(0);
 
     // Parse beatmaps
-    const beatmaps = await Promise.all(
-      beatmapFiles.map(async beatmap => {
-        const diffs = await Promise.all(
-          beatmap.diffs.map(async diff => {
-            const text = await diff.text();
-            const data = parseBeatmap(text.split('\n').map(l => l.trim()));
-            const info = loadBeatmapInfo(data, beatmap.files);
+    const beatmaps: BeatmapFiles[] = [];
 
-            setProgress(p => p + 1);
-            return {
-              info,
-              data
-            };
-          })
-        );
+    for (const beatmap of beatmapFiles) {
+      const diffs: BeatmapDiff[] = [];
 
-        return {
+      for (const diff of beatmap.diffs) {
+        const text = await diff.text();
+        const data = parseBeatmap(text.split('\n').map(l => l.trim()));
+
+        if (data.mode === GameMode.STANDARD) {
+          const info = loadBeatmapInfo(data, beatmap.files);
+          diffs.push({
+            info,
+            data
+          });
+        }
+        setProgress(p => p + 1);
+      }
+
+      if (diffs.length > 0) {
+        beatmaps.push({
           info: {
             id: diffs[0].data.beatmapSetID,
             title: diffs[0].data.title,
@@ -73,9 +83,9 @@ export default function BeatmapUpload({ onSelect }: Props) {
           },
           difficulties: diffs,
           files: beatmap.files
-        };
-      })
-    );
+        });
+      }
+    }
 
     onSelect(beatmaps);
   };

@@ -1,7 +1,11 @@
 import { BeatmapFile } from '../../../Game';
-import { BeatmapData, parseBeatmap } from '../../../Game/Loader/BeatmapLoader';
+import {
+  BeatmapData,
+  GameMode,
+  parseBeatmap
+} from '../../../Game/Loader/BeatmapLoader';
 import { SayobotBeatmapInfo, SayobotDiffInfo } from '../../API/SayobotAPI';
-import { BeatmapFiles } from '../../Components/BeatmapUpload';
+import { BeatmapDiff, BeatmapFiles } from '../../Components/BeatmapUpload';
 import { fetchOSZ } from '../../util';
 
 function loadBeatmapInfo(
@@ -32,22 +36,24 @@ export async function fetchSayobot(
   );
 
   // Parse diffs
-  const diffs = await Promise.all(
-    diffFiles.map(async d => {
-      const text = await d.blob.text();
-      const data = parseBeatmap(text.split('\n').map(l => l.trim()));
+  const diffs: BeatmapDiff[] = [];
 
+  for (const diff of diffFiles) {
+    const text = await diff.text();
+    const data = parseBeatmap(text.split('\n').map(l => l.trim()));
+
+    if (data.mode === GameMode.STANDARD) {
       const diffInfo = sayobotInfo.bid_data.find(
         d => d.version === data.version
       );
       const info = loadBeatmapInfo(data, sayobotInfo, diffInfo, otherFiles);
 
-      return {
+      diffs.push({
         info,
         data
-      };
-    })
-  );
+      });
+    }
+  }
 
   diffs.sort((a, b) => a.info.stars - b.info.stars);
 

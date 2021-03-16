@@ -1,7 +1,11 @@
 import { BeatmapFile } from '../../../Game';
-import { BeatmapData, parseBeatmap } from '../../../Game/Loader/BeatmapLoader';
+import {
+  BeatmapData,
+  GameMode,
+  parseBeatmap
+} from '../../../Game/Loader/BeatmapLoader';
 import { CheeseGullBeatmap, CheeseGullSet } from '../../API/CheeseGullAPI';
-import { BeatmapFiles } from '../../Components/BeatmapUpload';
+import { BeatmapDiff, BeatmapFiles } from '../../Components/BeatmapUpload';
 import { fetchOSZ } from '../../util';
 
 function loadBeatmapInfo(
@@ -32,22 +36,24 @@ export async function fetchRipple(
   );
 
   // Parse diffs
-  const diffs = await Promise.all(
-    diffFiles.map(async d => {
-      const text = await d.blob.text();
-      const data = parseBeatmap(text.split('\n').map(l => l.trim()));
+  const diffs: BeatmapDiff[] = [];
 
+  for (const diff of diffFiles) {
+    const text = await diff.text();
+    const data = parseBeatmap(text.split('\n').map(l => l.trim()));
+
+    if (data.mode === GameMode.STANDARD) {
       const diffInfo = cheeseGullInfo.ChildrenBeatmaps.find(
         d => d.DiffName === data.version
       );
       const info = loadBeatmapInfo(data, cheeseGullInfo, diffInfo, otherFiles);
 
-      return {
+      diffs.push({
         info,
         data
-      };
-    })
-  );
+      });
+    }
+  }
 
   diffs.sort((a, b) => a.info.stars - b.info.stars);
 

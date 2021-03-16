@@ -1,7 +1,7 @@
 import { SampleSetType } from '../SampleSet';
 import { getSections, parseColor, parseKeyValue } from '../util';
 
-enum GameMode {
+export enum GameMode {
   STANDARD = 0,
   // Unsupported
   TAIKO = 1,
@@ -18,7 +18,7 @@ export interface BeatmapData {
   audioLeadIn: number;
   sampleSet: SampleSetType;
   stackLeniency: number;
-  mode: number;
+  mode: GameMode;
 
   // [Metadata]
   title: string;

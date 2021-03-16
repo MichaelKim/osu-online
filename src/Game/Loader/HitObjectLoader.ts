@@ -1,9 +1,9 @@
-import GameState from '../State/GameState';
 import { HitObject, HitObjectTypes } from '../HitObjects';
 import HitCircle from '../HitObjects/HitCircle';
 import Slider from '../HitObjects/Slider';
 import Spinner from '../HitObjects/Spinner';
 import Skin from '../Skin';
+import GameState from '../State/GameState';
 import { arToMS } from '../timing';
 import { getSection, within } from '../util';
 import { BeatmapData } from './BeatmapLoader';
@@ -173,8 +173,51 @@ export function loadHitObjects(
   });
 }
 
+// Parse only data required for beatmap listing
 export function loadHitObjectsData(beatmap: BeatmapData) {
-  const timingPoints = parseTimingPoints(beatmap.file);
-  const notes = parseHitObjects(beatmap.file, beatmap, timingPoints);
+  const notes: {
+    type: HitObjectTypes;
+    x: number;
+    y: number;
+    t: number;
+  }[] = [];
+
+  const section = getSection(beatmap.file, '[HitObjects]');
+  for (const line of section) {
+    const tokens = line.split(',');
+    if (tokens.length < 4) {
+      continue;
+    }
+
+    // x,y,time,type,hitSound,objectParams,hitSample
+    const x = parseFloat(tokens[0]);
+    const y = parseFloat(tokens[1]);
+    const t = parseInt(tokens[2]);
+    const type = parseInt(tokens[3]);
+
+    if (type & HitObjectTypes.HIT_CIRCLE) {
+      notes.push({
+        type: HitObjectTypes.HIT_CIRCLE,
+        x,
+        y,
+        t
+      });
+    } else if (type & HitObjectTypes.SLIDER) {
+      notes.push({
+        type: HitObjectTypes.SLIDER,
+        x,
+        y,
+        t
+      });
+    } else if (type & HitObjectTypes.SPINNER) {
+      notes.push({
+        type: HitObjectTypes.SPINNER,
+        x,
+        y,
+        t
+      });
+    }
+  }
+
   return notes;
 }

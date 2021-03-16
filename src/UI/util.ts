@@ -29,7 +29,9 @@ export async function fetchOSZ(url: string) {
   );
 
   // Find all .osu files
-  const diffFiles = files.filter(f => f.file.name.endsWith('.osu'));
+  const diffFiles = files
+    .filter(f => f.file.name.endsWith('.osu'))
+    .map(f => f.blob);
   const otherFiles = files
     .filter(f => !f.file.name.endsWith('.osu'))
     .map(f => ({

@@ -1,6 +1,8 @@
 @use '../../variables.scss';
 
 .info {
+  display: flex;
+  flex-direction: column;
   flex: 1;
   background-color: variables.$dark-accent;
 }
@@ -11,4 +13,28 @@
   background-image: url('default-bg.png');
   background-size: cover;
   background-position: center;
+}
+
+.metadata {
+  margin: 16px;
+  padding: 8px;
+  flex-grow: 1;
+  background-color: variables.$dark-color;
+
+  h1 {
+    margin-bottom: 12px;
+  }
+
+  p {
+    font-size: 1.3em;
+    margin-bottom: 8px;
+  }
+}
+
+.playButton {
+  height: 100px;
+  justify-self: flex-end;
+  font-size: 2em;
+  margin: 16px;
+  box-sizing: border-box;
 }

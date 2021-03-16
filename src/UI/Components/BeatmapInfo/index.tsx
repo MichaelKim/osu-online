@@ -31,17 +31,21 @@ export default function BeatmapInfo({ beatmap, version, onSelect }: Props) {
             : {}
         }
       />
-      <h1>
-        {diff.data.title} [{diff.data.version}]
-      </h1>
-      {diff.data.source && <p>From {diff.data.source}</p>}
-      {diff.data.artist && <p>By {diff.data.artist}</p>}
-      <p>Mapped by {diff.data.creator}</p>
+      <div className={style.metadata}>
+        <h1>
+          {diff.data.title} [{diff.data.version}]
+        </h1>
+        {diff.data.source && <p>From {diff.data.source}</p>}
+        {diff.data.artist && <p>By {diff.data.artist}</p>}
+        <p>Mapped by {diff.data.creator}</p>
 
-      <p>
-        Length: {min}:{sec}
-      </p>
-      <button onClick={onSelect}>Play</button>
+        <p>
+          Length: {min}:{sec}
+        </p>
+      </div>
+      <button className={style.playButton} onClick={onSelect}>
+        Play
+      </button>
     </div>
   );
 }

@@ -46,7 +46,7 @@ export default function BeatmapUpload({ onSelect }: Props) {
   const [total, setTotal] = useState(0);
 
   const loadBeatmaps = async (root: Directory) => {
-    const beatmapFiles = getBeatmaps(root).slice(0, 100);
+    const beatmapFiles = getBeatmaps(root);
 
     const total = beatmapFiles.reduce((sum, b) => sum + b.diffs.length, 0);
     setTotal(total);

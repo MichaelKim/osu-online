@@ -1,10 +1,11 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { BeatmapFile } from '../../../Game';
 import { BeatmapData } from '../../../Game/Loader/BeatmapLoader';
-import BeatmapBar from '../BeatmapBar';
+import BeatmapBar, { BeatmapDiffBar } from '../BeatmapBar';
 import BeatmapInfo from '../BeatmapInfo';
 import { BeatmapFiles } from '../BeatmapUpload';
 import style from './index.module.scss';
+import VirtualList from './VirtualList';
 
 type Props = {
   beatmaps: BeatmapFiles[];
@@ -36,14 +37,38 @@ export default function BeatmapListing({ beatmaps, onSelect }: Props) {
     onSelect(diff.data, selectedBeatmap.files);
   }, [selectedBeatmap, selectedVersion, onSelect]);
 
-  const onClickDiff = useCallback(
-    (version: string) => {
-      if (version === selectedVersion) return;
+  const items = useMemo(() => {
+    const items = [];
 
-      setVersion(version);
-    },
-    [selectedVersion]
-  );
+    for (const b of beatmaps) {
+      const Bar = () => <BeatmapBar beatmap={b} onClick={onClick} />;
+      items.push({
+        renderChild: Bar,
+        height: 126,
+        key: b.info.id + '-' + b.info.title + '-' + b.info.creator
+      });
+
+      if (selectedBeatmap === b) {
+        for (const d of b.difficulties) {
+          const DiffBar = () => (
+            <BeatmapDiffBar
+              beatmapID={b.info.id}
+              creator={b.info.creator}
+              diff={d.info}
+              onClick={setVersion}
+            />
+          );
+          items.push({
+            renderChild: DiffBar,
+            height: 86,
+            key: d.info.version
+          });
+        }
+      }
+    }
+
+    return items;
+  }, [beatmaps, selectedBeatmap, onClick]);
 
   return (
     <div className={style.container}>
@@ -52,17 +77,7 @@ export default function BeatmapListing({ beatmaps, onSelect }: Props) {
         version={selectedVersion}
         onSelect={onPlay}
       />
-      <div className={style.list}>
-        {beatmaps.map(b => (
-          <BeatmapBar
-            key={b.info.id + '-' + b.difficulties[0].data.version}
-            beatmap={b}
-            expanded={selectedBeatmap === b}
-            onClick={onClick}
-            onClickDiff={onClickDiff}
-          />
-        ))}
-      </div>
+      <VirtualList items={items} />
     </div>
   );
 }

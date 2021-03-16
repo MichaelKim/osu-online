@@ -1,11 +1,5 @@
 @use '../../variables.scss';
 
-.header {
-  display: flex;
-  flex-direction: row;
-  margin-bottom: 12px;
-}
-
 .container {
   flex: 1;
   display: flex;
@@ -13,7 +7,3 @@
   overflow: hidden;
 }
 
-.list {
-  flex: 1;
-  overflow-y: scroll;
-}

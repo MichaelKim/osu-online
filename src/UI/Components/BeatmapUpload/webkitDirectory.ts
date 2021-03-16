@@ -29,7 +29,8 @@ export function getFilesFromInput(files: FileList) {
     files: {}
   };
 
-  for (const file of Array.from(files)) {
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
     // @ts-expect-error: non-standard API
     const filePath: string = file.webkitRelativePath;
     const path = filePath.split('/');

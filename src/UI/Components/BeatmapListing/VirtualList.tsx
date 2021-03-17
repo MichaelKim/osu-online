@@ -1,4 +1,5 @@
 import { Component, createRef } from 'react';
+import OptionsContext from '../../options';
 import VirtualListItem from './VirtualListItem';
 
 type ObserverCallback = (visible: boolean) => void;
@@ -18,6 +19,9 @@ type State = {
 
 // Functional comp requires way too many useCallbacks
 export default class VirtualList extends Component<Props, State> {
+  static contextType = OptionsContext;
+  declare context: React.ContextType<typeof OptionsContext>;
+
   state = {
     offset: 0
   };
@@ -65,6 +69,7 @@ export default class VirtualList extends Component<Props, State> {
   render() {
     const { items } = this.props;
     const { offset } = this.state;
+    const { animations } = this.context;
 
     return (
       <div
@@ -73,7 +78,7 @@ export default class VirtualList extends Component<Props, State> {
           flex: 1,
           overflowY: 'scroll'
         }}
-        onScroll={this.onScroll}
+        onScroll={animations ? this.onScroll : undefined}
       >
         {items.map(({ className, height, key, renderChild }) => (
           <VirtualListItem
@@ -81,6 +86,7 @@ export default class VirtualList extends Component<Props, State> {
             key={key}
             height={height}
             offset={offset}
+            animations={animations}
             renderChild={renderChild}
             onAttach={this.onAttach}
             onDetach={this.onDetach}

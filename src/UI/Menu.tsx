@@ -22,11 +22,9 @@ export default function Menu({ options, onSelect }: Props) {
   );
 
   return (
-    <>
-      <OptionsContext.Provider value={options}>
-        <Header onAdd={addBeatmaps} />
-      </OptionsContext.Provider>
+    <OptionsContext.Provider value={options}>
+      <Header onAdd={addBeatmaps} />
       <BeatmapListing beatmaps={beatmaps} onSelect={onSelect} />
-    </>
+    </OptionsContext.Provider>
   );
 }

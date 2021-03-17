@@ -43,7 +43,14 @@ module.exports = async (env, argv) => {
                 ],
                 '@babel/preset-typescript'
               ],
-              plugins: ['@babel/plugin-proposal-class-properties', 'const-enum']
+              plugins: [
+                'const-enum',
+                [
+                  '@babel/plugin-transform-typescript',
+                  { allowDeclareFields: true }
+                ],
+                '@babel/plugin-proposal-class-properties'
+              ]
             }
           }
         },

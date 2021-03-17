@@ -4,6 +4,7 @@ type ItemProps = {
   className?: string;
   height: number;
   offset: number;
+  animations: boolean;
   renderChild: () => React.ReactNode;
   onAttach: (el: Element, cb: (visible: boolean) => void) => void;
   onDetach: (el: Element) => void;
@@ -46,15 +47,15 @@ export default class VirtualListItem extends Component<ItemProps, ItemState> {
     }
 
     // Render one frame before going invisible
-    return this.state.visible;
+    return this.state.visible || nextProps.animations !== this.props.animations;
   }
 
   render() {
-    const { className, height, offset, renderChild } = this.props;
+    const { className, height, offset, animations, renderChild } = this.props;
     const { top, visible } = this.state;
 
     const pos = Math.min(Math.max(0, (top - offset) / window.innerHeight), 1);
-    const x = 60 * (pos - 0.5) * (pos - 0.5);
+    const x = animations ? 60 * (pos - 0.5) * (pos - 0.5) : 0;
 
     return (
       <div ref={this.ref} style={{ height, transform: `translateX(${x}%)` }}>

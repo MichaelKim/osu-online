@@ -6,21 +6,16 @@ export enum CursorType {
   UNADJUSTED // Pointer lock with unadjusted movement
 }
 
-export type Options = {
-  cursorType: CursorType;
-  supportsRawInput: boolean;
-  cursorSensitivity: number;
-  leftButton: string;
-  rightButton: string;
-};
-
-export const defaultOptions: Options = {
+export const defaultOptions = {
   cursorType: CursorType.DEFAULT,
   supportsRawInput: true,
   cursorSensitivity: 2,
   leftButton: '1',
-  rightButton: '2'
+  rightButton: '2',
+  animations: true
 };
+
+export type Options = typeof defaultOptions;
 
 const OptionsContext = createContext<
   Options & {

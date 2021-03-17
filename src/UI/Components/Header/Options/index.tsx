@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Modal from '../../Modal';
 import style from '../index.module.scss';
+import AnimationsOption from './AnimationsOption';
 import CursorSensitivityOption from './CursorSensitivity';
 import optionsStyle from './index.module.scss';
 import KeyBindingsOption from './KeyBindingsOption';
@@ -23,12 +24,21 @@ export default function Options() {
           <button onClick={onToggle}>Close</button>
         </div>
 
-        <h2>Mouse</h2>
-        <RawInputOption />
-        <CursorSensitivityOption />
+        <div className={optionsStyle.optionsSection}>
+          <h2>Mouse</h2>
+          <RawInputOption />
+          <CursorSensitivityOption />
+        </div>
 
-        <h2>Keyboard</h2>
-        <KeyBindingsOption />
+        <div className={optionsStyle.optionsSection}>
+          <h2>Keyboard</h2>
+          <KeyBindingsOption />
+        </div>
+
+        <div className={optionsStyle.optionsSection}>
+          <h2>UI</h2>
+          <AnimationsOption />
+        </div>
       </Modal>
     </div>
   );

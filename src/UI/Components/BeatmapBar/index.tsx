@@ -41,12 +41,10 @@ type Props = {
 function BeatmapBar({ beatmap, onClick }: Props) {
   const [rendered, setRendered] = useState(false);
 
-  console.log('bar');
-
   useEffect(() => {
     const id = window.setTimeout(() => {
       setRendered(true);
-    }, 500);
+    }, 250);
 
     return () => window.clearTimeout(id);
   }, []);

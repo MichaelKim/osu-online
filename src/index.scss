@@ -2,9 +2,9 @@
 
 @font-face {
   font-family: 'Exo 2';
-  src: url('fonts/Exo2-VariableFont_wght.ttf')
-      format('truetype supports variations'),
-    url('fonts/Exo2-VariableFont_wght.ttf') format('truetype-variations');
+  src: url('fonts/Exo2-VariableFont_wght.woff2')
+      format('woff2 supports variations'),
+    url('fonts/Exo2-VariableFont_wght.woff2') format('woff2-variations');
   font-display: swap;
   font-weight: 100 900;
   font-style: normal;
@@ -12,9 +12,9 @@
 
 @font-face {
   font-family: 'Exo 2';
-  src: url('fonts/Exo2-Italic-VariableFont_wght.ttf')
-      format('truetype supports variations'),
-    url('fonts/Exo2-Italic-VariableFont_wght.ttf') format('truetype-variations');
+  src: url('fonts/Exo2-Italic-VariableFont_wght.woff2')
+      format('woff2 supports variations'),
+    url('fonts/Exo2-Italic-VariableFont_wght.woff2') format('woff2-variations');
   font-display: swap;
   font-weight: 100 900;
   font-style: italic;

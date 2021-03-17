@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { BeatmapFile } from '../../../Game';
 import { BeatmapData } from '../../../Game/Loader/BeatmapLoader';
 import BeatmapBar, { BeatmapDiffBar } from '../BeatmapBar';
+import barStyle from '../BeatmapBar/index.module.scss';
 import BeatmapInfo from '../BeatmapInfo';
 import { BeatmapFiles } from '../BeatmapUpload';
 import style from './index.module.scss';
@@ -43,9 +44,11 @@ export default function BeatmapListing({ beatmaps, onSelect }: Props) {
     for (const b of beatmaps) {
       const Bar = () => <BeatmapBar beatmap={b} onClick={onClick} />;
       items.push({
-        renderChild: Bar,
+        bar: BeatmapBar,
+        className: barStyle.bar,
         height: 126,
-        key: b.info.id + '-' + b.info.title + '-' + b.info.creator
+        key: b.info.id + '-' + b.info.title + '-' + b.info.creator,
+        renderChild: Bar
       });
 
       if (selectedBeatmap === b) {
@@ -59,9 +62,10 @@ export default function BeatmapListing({ beatmaps, onSelect }: Props) {
             />
           );
           items.push({
-            renderChild: DiffBar,
+            className: barStyle.diff,
             height: 86,
-            key: d.info.version
+            key: d.info.version,
+            renderChild: DiffBar
           });
         }
       }

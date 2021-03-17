@@ -10,6 +10,20 @@
   cursor: pointer;
 }
 
+.fadein {
+  height: 100%;
+  animation: 0.5s fade-in;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 .fade {
   background: linear-gradient(to right, #00000088 33%, #00000011);
   height: 100%;

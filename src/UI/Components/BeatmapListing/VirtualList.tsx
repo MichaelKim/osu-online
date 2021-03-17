@@ -1,107 +1,92 @@
-import { memo, useCallback, useRef, useState } from 'react';
-
-type Props = {
-  items: {
-    renderChild: () => JSX.Element;
-    height: number;
-    key: React.Key;
-  }[];
-};
-
-const useCallbackRef = <T extends HTMLElement>(
-  attach: (el: T) => void,
-  detach: (el: T) => void
-) => {
-  const ref = useRef<T | null>(null);
-  const cb = useCallback(
-    (el: T | null) => {
-      if (ref.current) detach(ref.current);
-      if (el) attach(el);
-      ref.current = el;
-    },
-    [attach, detach]
-  );
-
-  return cb;
-};
+import { Component, createRef } from 'react';
+import VirtualListItem from './VirtualListItem';
 
 type ObserverCallback = (visible: boolean) => void;
 
-type ItemProps = {
-  height: number;
-  renderChild: () => JSX.Element;
-  onAttach: (el: Element, cb: ObserverCallback) => void;
-  onDetach: (el: Element) => void;
+type Props = {
+  items: {
+    className?: string;
+    height: number;
+    key: React.Key;
+    renderChild: () => React.ReactNode;
+  }[];
 };
 
-function Item({ height, renderChild, onAttach, onDetach }: ItemProps) {
-  const [visible, setVisible] = useState(false);
-  const attach = useCallback(el => onAttach(el, setVisible), [onAttach]);
-  const ref = useCallbackRef(attach, onDetach);
+type State = {
+  offset: number;
+};
 
-  return (
-    <div ref={ref} style={{ height }}>
-      {visible && renderChild()}
-    </div>
-  );
-}
+// Functional comp requires way too many useCallbacks
+export default class VirtualList extends Component<Props, State> {
+  state = {
+    offset: 0
+  };
 
-function VirtualList({ items }: Props) {
-  const observer = useRef<IntersectionObserver>();
-  const mapping = useRef(new Map<Element, ObserverCallback>());
+  // Intersection Observer
+  private observer: IntersectionObserver | null = null;
+  // List element -> observe callback
+  private mapping = new Map<Element, ObserverCallback>();
+  // Ref to main element
+  private ref = createRef<HTMLDivElement>();
 
-  const raf = useRef(0);
+  componentDidMount() {
+    this.observer = new IntersectionObserver(this.onObserve, {
+      root: this.ref.current,
+      rootMargin: '200px'
+    });
+  }
 
-  const attach = useCallback(el => {
-    observer.current = new IntersectionObserver(
-      entries => {
-        cancelAnimationFrame(raf.current);
-        raf.current = requestAnimationFrame(() => {
-          for (const entry of entries) {
-            mapping.current.get(entry.target)?.(entry.isIntersecting);
-          }
-        });
-      },
-      {
-        root: el,
-        rootMargin: '200px'
-      }
-    );
-  }, []);
-  const detach = useCallback(() => observer.current?.disconnect(), []);
-  const ref = useCallbackRef<HTMLDivElement>(attach, detach);
+  componentWillUnmount() {
+    this.observer?.disconnect();
+  }
 
-  const onAttach = useCallback((el: Element, cb: ObserverCallback) => {
-    if (!mapping.current.has(el)) {
-      mapping.current.set(el, cb);
-      observer.current?.observe(el);
+  onObserve = (entries: IntersectionObserverEntry[]) => {
+    for (const entry of entries) {
+      this.mapping.get(entry.target)?.(entry.isIntersecting);
     }
-  }, []);
+  };
 
-  const onDetach = useCallback((el: Element) => {
-    mapping.current.delete(el);
-    observer.current?.unobserve(el);
-  }, []);
+  onScroll = ({ currentTarget: { scrollTop } }: React.UIEvent) => {
+    this.setState({ offset: scrollTop });
+  };
 
-  return (
-    <div
-      ref={ref}
-      style={{
-        flex: 1,
-        overflowY: 'scroll'
-      }}
-    >
-      {items.map(({ renderChild, height, key }) => (
-        <Item
-          key={key}
-          height={height}
-          onAttach={onAttach}
-          onDetach={onDetach}
-          renderChild={renderChild}
-        />
-      ))}
-    </div>
-  );
+  onAttach = (el: Element, cb: ObserverCallback) => {
+    if (!this.mapping.has(el)) {
+      this.mapping.set(el, cb);
+      this.observer?.observe(el);
+    }
+  };
+
+  onDetach = (el: Element) => {
+    this.mapping.delete(el);
+    this.observer?.unobserve(el);
+  };
+
+  render() {
+    const { items } = this.props;
+    const { offset } = this.state;
+
+    return (
+      <div
+        ref={this.ref}
+        style={{
+          flex: 1,
+          overflowY: 'scroll'
+        }}
+        onScroll={this.onScroll}
+      >
+        {items.map(({ className, height, key, renderChild }) => (
+          <VirtualListItem
+            className={className}
+            key={key}
+            height={height}
+            offset={offset}
+            renderChild={renderChild}
+            onAttach={this.onAttach}
+            onDetach={this.onDetach}
+          />
+        ))}
+      </div>
+    );
+  }
 }
-
-export default memo(VirtualList);

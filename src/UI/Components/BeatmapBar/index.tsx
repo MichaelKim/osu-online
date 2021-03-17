@@ -1,3 +1,4 @@
+import { memo, useEffect, useState } from 'react';
 import { BeatmapFiles, BeatmapInfo } from '../BeatmapUpload';
 import DifficultyCircle from '../DifficultyCircle';
 import style from './index.module.scss';
@@ -9,12 +10,7 @@ type DiffProps = {
   onClick: (version: string) => void;
 };
 
-export function BeatmapDiffBar({
-  beatmapID,
-  creator,
-  diff,
-  onClick
-}: DiffProps) {
+function DiffBar({ beatmapID, creator, diff, onClick }: DiffProps) {
   const _onClick = () => onClick(diff.version);
 
   return (
@@ -35,38 +31,58 @@ export function BeatmapDiffBar({
   );
 }
 
+export const BeatmapDiffBar = memo(DiffBar);
+
 type Props = {
   beatmap: BeatmapFiles;
   onClick: (beatmap: BeatmapFiles) => void;
 };
 
-export default function BeatmapBar({ beatmap, onClick }: Props) {
-  const _onClick = () => onClick(beatmap);
+function BeatmapBar({ beatmap, onClick }: Props) {
+  const [rendered, setRendered] = useState(false);
 
-  // const background = beatmap.info.background;
+  console.log('bar');
+
+  useEffect(() => {
+    const id = window.setTimeout(() => {
+      setRendered(true);
+    }, 500);
+
+    return () => window.clearTimeout(id);
+  }, []);
+
+  if (!rendered) {
+    return <div className={style.bar} />;
+  }
+
+  const _onClick = () => onClick(beatmap);
+  const background = beatmap.info.background;
   return (
-    <div
-      className={style.bar}
-      // style={{
-      //   backgroundImage: background ? `url(${background})` : ''
-      // }}
-      onClick={_onClick}
-    >
-      <div className={style.fade}>
-        <p className={style.title}>{beatmap.info.title}</p>
-        <p className={style.artist}>{beatmap.info.artist}</p>
-        <div className={style.diffCircleBox}>
-          {beatmap.difficulties.map(d => (
-            <DifficultyCircle
-              key={d.info.version}
-              size={16}
-              beatmapID={beatmap.info.id}
-              version={d.info.version}
-              stars={d.info.stars}
-            />
-          ))}
+    <div className={style.bar} onClick={_onClick}>
+      <div
+        className={style.fadein}
+        style={{
+          backgroundImage: background ? `url(${background})` : ''
+        }}
+      >
+        <div className={style.fade}>
+          <p className={style.title}>{beatmap.info.title}</p>
+          <p className={style.artist}>{beatmap.info.artist}</p>
+          <div className={style.diffCircleBox}>
+            {beatmap.difficulties.map(d => (
+              <DifficultyCircle
+                key={d.info.version}
+                size={16}
+                beatmapID={beatmap.info.id}
+                version={d.info.version}
+                stars={d.info.stars}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </div>
   );
 }
+
+export default memo(BeatmapBar);

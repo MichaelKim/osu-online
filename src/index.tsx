@@ -18,7 +18,7 @@ function App() {
   return (
     <div className='center'>
       <div id='osu-circle' onClick={onClick}>
-        <input type='image' id='start' alt='Start' src='osu.png' />
+        <input type='image' id='start' alt='Start' src='osu.webp' />
       </div>
     </div>
   );

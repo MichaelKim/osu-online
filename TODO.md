@@ -4,3 +4,4 @@
 - breaks
 - preview audio
 - skin change
+- song end

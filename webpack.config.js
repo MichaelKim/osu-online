@@ -8,6 +8,7 @@ const path = require('path');
 const TerserPlugin = require('terser-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 
 module.exports = async (env, argv) => {
   const isDev = argv.mode !== 'production';
@@ -99,7 +100,7 @@ module.exports = async (env, argv) => {
           ]
         },
         {
-          test: /\.(ttf|png)$/i,
+          test: /\.(ttf|woff2|png|webp)$/i,
           type: 'asset/resource'
         }
       ]
@@ -161,7 +162,7 @@ module.exports = async (env, argv) => {
         })
       ]
     };
-    config.plugins.push(new CleanWebpackPlugin());
+    config.plugins.push(new CleanWebpackPlugin(), new BundleAnalyzerPlugin());
   }
 
   return config;

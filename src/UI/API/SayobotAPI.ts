@@ -8,8 +8,8 @@ export enum SayobotListType {
 export enum SayobotListMode {
   STD = 1,
   TAIKO = 2,
-  CTB = 3,
-  MANIA = 4
+  CTB = 4,
+  MANIA = 5 // 8?
 }
 
 export enum SayobotListClass {
@@ -154,6 +154,11 @@ async function getBeatmapInfo(sid: number): Promise<BeatmapInfo> {
 
 export async function getSayobotBeatmaps(options: Partial<BeatmapListOptions>) {
   const list = await getBeatmapList(options);
-  const data = await Promise.all(list.data.map(d => getBeatmapInfo(d.sid)));
+  const data = await Promise.all(
+    list.data
+      // Mode search filter doesn't work
+      .filter(d => d.modes & SayobotListMode.STD)
+      .map(d => getBeatmapInfo(d.sid))
+  );
   return data.map(d => d.data);
 }

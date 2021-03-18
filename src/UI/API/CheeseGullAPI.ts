@@ -120,11 +120,14 @@ export async function getBeatmapList(
   );
   const json: CheeseGullSet[] = await res.json();
 
-  json.forEach(set => {
+  // Certain search results are null
+  const validMaps = json.filter(set => set.ChildrenBeatmaps);
+
+  validMaps.forEach(set => {
     set.ChildrenBeatmaps.sort(
       (a, b) => a.DifficultyRating - b.DifficultyRating
     );
   });
 
-  return json;
+  return validMaps;
 }

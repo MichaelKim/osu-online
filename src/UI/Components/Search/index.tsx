@@ -22,6 +22,7 @@ export default function Search({ value, onChange }: Props) {
       className={style.searchInput}
       value={value}
       onChange={_onChange}
+      autoFocus
     />
   );
 }

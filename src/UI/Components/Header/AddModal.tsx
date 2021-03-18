@@ -48,7 +48,8 @@ export default function AddModal({ onAdd }: Props) {
           </label>
           <button onClick={onToggle}>Close</button>
         </div>
-        <Search value={keyword} onChange={setKeyword} />
+        {/* Reload Search for autofocus */}
+        {showModal && <Search value={keyword} onChange={setKeyword} />}
         <div className={style.section}>
           <Server search={keyword} onSelect={onAdd} />
         </div>

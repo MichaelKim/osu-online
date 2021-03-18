@@ -28,6 +28,7 @@ export default class InputController {
   }
 
   start() {
+    window.addEventListener('contextmenu', this.onContextMenu);
     window.addEventListener('mousedown', this.onDown);
     window.addEventListener('mouseup', this.onUp);
     window.addEventListener('keydown', this.onKeyDown);
@@ -36,10 +37,18 @@ export default class InputController {
   }
 
   stop() {
+    window.removeEventListener('contextmenu', this.onContextMenu);
     window.removeEventListener('mousedown', this.onDown);
     window.removeEventListener('mouseup', this.onUp);
+    window.removeEventListener('keydown', this.onKeyDown);
+    window.removeEventListener('keyup', this.onKeyUp);
+    window.removeEventListener('mousemove', this.onMove);
     this.events = [];
   }
+
+  private onContextMenu = (e: MouseEvent) => {
+    e.preventDefault();
+  };
 
   private onKeyDown = (e: KeyboardEvent) => {
     // Ignore repeated events from holding key down

@@ -1,5 +1,5 @@
-import JSZip from 'jszip';
 import { useCallback, useRef } from 'react';
+import { parse } from 'uzip';
 
 export function useDebounce(delay: number) {
   const id = useRef<number>(0);
@@ -19,25 +19,19 @@ export function useDebounce(delay: number) {
 export async function fetchOSZ(url: string) {
   const res = await fetch(url);
   const blob = await res.blob();
-  const zip = await JSZip.loadAsync(blob);
+  const buffer = await blob.arrayBuffer();
 
-  const files = await Promise.all(
-    Object.values(zip.files).map(async f => ({
-      file: f,
-      blob: await f.async('blob')
-    }))
-  );
+  const data = parse(buffer);
+  const files = Object.entries(data).map(([name, arr]) => ({
+    name,
+    blob: new Blob([arr])
+  }));
 
   // Find all .osu files
   const diffFiles = files
-    .filter(f => f.file.name.endsWith('.osu'))
-    .map(f => f.blob);
-  const otherFiles = files
-    .filter(f => !f.file.name.endsWith('.osu'))
-    .map(f => ({
-      name: f.file.name,
-      blob: f.blob
-    }));
+    .filter(({ name }) => name.endsWith('.osu'))
+    .map(({ blob }) => blob);
+  const otherFiles = files.filter(({ name }) => !name.endsWith('.osu'));
 
   return { diffFiles, otherFiles };
 }

@@ -42,12 +42,24 @@ export default function Root({ supportsRawInput }: Props) {
         setGameLoaded(true);
       }
 
-      // Load beatmap
-      if (await game.current.loadBeatmap(data, files)) {
-        setPlaying(true);
-        setPaused(false);
-        game.current.play();
+      // Get background image
+      const bgFile = files.find(f => f.name === data.background.filename);
+      if (bgFile == null) {
+        console.warn('Missing background image:', data.background.filename);
       }
+
+      // Get audio
+      const audioFile = files.find(f => f.name === data.audioFilename);
+      if (audioFile == null) {
+        alert("This beatmap is missing its audio file and can't be played!");
+        return;
+      }
+
+      // Load beatmap
+      await game.current.loadBeatmap(data, bgFile, audioFile);
+      setPlaying(true);
+      setPaused(false);
+      game.current.play();
     },
     [gameLoaded]
   );

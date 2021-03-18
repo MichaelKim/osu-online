@@ -59,20 +59,11 @@ export default class Game {
     );
   }
 
-  async loadBeatmap(data: BeatmapData, files: BeatmapFile[]) {
-    // Get background image
-    const bgFile = files.find(f => f.name === data.background.filename);
-    if (bgFile == null) {
-      console.warn('Missing background image:', data.background.filename);
-    }
-
-    // Get audio
-    const audioFile = files.find(f => f.name === data.audioFilename);
-    if (audioFile == null) {
-      console.error('Missing audio file!');
-      return false;
-    }
-
+  async loadBeatmap(
+    data: BeatmapData,
+    bgFile: BeatmapFile | undefined,
+    audioFile: BeatmapFile
+  ) {
     // Load background image
     bgFile && (await this.background.loadBeatmap(bgFile.blob));
 

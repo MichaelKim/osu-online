@@ -24,7 +24,7 @@ export default function Sayobot({ search, onSelect }: Props) {
       getSayobotBeatmaps({
         limit: LIMIT,
         offset,
-        type: keyword === '' ? SayobotListType.NEW : SayobotListType.SEARCH,
+        type: keyword === '' ? SayobotListType.HOT : SayobotListType.SEARCH,
         keyword,
         mode: SayobotListMode.STD,
         class: SayobotListClass.RANKED

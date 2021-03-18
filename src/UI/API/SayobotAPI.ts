@@ -1,6 +1,6 @@
 export enum SayobotListType {
   HOT = 1,
-  NEW = 2,
+  NEW = 2, // This ignores mode filter
   PACKS = 3,
   SEARCH = 4
 }
@@ -154,11 +154,13 @@ async function getBeatmapInfo(sid: number): Promise<BeatmapInfo> {
 
 export async function getSayobotBeatmaps(options: Partial<BeatmapListOptions>) {
   const list = await getBeatmapList(options);
-  const data = await Promise.all(
-    list.data
-      // Mode search filter doesn't work
-      .filter(d => d.modes & SayobotListMode.STD)
-      .map(d => getBeatmapInfo(d.sid))
-  );
+  if (list.data == null) {
+    return [];
+  }
+
+  // Mode search filter doesn't perfectly work
+  const stdMaps = list.data.filter(d => d.modes & SayobotListMode.STD);
+
+  const data = await Promise.all(stdMaps.map(d => getBeatmapInfo(d.sid)));
   return data.map(d => d.data);
 }

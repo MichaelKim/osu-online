@@ -32,7 +32,8 @@ export async function fetchRipple(
   cheeseGullInfo: CheeseGullSet
 ): Promise<BeatmapFiles> {
   const { diffFiles, otherFiles } = await fetchOSZ(
-    'https://storage.ripple.moe/d/' + cheeseGullInfo.SetID
+    'https://txy1.sayobot.cn/beatmaps/download/mini/' + cheeseGullInfo.SetID
+    // 'https://storage.ripple.moe/d/' + cheeseGullInfo.SetID
   );
 
   // Parse diffs

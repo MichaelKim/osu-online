@@ -46,6 +46,26 @@
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
+
+  button {
+    line-height: 30px;
+  }
+
+  label {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  select {
+    height: 40px;
+    margin-left: 4px;
+    background-color: #495464;
+    color: #f4f4f2;
+    border: 1px solid #e8e8e8;
+    font-family: 'Exo 2';
+    font-size: 1em;
+  }
 }
 
 .section {

@@ -67,7 +67,9 @@ export default function BeatmapCard({ beatmap, onSelect }: Props) {
       <div className={style.cardBox}>
         <div
           className={style.cardUpper}
-          style={beatmap.bg ? { backgroundImage: `url(${beatmap.bg})` } : {}}
+          style={{
+            backgroundImage: `url(${beatmap.bg}), url('default-bg.webp')`
+          }}
         >
           <div className={style.cardUpperBox}>
             <p>{beatmap.artist}</p>

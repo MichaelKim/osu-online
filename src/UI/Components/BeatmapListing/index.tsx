@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'preact/hooks';
 import { BeatmapFile } from '../../../Game';
 import { BeatmapData } from '../../../Game/Loader/BeatmapLoader';
 import BeatmapBar, { BeatmapDiffBar } from '../BeatmapBar';
@@ -14,8 +14,10 @@ type Props = {
 };
 
 export default function BeatmapListing({ beatmaps, onSelect }: Props) {
-  const [selectedBeatmap, setSelected] = useState<BeatmapFiles>();
-  const [selectedVersion, setVersion] = useState<string>();
+  const [selectedBeatmap, setSelected] = useState<BeatmapFiles | undefined>(
+    undefined
+  );
+  const [selectedVersion, setVersion] = useState<string | undefined>(undefined);
 
   const onClick = useCallback(
     (beatmap: BeatmapFiles) => {

@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { useContext } from 'preact/hooks';
 import OptionsContext from '../../../options';
 import style from './index.module.scss';
 

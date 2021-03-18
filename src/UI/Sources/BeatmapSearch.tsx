@@ -1,4 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { ComponentChildren } from 'preact';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import LoadingCircle from '../Components/LoadingCircle';
 import { useDebounce } from '../util';
 
@@ -6,7 +7,7 @@ type Props<T> = {
   search: string;
   limit: number;
   onSearch: (keyword: string, offset: number) => Promise<T[]>;
-  children: (beatmap: T) => React.ReactNode;
+  children: (beatmap: T) => ComponentChildren;
 };
 
 export default function BeatmapSearch<T>({

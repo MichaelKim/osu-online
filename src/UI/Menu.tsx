@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState } from 'preact/hooks';
 import { BeatmapFile } from '../Game';
 import { BeatmapData } from '../Game/Loader/BeatmapLoader';
 import BeatmapListing from './Components/BeatmapListing';

@@ -1,5 +1,5 @@
 import JSZip from 'jszip';
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef } from 'preact/hooks';
 
 export function useDebounce(delay: number) {
   const id = useRef<number>(0);

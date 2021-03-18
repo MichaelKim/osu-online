@@ -37,15 +37,18 @@ module.exports = async (env, argv) => {
               presets: [
                 '@babel/preset-env',
                 [
-                  '@babel/preset-react',
+                  '@babel/preset-typescript',
                   {
-                    runtime: 'automatic'
+                    jsxPragma: 'h'
                   }
-                ],
-                '@babel/preset-typescript'
+                ]
               ],
               plugins: [
                 'const-enum',
+                [
+                  '@babel/plugin-transform-react-jsx',
+                  { runtime: 'automatic', importSource: 'preact' }
+                ],
                 [
                   '@babel/plugin-transform-typescript',
                   { allowDeclareFields: true }
@@ -106,7 +109,12 @@ module.exports = async (env, argv) => {
       ]
     },
     resolve: {
-      extensions: ['.ts', '.js', '.tsx']
+      extensions: ['.ts', '.js', '.tsx'],
+      alias: {
+        react: 'preact/compat',
+        'react-dom/test-utils': 'preact/test-utils',
+        'react-dom': 'preact/compat'
+      }
     },
     plugins: [
       new HtmlWebpackPlugin({
@@ -130,7 +138,8 @@ module.exports = async (env, argv) => {
       new MiniCssExtractPlugin({
         filename: isDev ? '[name].css' : '[name].[contenthash].css',
         chunkFilename: isDev ? '[id].css' : '[id].[contenthash].css'
-      })
+      }),
+      new BundleAnalyzerPlugin()
     ],
     stats: {
       colors: true
@@ -162,7 +171,7 @@ module.exports = async (env, argv) => {
         })
       ]
     };
-    config.plugins.push(new CleanWebpackPlugin(), new BundleAnalyzerPlugin());
+    config.plugins.push(new CleanWebpackPlugin());
   }
 
   return config;

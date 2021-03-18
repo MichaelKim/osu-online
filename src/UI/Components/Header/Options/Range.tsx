@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from 'preact/hooks';
 import ReactTooltip from 'react-tooltip';
 import { useDebounce } from '../../../util';
 import style from './index.module.scss';
@@ -23,10 +23,11 @@ export default function Range({
   const [value, setValue] = useState(initialValue);
   const debounce = useDebounce(50);
 
-  const onInput = (e: React.FormEvent<HTMLInputElement>) => {
-    const newValue = parseFloat(e.currentTarget.value);
+  const onInput = (e: Event) => {
+    const { value } = e.currentTarget as HTMLInputElement;
+    const newValue = parseFloat(value);
     setValue(newValue);
-    debounce(onChange, value);
+    debounce(onChange, newValue);
   };
 
   return (

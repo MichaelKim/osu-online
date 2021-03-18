@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'preact/hooks';
 import OptionsContext from '../../../options';
 import Modal from '../../Modal';
 import style from './index.module.scss';

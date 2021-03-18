@@ -1,4 +1,4 @@
-import { createContext } from 'react';
+import { createContext } from 'preact';
 
 export enum CursorType {
   DEFAULT, // Nothing

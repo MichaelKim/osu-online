@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState } from 'preact/hooks';
 import BeatmapUpload, { BeatmapFiles } from '../BeatmapUpload';
 import Modal from '../Modal';
 import style from './index.module.scss';

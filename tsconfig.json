@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "jsx": "react-jsx",
+    "jsxImportSource": "preact",
     "isolatedModules": true,
     "lib": ["ES2019", "DOM"],
     "target": "ES2019",

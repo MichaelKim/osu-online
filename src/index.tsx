@@ -1,5 +1,5 @@
-import { StrictMode, useState } from 'react';
-import ReactDOM from 'react-dom';
+import { render } from 'preact';
+import { useState } from 'preact/hooks';
 import { checkUnadjusted } from './Game/lock';
 import './index.scss';
 import Root from './UI';
@@ -24,9 +24,5 @@ function App() {
   );
 }
 
-ReactDOM.render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-  document.getElementById('app')
-);
+const app = document.getElementById('app');
+app && render(<App />, app);

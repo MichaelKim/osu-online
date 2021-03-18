@@ -1,11 +1,11 @@
-import { Component, createRef } from 'react';
+import { Component, createRef, ComponentChildren } from 'preact';
 
 type ItemProps = {
   className?: string;
   height: number;
   offset: number;
   animations: boolean;
-  renderChild: () => React.ReactNode;
+  renderChild: () => ComponentChildren;
   onAttach: (el: Element, cb: (visible: boolean) => void) => void;
   onDetach: (el: Element) => void;
 };

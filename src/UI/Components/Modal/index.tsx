@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { ComponentChildren } from 'preact';
+import { useEffect, useState } from 'preact/hooks';
 import style from './index.module.scss';
 
 type Props = {
-  children: React.ReactNode;
+  children: ComponentChildren;
   visible: boolean;
   keepOpen?: boolean;
   className?: string;
@@ -18,10 +19,9 @@ export default function Modal({
 }: Props) {
   const [loaded, setLoaded] = useState(false);
 
-  const onModalClick = (e: React.MouseEvent<HTMLDivElement>) =>
-    e.stopPropagation();
+  const onModalClick = (e: MouseEvent) => e.stopPropagation();
 
-  const _onExit = (e: React.MouseEvent<HTMLDivElement>) => {
+  const _onExit = (e: MouseEvent) => {
     e.stopPropagation();
     onExit();
   };

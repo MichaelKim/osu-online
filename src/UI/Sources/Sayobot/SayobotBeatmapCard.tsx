@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback } from 'preact/hooks';
 import { SayobotBeatmapInfo } from '../../API/SayobotAPI';
 import BeatmapCard from '../../Components/BeatmapCard';
 

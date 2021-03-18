@@ -19,8 +19,7 @@
   },
   "settings": {
     "react": {
-      "pragma": "React",
-      "version": "detect"
+      "pragma": "h"
     }
   }
 }

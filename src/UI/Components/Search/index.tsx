@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { useCallback } from 'preact/hooks';
 import style from './index.module.scss';
 
 type Props = {
@@ -7,9 +7,9 @@ type Props = {
 };
 
 export default function Search({ value, onChange }: Props) {
-  const _onChange = React.useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const { value } = e.currentTarget;
+  const _onChange = useCallback(
+    (e: Event) => {
+      const { value } = e.currentTarget as HTMLInputElement;
       onChange(value);
     },
     [onChange]

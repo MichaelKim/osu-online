@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from 'preact/hooks';
 import { BeatmapFile } from '../../../Game';
 import {
   BeatmapData,
@@ -90,9 +90,8 @@ export default function BeatmapUpload({ onSelect }: Props) {
     onSelect(beatmaps);
   };
 
-  const onChange = ({
-    target: { files }
-  }: React.ChangeEvent<HTMLInputElement>) => {
+  const onChange = (e: Event) => {
+    const { files } = e.target as HTMLInputElement;
     if (files == null) {
       return;
     }
@@ -100,17 +99,17 @@ export default function BeatmapUpload({ onSelect }: Props) {
     loadBeatmaps(getFilesFromInput(files));
   };
 
-  const onDragEnter = (e: React.DragEvent) => {
+  const onDragEnter = (e: DragEvent) => {
     e.preventDefault();
     setDragging(true);
   };
 
-  const onDragLeave = (e: React.DragEvent) => {
+  const onDragLeave = (e: DragEvent) => {
     e.preventDefault();
     setDragging(false);
   };
 
-  const onDrop = async (e: React.DragEvent) => {
+  const onDrop = async (e: DragEvent) => {
     e.preventDefault();
     setDragging(false);
 

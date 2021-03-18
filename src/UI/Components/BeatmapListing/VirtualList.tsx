@@ -1,5 +1,6 @@
-import { Component, createRef } from 'react';
-import OptionsContext from '../../options';
+import { Component, createRef, ComponentChildren, Key } from 'preact';
+import { JSXInternal } from 'preact/src/jsx';
+import OptionsContext, { Options } from '../../options';
 import VirtualListItem from './VirtualListItem';
 
 type ObserverCallback = (visible: boolean) => void;
@@ -8,8 +9,8 @@ type Props = {
   items: {
     className?: string;
     height: number;
-    key: React.Key;
-    renderChild: () => React.ReactNode;
+    key: Key;
+    renderChild: () => ComponentChildren;
   }[];
 };
 
@@ -20,7 +21,8 @@ type State = {
 // Functional comp requires way too many useCallbacks
 export default class VirtualList extends Component<Props, State> {
   static contextType = OptionsContext;
-  declare context: React.ContextType<typeof OptionsContext>;
+  declare context: Options;
+  refs = {};
 
   state = {
     offset: 0
@@ -50,7 +52,9 @@ export default class VirtualList extends Component<Props, State> {
     }
   };
 
-  onScroll = ({ currentTarget: { scrollTop } }: React.UIEvent) => {
+  onScroll: JSXInternal.UIEventHandler<HTMLDivElement> = ({
+    currentTarget: { scrollTop }
+  }) => {
     this.setState({ offset: scrollTop });
   };
 

@@ -27,6 +27,32 @@ enum State {
   ADDED
 }
 
+function DiffCircles({ beatmap }: { beatmap: BeatmapInfo }) {
+  if (beatmap.diffs.length <= 10) {
+    return (
+      <>
+        {beatmap.diffs.map(d => (
+          <DifficultyCircle
+            key={d.version}
+            beatmapID={beatmap.id}
+            version={d.version}
+            stars={d.stars}
+          />
+        ))}
+      </>
+    );
+  }
+
+  const lastDiff = beatmap.diffs[beatmap.diffs.length - 1];
+
+  return (
+    <>
+      <DifficultyCircle beatmapID={beatmap.id} stars={lastDiff.stars} />
+      <p>{beatmap.diffs.length}</p>
+    </>
+  );
+}
+
 export default function BeatmapCard({ beatmap, onSelect }: Props) {
   const [state, setState] = useState(State.NONE);
 
@@ -52,14 +78,7 @@ export default function BeatmapCard({ beatmap, onSelect }: Props) {
           <div className={style.cardLowerInfo}>
             <p>Mapped by {beatmap.creator}</p>
             <div className={style.cardLowerDiffs}>
-              {beatmap.diffs.map(d => (
-                <DifficultyCircle
-                  key={d.version}
-                  beatmapID={beatmap.id}
-                  version={d.version}
-                  stars={d.stars}
-                />
-              ))}
+              <DiffCircles beatmap={beatmap} />
             </div>
           </div>
           <div className={style.addBox}>

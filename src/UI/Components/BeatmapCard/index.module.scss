@@ -56,7 +56,14 @@
 .cardLowerDiffs {
   display: flex;
   flex-direction: row;
+  align-items: center;
+  height: 20px;
   margin: 2px 0;
+
+  // Difficulty count
+  p {
+    line-height: 20px;
+  }
 }
 
 .addBox {

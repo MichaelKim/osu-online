@@ -162,7 +162,12 @@ module.exports = async (env, argv) => {
         })
       ]
     };
-    config.plugins.push(new CleanWebpackPlugin(), new BundleAnalyzerPlugin());
+    config.plugins.push(
+      new CleanWebpackPlugin({
+        cleanOnceBeforeBuildPatterns: ['**/*', '!.git/**', '!.static']
+      }),
+      new BundleAnalyzerPlugin()
+    );
   }
 
   return config;

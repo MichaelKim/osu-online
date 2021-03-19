@@ -102,6 +102,7 @@ export default class Spinner {
     this.lastSpins = 0;
     this.drawnAngle = 0;
     this.text.text = '';
+    this.finished = 0;
 
     this.counter.reset();
   }
@@ -113,26 +114,6 @@ export default class Spinner {
   setVisible(visible: boolean) {
     this.s.container.visible = visible;
     this.text.visible = visible;
-  }
-
-  restart(stage: PIXI.Container) {
-    this.s = loadSpinnerSprites(this.o, this.skin);
-    this.text = new PIXI.Text('', {
-      fill: 0xffffff,
-      fontSize: 24,
-      align: 'center'
-    });
-    this.addToStage(stage);
-    this.down = false;
-    this.rotations = 0;
-    this.position = { x: 0, y: 0 };
-    this.lastAngle = 0;
-    this.lastTime = 0;
-    this.currentRotations = 0;
-    this.lastSpins = 0;
-    this.counter = new SpinnerCounter();
-    this.drawnAngle = 0;
-    this.finished = 0;
   }
 
   get start() {

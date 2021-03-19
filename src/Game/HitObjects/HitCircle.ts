@@ -76,13 +76,6 @@ export default class HitCircle {
     this.s.container.visible = visible;
   }
 
-  restart(stage: PIXI.Container) {
-    this.s = loadHitCircleSprites(this.o, this.beatmap, this.skin);
-    this.addToStage(stage);
-    this.setVisible(false);
-    this.finished = 0;
-  }
-
   get enter() {
     return this.o.t - this.fadeTime;
   }

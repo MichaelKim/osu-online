@@ -8,6 +8,5 @@
 - add more time at start of game
 - skip intro
 - spinner bonus
-- fix spinner on retry
 - add official osu api search (server needed, add cors!)
 - default beatmaps

@@ -7,7 +7,7 @@ import Cursor from './Cursor';
 import FollowPointController from './FollowPointController';
 import InputController, { InputType } from './InputController';
 import { BeatmapData } from './Loader/BeatmapLoader';
-import { lockPointer } from './lock';
+import { lockPointer, unlockPointer } from './lock';
 import OptionsController from './OptionsController';
 import Renderer from './Renderer';
 import ResumeController from './ResumeController';
@@ -19,6 +19,10 @@ export type BeatmapFile = {
   blob: Blob;
 };
 
+type Stats = {
+  score: number;
+};
+
 export default class Game {
   private renderer: Renderer;
   private input: InputController;
@@ -28,12 +32,17 @@ export default class Game {
   private background: BackgroundController;
   private options: OptionsController;
 
+  private doneCallback?: (stats: Stats) => void;
+
   // Based on skin
   private cursor!: Cursor; // TODO: is there a better way than using !
   private beatmap!: Beatmap;
   private gameState!: GameState;
   private followPoint!: FollowPointController;
   private resumer!: ResumeController;
+
+  // Gameplay state
+  private isFinished = 0;
 
   constructor(private view: HTMLCanvasElement) {
     this.renderer = new Renderer(view);
@@ -162,9 +171,26 @@ export default class Game {
     this.gameState.update(time);
     this.followPoint.update(time);
     this.renderer.render();
+
+    if (this.isFinished === 0 && time >= this.beatmap.endTime()) {
+      // Run once
+      console.log('notes done');
+      this.isFinished = time;
+    } else if (this.isFinished > 0 && time > this.isFinished + 2000) {
+      this.done();
+    }
   };
 
+  onDone(callback: (stats: Stats) => void) {
+    this.doneCallback = callback;
+  }
+
   async pause() {
+    if (this.isFinished > 0) {
+      await this.done();
+      return;
+    }
+
     this.audio.pause();
     this.cursor.showCursor();
     this.resumer.pause(this.cursor.getPosition());
@@ -204,6 +230,15 @@ export default class Game {
 
     // @ts-expect-error: delete
     this.beatmap = null;
+  }
+
+  async done() {
+    console.log('done');
+    this.quit();
+    await unlockPointer();
+    this.doneCallback?.({
+      score: 1
+    });
   }
 
   isPlaying() {

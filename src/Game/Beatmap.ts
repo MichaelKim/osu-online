@@ -69,6 +69,10 @@ export default class Beatmap {
     }
   }
 
+  endTime() {
+    return this.notes[this.notes.length - 1].endTime;
+  }
+
   mousedown(time: number, position: IPointData) {
     // Ignore if no notes are currently visible
     if (this.left >= this.right) return;

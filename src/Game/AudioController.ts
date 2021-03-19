@@ -10,6 +10,8 @@ export default class AudioController {
   private resumeTime = 0; // When the audio was last resumed
   private current?: PIXISound.Sound;
 
+  private complete = 0;
+
   // async load(filename: string) {
   //   console.log('load', filename);
   //   if (!filename) {
@@ -55,7 +57,17 @@ export default class AudioController {
       return;
     }
 
-    await this.current.play();
+    this.complete = 0;
+    await this.current.play({
+      complete: () => {
+        console.log('audio done');
+        this.complete =
+          this.getCurrentTime() -
+          this.resumeTime +
+          this.elapsedTime -
+          performance.now();
+      }
+    });
     this.resumeTime = this.getCurrentTime();
     this.elapsedTime = 0;
   }
@@ -66,6 +78,10 @@ export default class AudioController {
   }
 
   getTime() {
+    if (this.complete > 0) {
+      return this.complete + performance.now();
+    }
+
     if (this.current?.isPlaying) {
       return this.getCurrentTime() - this.resumeTime + this.elapsedTime;
     }

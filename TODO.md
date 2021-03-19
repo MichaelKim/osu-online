@@ -4,9 +4,10 @@
 - breaks
 - preview audio
 - skin change
-- song end
 - add more time at start of game
 - skip intro
 - spinner bonus
 - add official osu api search (server needed, add cors!)
 - default beatmaps
+- exiting fullscreen while game loading isn't detected
+- show end game stats

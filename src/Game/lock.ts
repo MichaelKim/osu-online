@@ -24,6 +24,11 @@ export async function lockPointer(
   await promise;
 }
 
+export async function unlockPointer() {
+  await document.exitFullscreen();
+  document.exitPointerLock();
+}
+
 // Check if browser supports unadjusted movement pointer lock
 export async function checkUnadjusted(): Promise<boolean> {
   return new Promise(resolve => {

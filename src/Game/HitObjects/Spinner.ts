@@ -124,6 +124,10 @@ export default class Spinner {
     return this.o.t;
   }
 
+  get endTime() {
+    return this.o.endTime;
+  }
+
   private getHitResult() {
     const progress = this.rotations / this.o.rotationsNeeded;
     if (progress >= 1) {

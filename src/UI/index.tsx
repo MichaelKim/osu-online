@@ -34,6 +34,15 @@ export default function Root({ supportsRawInput }: Props) {
     game.current.setOptions(options);
   }, [options]);
 
+  // Game done callback
+  useEffect(() => {
+    game.current.onDone(stats => {
+      console.log(stats);
+      setPlaying(false);
+      setPaused(false);
+    });
+  }, []);
+
   const onPlay = useCallback(
     async (data: BeatmapData, files: BeatmapFile[]) => {
       // Load game

@@ -174,6 +174,7 @@ export default class Game {
   async resume() {
     await lockPointer(this.view, this.options.options.cursorType);
     this.cursor.hideCursor();
+    this.input.start();
     this.resumer.startResume();
   }
 
@@ -187,6 +188,7 @@ export default class Game {
     await lockPointer(this.view, this.options.options.cursorType);
     this.cursor.hideCursor();
     await this.audio.play();
+    this.input.start();
   }
 
   quit() {

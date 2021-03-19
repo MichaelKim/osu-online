@@ -1,6 +1,68 @@
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import OptionsContext, { CursorType } from '../../../options';
+import Modal from '../../Modal';
 import style from './index.module.scss';
+
+function RawInputNotSupported() {
+  const [showModal, setModal] = useState(false);
+  const onToggle = () => setModal(m => !m);
+
+  return (
+    <div className={style.rowItem}>
+      <p>Your browser does not support disabling mouse acceleration!</p>{' '}
+      <button onClick={onToggle}>Why?</button>
+      <Modal
+        visible={showModal}
+        onExit={onToggle}
+        className={style.mouseAccelerationModal}
+      >
+        <button onClick={onToggle}>Close</button>
+        <p>
+          Disabling mouse acceleration is a new browser feature and is only
+          available on Chrome 88+.
+        </p>
+        <br />
+        <p>
+          To disable mouse acceleration, go to <em>chrome://flags</em> and
+          search for <b>Enables pointer lock options</b>. Enable the{' '}
+          <em>flags/#enable-pointer-lock-options</em> flag and restart Chrome.
+        </p>
+        <br />
+        <p>
+          Alternatively, try turning off mouse acceleration within your OS&apos;
+          settings.
+        </p>
+        <ul>
+          <li>
+            For Windows, go to Control Panel &gt; Mouse &gt; Pointer Options
+            &gt; uncheck <b>Enhance pointer precision</b>.
+          </li>
+          <li>
+            For MacOS, open Terminal and enter{' '}
+            <code>
+              defaults write .GlobalPreferences com.apple.mouse.scaling -1
+            </code>
+            .
+          </li>
+          <li>
+            For Chrome OS, go to Settings &gt; Device &gt; Mouse and touchpad.
+          </li>
+        </ul>
+        <p>
+          See{' '}
+          <a
+            href='https://web.dev/disable-mouse-acceleration'
+            target='_blank'
+            rel='noreferrer'
+          >
+            this
+          </a>{' '}
+          for more details.
+        </p>
+      </Modal>
+    </div>
+  );
+}
 
 export default function RawInputOption() {
   const { cursorType, supportsRawInput, setOptions } = useContext(
@@ -36,16 +98,7 @@ export default function RawInputOption() {
           readOnly
         />
       </div>
-      {!supportsRawInput && (
-        <p>
-          To disable mouse acceleration, use Chrome and enable the{' '}
-          <em>chrome://flags/#enable-pointer-lock-options</em> flag. See{' '}
-          <a href='https://www.chromestatus.com/feature/5723553087356928'>
-            this
-          </a>{' '}
-          for more details.
-        </p>
-      )}
+      {!supportsRawInput && <RawInputNotSupported />}
       <div
         className={supportsRawInput ? style.rowItem : style.disabledRowItem}
         onClick={onRaw}

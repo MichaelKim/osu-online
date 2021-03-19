@@ -54,7 +54,11 @@ export default class VirtualListItem extends Component<ItemProps, ItemState> {
     const { className, height, offset, animations, renderChild } = this.props;
     const { top, visible } = this.state;
 
-    const pos = Math.min(Math.max(0, (top - offset) / window.innerHeight), 1);
+    const realTop = this.ref.current?.offsetTop ?? top;
+    const pos = Math.min(
+      Math.max(0, (realTop - offset) / window.innerHeight),
+      1
+    );
     const x = animations ? 60 * (pos - 0.5) * (pos - 0.5) : 0;
 
     return (

@@ -42,6 +42,7 @@ export default class Game {
   private resumer!: ResumeController;
 
   // Gameplay state
+  private _isPlaying = false;
   private isFinished = 0;
 
   constructor(private view: HTMLCanvasElement) {
@@ -101,6 +102,8 @@ export default class Game {
       return;
     }
 
+    this._isPlaying = true;
+
     this.view.style.display = 'block';
     await lockPointer(this.view, this.options.options.cursorType);
     this.cursor.hideCursor();
@@ -108,6 +111,11 @@ export default class Game {
     await this.audio.play();
     this.clock.start();
     this.input.start();
+
+    // In case the game paused while loading
+    if (!this._isPlaying) {
+      this.pause();
+    }
   }
 
   update = (time: number) => {
@@ -136,7 +144,7 @@ export default class Game {
       return;
     }
 
-    if (!this.isPlaying()) {
+    if (!this._isPlaying) {
       this.renderer.render();
       return;
     }
@@ -174,9 +182,8 @@ export default class Game {
 
     if (this.isFinished === 0 && time >= this.beatmap.endTime()) {
       // Run once
-      console.log('notes done');
       this.isFinished = time;
-    } else if (this.isFinished > 0 && time > this.isFinished + 2000) {
+    } else if (this.isFinished > 0 && time > this.isFinished + 1000) {
       this.done();
     }
   };
@@ -195,9 +202,11 @@ export default class Game {
     this.cursor.showCursor();
     this.resumer.pause(this.cursor.getPosition());
     this.input.stop();
+    this._isPlaying = false;
   }
 
   async resume() {
+    this._isPlaying = true;
     await lockPointer(this.view, this.options.options.cursorType);
     this.cursor.hideCursor();
     this.input.start();
@@ -205,8 +214,10 @@ export default class Game {
   }
 
   async retry() {
-    this.cursor.hideCursor();
+    this._isPlaying = true;
     this.audio.stop();
+    this.input.stop();
+    this.clock.stop();
     this.gameState.restart();
     this.followPoint.restart();
     this.beatmap.restart();
@@ -214,7 +225,12 @@ export default class Game {
     await lockPointer(this.view, this.options.options.cursorType);
     this.cursor.hideCursor();
     await this.audio.play();
+    this.clock.start();
     this.input.start();
+
+    if (!this._isPlaying) {
+      this.pause();
+    }
   }
 
   quit() {
@@ -230,10 +246,10 @@ export default class Game {
 
     // @ts-expect-error: delete
     this.beatmap = null;
+    this._isPlaying = false;
   }
 
   async done() {
-    console.log('done');
     this.quit();
     await unlockPointer();
     this.doneCallback?.({
@@ -242,7 +258,7 @@ export default class Game {
   }
 
   isPlaying() {
-    return this.audio.isPlaying();
+    return this._isPlaying;
   }
 
   setOptions(o: Partial<Options>) {

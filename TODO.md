@@ -10,6 +10,5 @@
 - spinner bonus
 - fix spinner on retry
 - open raw input info in new tab
-- cursor sensitivity not fully updating if modal closed quickly
 - add official osu api search (server needed, add cors!)
 - default beatmaps

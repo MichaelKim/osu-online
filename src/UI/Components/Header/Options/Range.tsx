@@ -26,7 +26,7 @@ export default function Range({
   const onInput = (e: React.FormEvent<HTMLInputElement>) => {
     const newValue = parseFloat(e.currentTarget.value);
     setValue(newValue);
-    debounce(onChange, value);
+    debounce(onChange, newValue);
   };
 
   return (

@@ -69,6 +69,10 @@ export default class Beatmap {
     }
   }
 
+  startTime() {
+    return this.notes[0].o.t;
+  }
+
   endTime() {
     return this.notes[this.notes.length - 1].endTime;
   }

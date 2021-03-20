@@ -7,7 +7,8 @@ import { clamp } from './util';
 export enum InputType {
   DOWN,
   UP,
-  MOVE
+  MOVE,
+  SPACE
 }
 
 interface InputEvent {
@@ -52,12 +53,18 @@ export default class InputController {
 
   private onKeyDown = (e: KeyboardEvent) => {
     // Ignore repeated events from holding key down
+    if (e.repeat) return;
     if (
-      !e.repeat &&
-      (e.key === this.options.options.leftButton ||
-        e.key === this.options.options.rightButton)
+      e.key === this.options.options.leftButton ||
+      e.key === this.options.options.rightButton
     ) {
       this.onDown();
+    } else if (e.key === ' ') {
+      this.events.push({
+        time: this.clock.getTime(),
+        type: InputType.SPACE,
+        position: this.position
+      });
     }
   };
 

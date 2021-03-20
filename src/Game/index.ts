@@ -6,6 +6,7 @@ import Clock from './Clock';
 import Cursor from './Cursor';
 import FollowPointController from './FollowPointController';
 import InputController, { InputType } from './InputController';
+import IntroController from './IntroController';
 import { BeatmapData } from './Loader/BeatmapLoader';
 import { lockPointer, unlockPointer } from './lock';
 import OptionsController from './OptionsController';
@@ -31,6 +32,7 @@ export default class Game {
   private audio: AudioController;
   private background: BackgroundController;
   private options: OptionsController;
+  private intro: IntroController;
 
   private doneCallback?: (stats: Stats) => void;
 
@@ -54,6 +56,7 @@ export default class Game {
     this.clock = new Clock(this.audio, this.update);
     this.input = new InputController(this.clock, this.options);
     this.background = new BackgroundController(this.renderer);
+    this.intro = new IntroController(this.renderer);
   }
 
   async init() {
@@ -116,6 +119,11 @@ export default class Game {
     if (!this._isPlaying) {
       this.pause();
     }
+
+    const startTime = this.beatmap.startTime();
+    if (startTime > 5000) {
+      this.intro.showIntro(startTime);
+    }
   }
 
   update = (time: number) => {
@@ -152,6 +160,11 @@ export default class Game {
     // Check for input events since last frame
     for (const event of this.input.events) {
       switch (event.type) {
+        case InputType.SPACE:
+          if (this.intro.space(event.time)) {
+            this.audio.seek(this.beatmap.startTime() - 2000);
+          }
+          break;
         case InputType.DOWN:
           this.beatmap.mousedown(
             event.time,
@@ -175,6 +188,7 @@ export default class Game {
     }
     this.input.events = [];
 
+    this.intro.update(time);
     this.beatmap.update(time);
     this.gameState.update(time);
     this.followPoint.update(time);
@@ -214,7 +228,6 @@ export default class Game {
   }
 
   async retry() {
-    this._isPlaying = true;
     this.audio.stop();
     this.input.stop();
     this.clock.stop();
@@ -222,15 +235,7 @@ export default class Game {
     this.followPoint.restart();
     this.beatmap.restart();
 
-    await lockPointer(this.view, this.options.options.cursorType);
-    this.cursor.hideCursor();
-    await this.audio.play();
-    this.clock.start();
-    this.input.start();
-
-    if (!this._isPlaying) {
-      this.pause();
-    }
+    await this.play();
   }
 
   quit() {

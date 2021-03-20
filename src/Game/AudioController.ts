@@ -1,4 +1,5 @@
 import PIXISound from 'pixi-sound';
+import { INTRO_TIME } from './IntroController';
 
 export default class AudioController {
   private sounds: Record<string, AudioBuffer> = {};
@@ -37,6 +38,14 @@ export default class AudioController {
     const source = context.createBufferSource();
     source.buffer = buffer;
     source.connect(context.destination);
+    source.onended = () => {
+      this.complete =
+        this.getCurrentTime() -
+        this.resumeTime +
+        this.elapsedTime -
+        performance.now();
+    };
+
     return source;
   }
 
@@ -47,20 +56,24 @@ export default class AudioController {
     }
 
     this.complete = 0;
-
-    this.current.onended = () => {
-      console.log('audio done');
-      this.complete =
-        this.getCurrentTime() -
-        this.resumeTime +
-        this.elapsedTime -
-        performance.now();
-    };
     this.isPlaying = true;
 
     this.resumeTime = this.getCurrentTime();
-    this.elapsedTime = -2000;
-    this.current.start(this.resumeTime / 1000 + 2);
+    this.elapsedTime = -INTRO_TIME;
+    this.current.start((this.resumeTime + INTRO_TIME) / 1000);
+  }
+
+  seek(time: number) {
+    if (this.current == null || !this.isPlaying) return;
+
+    this.stop();
+
+    this.complete = 0;
+    this.isPlaying = true;
+
+    this.resumeTime = this.getCurrentTime();
+    this.elapsedTime = time;
+    this.current.start(0, time / 1000);
   }
 
   private getCurrentTime() {
@@ -104,6 +117,7 @@ export default class AudioController {
 
     if (this.isPlaying) {
       this.isPlaying = false;
+      this.current.onended = null;
       this.current.stop();
     }
 

@@ -6,7 +6,7 @@ import Clock from './Clock';
 import Cursor from './Cursor';
 import FollowPointController from './FollowPointController';
 import InputController, { InputType } from './InputController';
-import IntroController from './IntroController';
+import IntroController, { INTRO_TIME, MIN_INTRO_SKIP } from './IntroController';
 import { BeatmapData } from './Loader/BeatmapLoader';
 import { lockPointer, unlockPointer } from './lock';
 import OptionsController from './OptionsController';
@@ -121,7 +121,7 @@ export default class Game {
     }
 
     const startTime = this.beatmap.startTime();
-    if (startTime > 5000) {
+    if (startTime > MIN_INTRO_SKIP) {
       this.intro.showIntro(startTime);
     }
   }
@@ -162,7 +162,7 @@ export default class Game {
       switch (event.type) {
         case InputType.SPACE:
           if (this.intro.space(event.time)) {
-            this.audio.seek(this.beatmap.startTime() - 2000);
+            this.audio.seek(this.beatmap.startTime() - INTRO_TIME);
           }
           break;
         case InputType.DOWN:
@@ -224,7 +224,13 @@ export default class Game {
     await lockPointer(this.view, this.options.options.cursorType);
     this.cursor.hideCursor();
     this.input.start();
-    this.resumer.startResume();
+
+    if (this.beatmap.startTime() - this.clock.getTime() <= MIN_INTRO_SKIP) {
+      this.resumer.startResume();
+    } else {
+      // Don't show resume if still skippable
+      this.audio.resume();
+    }
   }
 
   async retry() {

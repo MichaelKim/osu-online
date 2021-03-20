@@ -60,7 +60,7 @@ export default class AudioController {
 
     this.resumeTime = this.getCurrentTime();
     this.elapsedTime = -INTRO_TIME;
-    this.current.start((this.resumeTime + INTRO_TIME) / 1000);
+    this.current.start((this.resumeTime - this.elapsedTime) / 1000);
   }
 
   seek(time: number) {
@@ -73,7 +73,11 @@ export default class AudioController {
 
     this.resumeTime = this.getCurrentTime();
     this.elapsedTime = time;
-    this.current.start(0, time / 1000);
+    if (time < 0) {
+      this.current.start((this.resumeTime - this.elapsedTime) / 1000);
+    } else {
+      this.current.start(0, this.elapsedTime / 1000);
+    }
   }
 
   private getCurrentTime() {
@@ -107,9 +111,12 @@ export default class AudioController {
     if (this.current == null) return;
 
     this.isPlaying = true;
-    this.current.start(0, this.elapsedTime / 1000);
-
     this.resumeTime = this.getCurrentTime();
+    if (this.elapsedTime < 0) {
+      this.current.start((this.resumeTime - this.elapsedTime) / 1000);
+    } else {
+      this.current.start(0, this.elapsedTime / 1000);
+    }
   }
 
   stop() {

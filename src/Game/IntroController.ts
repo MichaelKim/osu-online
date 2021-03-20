@@ -4,7 +4,8 @@ import { Text } from '@pixi/text';
 import Renderer from './Renderer';
 import { clerp } from './util';
 
-export const INTRO_TIME = 2000;
+export const INTRO_TIME = 2000; // Extra time before audio starts
+export const MIN_INTRO_SKIP = 5000; // Minimum delay to first note required for skip
 
 export default class IntroController {
   private container = new Container();

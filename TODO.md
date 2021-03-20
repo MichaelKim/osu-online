@@ -4,7 +4,6 @@
 - breaks
 - preview audio
 - skin change
-- skip intro
 - spinner bonus
 - add official osu api search (server needed, add cors!)
 - default beatmaps

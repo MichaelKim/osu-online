@@ -4,7 +4,6 @@
 - breaks
 - preview audio
 - skin change
-- add more time at start of game
 - skip intro
 - spinner bonus
 - add official osu api search (server needed, add cors!)

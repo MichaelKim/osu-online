@@ -56,8 +56,6 @@ export default class ScoreDisplay {
     }
 
     for (let i = length; i < MAX_SCORE_DIGITS; i++) {
-      // eslint-disable-next-line
-      if (this.sprites[i] == null) debugger;
       this.sprites[i].texture = this.skin.scores[0] || Texture.EMPTY;
     }
   }

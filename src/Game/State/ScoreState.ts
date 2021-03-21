@@ -1,5 +1,6 @@
 import { HitObject, HitObjectTypes } from '../HitObjects';
 import { HitResultType } from '../HitResultController';
+import AccuracyDisplay from '../HUD/AccuracyDisplay';
 import ComboDisplay from '../HUD/ComboDisplay';
 import ScoreDisplay from '../HUD/ScoreDisplay';
 import Renderer from '../Renderer';
@@ -25,6 +26,7 @@ export default class ScoreState {
   // Score
   rawScore = 0;
   bonusScore = 0;
+  cumulativeScore = 0;
   // Hit counts
   hits: Record<HitResultType, number> = {
     [HitResultType.MISS]: 0,
@@ -46,10 +48,12 @@ export default class ScoreState {
 
   comboDisplay: ComboDisplay;
   scoreDisplay: ScoreDisplay;
+  accuracyDisplay: AccuracyDisplay;
 
   constructor(renderer: Renderer, skin: Skin) {
     this.comboDisplay = new ComboDisplay(renderer, skin);
     this.scoreDisplay = new ScoreDisplay(renderer, skin);
+    this.accuracyDisplay = new AccuracyDisplay(renderer, skin);
   }
 
   load(notes: HitObject[]) {
@@ -80,8 +84,10 @@ export default class ScoreState {
     this.highestCombo = 0;
     this.rawScore = 0;
     this.bonusScore = 0;
+    this.cumulativeScore = 0;
     this.comboDisplay.reset();
     this.scoreDisplay.reset();
+    this.accuracyDisplay.reset();
   }
 
   // Clear beatmap data
@@ -102,7 +108,7 @@ export default class ScoreState {
   }
 
   private getAccuracy() {
-    return this.rawScore / this.maxScore;
+    return this.rawScore / this.cumulativeScore;
   }
 
   private getScore() {
@@ -121,36 +127,52 @@ export default class ScoreState {
 
     switch (result) {
       case HitResultType.MISS:
+        this.cumulativeScore += 300;
+        this.currentCombo = 0;
+        this.currentCombo = 0;
+        break;
       case HitResultType.EDGE_MISS:
+        this.cumulativeScore += 30;
+        this.currentCombo = 0;
+        this.currentCombo = 0;
+        break;
       case HitResultType.TICK_MISS:
+        this.cumulativeScore += 10;
         this.currentCombo = 0;
         this.currentCombo = 0;
         break;
       case HitResultType.HIT50:
         this.rawScore += 50;
+        this.cumulativeScore += 300;
         this.currentCombo += 1;
         break;
       case HitResultType.HIT100:
         this.rawScore += 100;
+        this.cumulativeScore += 300;
         this.currentCombo += 1;
         break;
       case HitResultType.HIT300:
         this.rawScore += 300;
+        this.cumulativeScore += 300;
         this.currentCombo += 1;
         break;
       case HitResultType.TICK_HIT:
         this.rawScore += 10;
+        this.cumulativeScore += 10;
         this.currentCombo += 1;
         break;
       case HitResultType.EDGE_HIT:
         this.rawScore += 30;
+        this.cumulativeScore += 30;
         this.currentCombo += 1;
         break;
       case HitResultType.SPIN_TICK:
         this.bonusScore += 10;
+        this.cumulativeScore += 10;
         break;
       case HitResultType.SPIN_BONUS:
         this.bonusScore += 50;
+        this.cumulativeScore += 30;
         break;
     }
 
@@ -158,6 +180,7 @@ export default class ScoreState {
 
     this.comboDisplay.setCombo(this.currentCombo, time);
     this.scoreDisplay.setScore(this.getScore(), time);
+    this.accuracyDisplay.setAccuracy(this.getAccuracy());
   }
 
   update(time: number) {

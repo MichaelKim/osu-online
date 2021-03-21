@@ -53,6 +53,8 @@ const assets = {
   score8: 'score-8.png',
   score9: 'score-9.png',
   scoreComma: 'score-comma.png',
+  scoreDot: 'score-dot.png',
+  scorePercent: 'score-percent.png',
   scoreX: 'score-x.png'
 };
 
@@ -86,6 +88,8 @@ export default class Skin {
   numbers: Partial<Tuple<Texture, 10>> = [];
   scores: Partial<Tuple<Texture, 10>> = [];
   scoreComma?: Texture;
+  scoreDot?: Texture;
+  scorePercent?: Texture;
   scoreX?: Texture;
   // Slider
   sliderb?: Texture;
@@ -242,7 +246,9 @@ export default class Skin {
       resources.score9?.texture
     ];
     this.scoreComma = resources.scoreComma?.texture;
+    this.scoreDot = resources.scoreDot?.texture;
     this.scoreX = resources.scoreX?.texture;
+    this.scorePercent = resources.scorePercent?.texture;
   }
 
   async load() {

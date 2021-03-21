@@ -9,6 +9,7 @@ const TerserPlugin = require('terser-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
+const CssoWebpackPlugin = require('csso-webpack-plugin').default;
 
 module.exports = async (env, argv) => {
   const isDev = argv.mode !== 'production';
@@ -166,6 +167,7 @@ module.exports = async (env, argv) => {
       new CleanWebpackPlugin({
         cleanOnceBeforeBuildPatterns: ['**/*', '!.git/**', '!.static']
       }),
+      new CssoWebpackPlugin(),
       new BundleAnalyzerPlugin()
     );
   }

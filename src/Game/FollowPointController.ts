@@ -15,7 +15,7 @@ class FollowPoint {
   sprite: Sprite;
 
   constructor(
-    texture: Texture | undefined,
+    texture: Texture,
     private start: Point,
     private end: Point,
     private angle: number,
@@ -66,7 +66,7 @@ class FollowPoint {
 }
 
 function generatePoints(
-  texture: Texture | undefined,
+  texture: Texture,
   prev: Point,
   next: Point,
   prevT: number,

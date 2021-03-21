@@ -42,7 +42,7 @@ export function initCircleSprite(
 
 // Common sprite initialization
 export function initSprite(
-  texture?: Texture,
+  texture: Texture,
   position: IPointData = { x: 0, y: 0 },
   size = 0
 ) {

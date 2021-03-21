@@ -15,7 +15,7 @@ export default class ReverseArrow {
   fullTime: number;
 
   constructor(
-    texture: Texture | undefined,
+    texture: Texture,
     private readonly o: SliderData,
     beatmap: BeatmapData
   ) {

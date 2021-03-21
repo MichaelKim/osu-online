@@ -16,7 +16,7 @@ class ComboContainer extends Container {
 
   constructor(private skin: Skin) {
     super();
-    const spriteHeight = skin.scores[0]?.height ?? 0;
+    const spriteHeight = skin.scores[0].height;
     for (let i = 0; i < MAX_COMBO_DIGITS; i++) {
       const sprite = new Sprite();
       sprite.position.set((i + 0.5) * SCORE_DIGIT_WIDTH, -spriteHeight);
@@ -33,11 +33,11 @@ class ComboContainer extends Container {
       this.sprites[i].texture = Texture.EMPTY;
     }
 
-    this.sprites[length].texture = this.skin.scoreX || Texture.EMPTY;
+    this.sprites[length].texture = this.skin.scoreX;
 
     for (let i = length - 1; i >= 0; i--) {
       const digit = Math.floor(combo % 10);
-      this.sprites[i].texture = this.skin.scores[digit] || Texture.EMPTY;
+      this.sprites[i].texture = this.skin.scores[digit];
 
       combo /= 10;
     }

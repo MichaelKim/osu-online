@@ -7,5 +7,3 @@
 - add official osu api search (server needed, add cors!)
 - default beatmaps
 - volume settings
-- default skin textures to EMPTY and ??= the loaded textures
-  - remove all skin texture null checks in rest of code

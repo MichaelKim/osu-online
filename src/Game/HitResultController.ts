@@ -31,7 +31,7 @@ class HitResult {
   sprite: Sprite;
 
   constructor(
-    texture: Texture | undefined,
+    texture: Texture,
     position: Point,
     diameter: number,
     public type: HitCircleHitResultType,

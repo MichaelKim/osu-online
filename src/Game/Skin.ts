@@ -78,32 +78,59 @@ export default class Skin {
   hitCircleOverlap = -2;
 
   // Textures
-  cursor?: Texture;
+  cursor: Texture = Texture.EMPTY;
   // Hit circle
-  circle?: Texture;
-  overlay?: Texture;
-  approach?: Texture;
-  followPoint?: Texture;
+  circle: Texture = Texture.EMPTY;
+  overlay: Texture = Texture.EMPTY;
+  approach: Texture = Texture.EMPTY;
+  followPoint: Texture = Texture.EMPTY;
   // Numbers
-  numbers: Partial<Tuple<Texture, 10>> = [];
-  scores: Partial<Tuple<Texture, 10>> = [];
-  scoreComma?: Texture;
-  scoreDot?: Texture;
-  scorePercent?: Texture;
-  scoreX?: Texture;
+  numbers: Tuple<Texture, 10> = [
+    Texture.EMPTY,
+    Texture.EMPTY,
+    Texture.EMPTY,
+    Texture.EMPTY,
+    Texture.EMPTY,
+    Texture.EMPTY,
+    Texture.EMPTY,
+    Texture.EMPTY,
+    Texture.EMPTY,
+    Texture.EMPTY
+  ];
+  scores: Tuple<Texture, 10> = [
+    Texture.EMPTY,
+    Texture.EMPTY,
+    Texture.EMPTY,
+    Texture.EMPTY,
+    Texture.EMPTY,
+    Texture.EMPTY,
+    Texture.EMPTY,
+    Texture.EMPTY,
+    Texture.EMPTY,
+    Texture.EMPTY
+  ];
+  scoreComma: Texture = Texture.EMPTY;
+  scoreDot: Texture = Texture.EMPTY;
+  scorePercent: Texture = Texture.EMPTY;
+  scoreX: Texture = Texture.EMPTY;
   // Slider
-  sliderb?: Texture;
-  sliderFollowCircle?: Texture;
-  sliderScorePoint?: Texture;
-  reverseArrow?: Texture;
+  sliderb: Texture = Texture.EMPTY;
+  sliderFollowCircle: Texture = Texture.EMPTY;
+  sliderScorePoint: Texture = Texture.EMPTY;
+  reverseArrow: Texture = Texture.EMPTY;
   // Spinner
-  spinnerBottom?: Texture;
-  spinnerGlow?: Texture;
-  spinnerMiddle?: Texture;
-  spinnerMiddle2?: Texture;
-  spinnerTop?: Texture;
+  spinnerBottom: Texture = Texture.EMPTY;
+  spinnerGlow: Texture = Texture.EMPTY;
+  spinnerMiddle: Texture = Texture.EMPTY;
+  spinnerMiddle2: Texture = Texture.EMPTY;
+  spinnerTop: Texture = Texture.EMPTY;
   // Hits
-  hits: Partial<Record<HitCircleHitResultType, Texture>> = {};
+  hits: Record<HitCircleHitResultType, Texture> = {
+    [HitResultType.MISS]: Texture.EMPTY,
+    [HitResultType.HIT50]: Texture.EMPTY,
+    [HitResultType.HIT100]: Texture.EMPTY,
+    [HitResultType.HIT300]: Texture.EMPTY
+  };
 
   // Sounds
   sampleSets: Record<SampleSetType, SampleSetData> = {
@@ -200,55 +227,57 @@ export default class Skin {
     );
 
     // TODO: check for missing / error texture
-    this.cursor = resources.cursor?.texture;
-    this.approach = resources.approach?.texture;
-    this.circle = resources.circle?.texture;
-    this.overlay = resources.overlay?.texture;
-    this.followPoint = resources.followPoint?.texture;
+    this.cursor = resources.cursor?.texture ?? Texture.EMPTY;
+    this.approach = resources.approach?.texture ?? Texture.EMPTY;
+    this.circle = resources.circle?.texture ?? Texture.EMPTY;
+    this.overlay = resources.overlay?.texture ?? Texture.EMPTY;
+    this.followPoint = resources.followPoint?.texture ?? Texture.EMPTY;
     this.numbers = [
-      resources.default0?.texture,
-      resources.default1?.texture,
-      resources.default2?.texture,
-      resources.default3?.texture,
-      resources.default4?.texture,
-      resources.default5?.texture,
-      resources.default6?.texture,
-      resources.default7?.texture,
-      resources.default8?.texture,
-      resources.default9?.texture
+      resources.default0?.texture ?? Texture.EMPTY,
+      resources.default1?.texture ?? Texture.EMPTY,
+      resources.default2?.texture ?? Texture.EMPTY,
+      resources.default3?.texture ?? Texture.EMPTY,
+      resources.default4?.texture ?? Texture.EMPTY,
+      resources.default5?.texture ?? Texture.EMPTY,
+      resources.default6?.texture ?? Texture.EMPTY,
+      resources.default7?.texture ?? Texture.EMPTY,
+      resources.default8?.texture ?? Texture.EMPTY,
+      resources.default9?.texture ?? Texture.EMPTY
     ];
-    this.sliderb = resources.sliderb?.texture;
-    this.sliderFollowCircle = resources.sliderFollowCircle?.texture;
-    this.sliderScorePoint = resources.sliderScorePoint?.texture;
-    this.reverseArrow = resources.reverseArrow?.texture;
+    this.sliderb = resources.sliderb?.texture ?? Texture.EMPTY;
+    this.sliderFollowCircle =
+      resources.sliderFollowCircle?.texture ?? Texture.EMPTY;
+    this.sliderScorePoint =
+      resources.sliderScorePoint?.texture ?? Texture.EMPTY;
+    this.reverseArrow = resources.reverseArrow?.texture ?? Texture.EMPTY;
     this.hits = {
-      [HitResultType.MISS]: resources.hit0?.texture,
-      [HitResultType.HIT50]: resources.hit50?.texture,
-      [HitResultType.HIT100]: resources.hit100?.texture,
-      [HitResultType.HIT300]: resources.hit300?.texture
+      [HitResultType.MISS]: resources.hit0?.texture ?? Texture.EMPTY,
+      [HitResultType.HIT50]: resources.hit50?.texture ?? Texture.EMPTY,
+      [HitResultType.HIT100]: resources.hit100?.texture ?? Texture.EMPTY,
+      [HitResultType.HIT300]: resources.hit300?.texture ?? Texture.EMPTY
     };
-    this.spinnerBottom = resources.spinnerBottom?.texture;
-    this.spinnerGlow = resources.spinnerGlow?.texture;
-    this.spinnerMiddle = resources.spinnerMiddle?.texture;
-    this.spinnerMiddle2 = resources.spinnerMiddle2?.texture;
-    this.spinnerTop = resources.spinnerTop?.texture;
+    this.spinnerBottom = resources.spinnerBottom?.texture ?? Texture.EMPTY;
+    this.spinnerGlow = resources.spinnerGlow?.texture ?? Texture.EMPTY;
+    this.spinnerMiddle = resources.spinnerMiddle?.texture ?? Texture.EMPTY;
+    this.spinnerMiddle2 = resources.spinnerMiddle2?.texture ?? Texture.EMPTY;
+    this.spinnerTop = resources.spinnerTop?.texture ?? Texture.EMPTY;
 
     this.scores = [
-      resources.score0?.texture,
-      resources.score1?.texture,
-      resources.score2?.texture,
-      resources.score3?.texture,
-      resources.score4?.texture,
-      resources.score5?.texture,
-      resources.score6?.texture,
-      resources.score7?.texture,
-      resources.score8?.texture,
-      resources.score9?.texture
+      resources.score0?.texture ?? Texture.EMPTY,
+      resources.score1?.texture ?? Texture.EMPTY,
+      resources.score2?.texture ?? Texture.EMPTY,
+      resources.score3?.texture ?? Texture.EMPTY,
+      resources.score4?.texture ?? Texture.EMPTY,
+      resources.score5?.texture ?? Texture.EMPTY,
+      resources.score6?.texture ?? Texture.EMPTY,
+      resources.score7?.texture ?? Texture.EMPTY,
+      resources.score8?.texture ?? Texture.EMPTY,
+      resources.score9?.texture ?? Texture.EMPTY
     ];
-    this.scoreComma = resources.scoreComma?.texture;
-    this.scoreDot = resources.scoreDot?.texture;
-    this.scoreX = resources.scoreX?.texture;
-    this.scorePercent = resources.scorePercent?.texture;
+    this.scoreComma = resources.scoreComma?.texture ?? Texture.EMPTY;
+    this.scoreDot = resources.scoreDot?.texture ?? Texture.EMPTY;
+    this.scoreX = resources.scoreX?.texture ?? Texture.EMPTY;
+    this.scorePercent = resources.scorePercent?.texture ?? Texture.EMPTY;
   }
 
   async load() {

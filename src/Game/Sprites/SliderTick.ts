@@ -18,7 +18,7 @@ export default class SliderTick {
   hit = false;
 
   constructor(
-    texture: Texture | undefined,
+    texture: Texture,
     slider: SliderData,
     public tickPosition: number, // [0, 1] along slider from head to end
     slideIndex: number

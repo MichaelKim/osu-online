@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import Game, { BeatmapFile } from '../Game';
+import Game, { BeatmapFile, Stats } from '../Game';
 import { BeatmapData } from '../Game/Loader/BeatmapLoader';
-import Menu from './Menu';
-import { CursorType, defaultOptions, Options } from './options';
-import style from './index.module.scss';
 import { onPause } from '../Game/lock';
 import { PauseScreen } from './Components/PauseScreen';
+import ResultModal from './Components/ResultModal';
+import style from './index.module.scss';
+import Menu from './Menu';
+import { CursorType, defaultOptions, Options } from './options';
 
 type Props = {
   supportsRawInput: boolean;
@@ -28,6 +29,7 @@ export default function Root({ supportsRawInput }: Props) {
     setOptions: (o: Partial<Options>) =>
       setOptions(options => ({ ...options, ...o }))
   });
+  const [result, setResult] = useState<Stats | null>(null);
 
   // Update game options
   useEffect(() => {
@@ -37,7 +39,7 @@ export default function Root({ supportsRawInput }: Props) {
   // Game done callback
   useEffect(() => {
     game.current.onDone(stats => {
-      console.log(stats);
+      setResult(stats);
       setPlaying(false);
       setPaused(false);
     });
@@ -102,6 +104,7 @@ export default function Root({ supportsRawInput }: Props) {
   return (
     <>
       <div className={playing ? style.playingRoot : style.root}>
+        <ResultModal result={result} onClose={() => setResult(null)} />
         <Menu options={options} onSelect={onPlay} />
       </div>
       {paused && (

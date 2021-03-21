@@ -37,6 +37,10 @@ export default class GameState {
     this.scoreState.reset();
   }
 
+  getState() {
+    return this.scoreState.getState();
+  }
+
   addResult(
     type: HitCircleHitResultType,
     object: HitCircle | Spinner,
@@ -74,6 +78,8 @@ export default class GameState {
     // LAZER: slider ends don't add to combo
     if (index !== object.o.slides) {
       this.scoreState.addResult(HitResultType.EDGE_HIT, time);
+    } else {
+      this.scoreState.addResult(HitResultType.LAST_EDGE_HIT, time);
     }
   }
 
@@ -81,6 +87,8 @@ export default class GameState {
     // LAZER: slider ends don't add to combo
     if (index !== object.o.slides) {
       this.scoreState.addResult(HitResultType.EDGE_MISS, time);
+    } else {
+      this.scoreState.addResult(HitResultType.LAST_EDGE_MISS, time);
     }
   }
 

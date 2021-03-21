@@ -44,7 +44,7 @@ function BeatmapBar({ beatmap, onClick }: Props) {
   useEffect(() => {
     const id = window.setTimeout(() => {
       setRendered(true);
-    }, 250);
+    }, 100);
 
     return () => window.clearTimeout(id);
   }, []);

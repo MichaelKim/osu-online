@@ -349,6 +349,8 @@ export default class Slider {
       if (this.state === State.ACTIVE) {
         // Play slider end hit sound
         this.gameState.addSliderEdge(this, time, this.o.slides);
+      } else {
+        this.gameState.missSliderEdge(this, time, this.o.slides);
       }
     }
 

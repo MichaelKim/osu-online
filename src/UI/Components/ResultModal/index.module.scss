@@ -1,0 +1,60 @@
+@use '../../variables.scss';
+
+.resultsModal {
+  text-align: center;
+  width: 500px;
+}
+
+.title {
+  font-size: 1.3em;
+}
+
+.artist {
+  font-size: 1em;
+}
+
+.version {
+  font-size: 1em;
+}
+
+.score {
+  font-size: 3.5em;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.item {
+  text-align: center;
+  flex: 1;
+}
+
+.itemTitle {
+  background-color: darken(variables.$dark-color, 10);
+  height: 20px;
+  border-radius: 10px;
+
+  p {
+    line-height: 20px;
+  }
+}
+
+.frac {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.top {
+  font-size: 1.4em;
+}
+
+.bot {
+  font-size: 0.9em;
+  align-self: flex-end;
+  margin-left: 2px;
+}

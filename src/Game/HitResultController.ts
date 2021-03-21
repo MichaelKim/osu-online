@@ -15,6 +15,8 @@ export enum HitResultType {
   TICK_MISS,
   EDGE_HIT,
   EDGE_MISS,
+  LAST_EDGE_HIT,
+  LAST_EDGE_MISS,
   SPIN_TICK,
   SPIN_BONUS
 }

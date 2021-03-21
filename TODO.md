@@ -7,5 +7,4 @@
 - spinner bonus
 - add official osu api search (server needed, add cors!)
 - default beatmaps
-- show end game stats
 - volume settings

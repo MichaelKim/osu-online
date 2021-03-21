@@ -14,14 +14,16 @@ import Renderer from './Renderer';
 import ResumeController from './ResumeController';
 import Skin from './Skin';
 import GameState from './State/GameState';
+import { GameResult } from './State/ScoreState';
 
 export type BeatmapFile = {
   name: string;
   blob: Blob;
 };
 
-type Stats = {
-  score: number;
+export type Stats = {
+  gameResult: GameResult;
+  beatmapData: BeatmapData;
 };
 
 export default class Game {
@@ -261,10 +263,14 @@ export default class Game {
   }
 
   async done() {
+    const gameResult = this.gameState.getState();
+    const beatmapData = this.beatmap.data;
+
     this.quit();
     await unlockPointer();
     this.doneCallback?.({
-      score: 1
+      beatmapData,
+      gameResult
     });
   }
 

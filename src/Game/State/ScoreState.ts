@@ -8,14 +8,39 @@ import Skin from '../Skin';
 // Handle score calculations and passes score to ScoreDisplay
 const ACCURACY_WEIGHT = 0.3;
 const COMBO_WEIGHT = 0.7;
+const MAX_SCORE = 1_000_000;
+
+export type GameResult = {
+  highestCombo: number;
+  maxCombo: number;
+  score: number;
+  accuracy: number;
+  hits: Record<HitResultType, number>;
+};
 
 export default class ScoreState {
+  // Combo
   currentCombo = 0;
   highestCombo = 0;
-
+  // Score
   rawScore = 0;
   bonusScore = 0;
-
+  // Hit counts
+  hits: Record<HitResultType, number> = {
+    [HitResultType.MISS]: 0,
+    [HitResultType.HIT50]: 0,
+    [HitResultType.HIT100]: 0,
+    [HitResultType.HIT300]: 0,
+    [HitResultType.TICK_HIT]: 0,
+    [HitResultType.TICK_MISS]: 0,
+    [HitResultType.EDGE_HIT]: 0,
+    [HitResultType.EDGE_MISS]: 0,
+    [HitResultType.LAST_EDGE_HIT]: 0,
+    [HitResultType.LAST_EDGE_MISS]: 0,
+    [HitResultType.SPIN_TICK]: 0,
+    [HitResultType.SPIN_BONUS]: 0
+  };
+  // Computed before play
   maxCombo = 0;
   maxScore = 0;
 
@@ -49,6 +74,7 @@ export default class ScoreState {
     }
   }
 
+  // Clear play data
   restart() {
     this.currentCombo = 0;
     this.highestCombo = 0;
@@ -58,32 +84,46 @@ export default class ScoreState {
     this.scoreDisplay.reset();
   }
 
+  // Clear beatmap data
   reset() {
-    this.currentCombo = 0;
-    this.highestCombo = 0;
-    this.rawScore = 0;
-    this.bonusScore = 0;
+    this.restart();
     this.maxCombo = 0;
     this.maxScore = 0;
-    this.comboDisplay.reset();
-    this.scoreDisplay.reset();
   }
 
-  getScore() {
+  getState(): GameResult {
+    return {
+      highestCombo: this.highestCombo,
+      maxCombo: this.maxCombo,
+      score: this.getScore(),
+      accuracy: this.getAccuracy(),
+      hits: this.hits
+    };
+  }
+
+  private getAccuracy() {
+    return this.rawScore / this.maxScore;
+  }
+
+  private getScore() {
     // LAZER: scorev2
-    const accuracyRatio = this.rawScore / this.maxScore;
+    const accuracyRatio = this.getAccuracy();
     const comboRatio = this.highestCombo / this.maxCombo;
     return (
-      1000000 * (accuracyRatio * ACCURACY_WEIGHT + comboRatio * COMBO_WEIGHT) +
+      MAX_SCORE *
+        (accuracyRatio * ACCURACY_WEIGHT + comboRatio * COMBO_WEIGHT) +
       this.bonusScore
     );
   }
 
   addResult(result: HitResultType, time: number) {
+    this.hits[result]++;
+
     switch (result) {
       case HitResultType.MISS:
       case HitResultType.EDGE_MISS:
       case HitResultType.TICK_MISS:
+        this.currentCombo = 0;
         this.currentCombo = 0;
         break;
       case HitResultType.HIT50:

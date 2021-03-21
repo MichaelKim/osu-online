@@ -1,4 +1,6 @@
-import * as PIXI from 'pixi.js';
+import { Texture } from '@pixi/core';
+import { Container } from '@pixi/display';
+import { Sprite } from '@pixi/sprite';
 import Renderer from '../Renderer';
 import Skin from '../Skin';
 import { clerp, clerp01 } from '../util';
@@ -8,15 +10,15 @@ const COMBO_POP_TIME = 250;
 const COMBO_POP_2_TIME = 100;
 const MAX_COMBO_DIGITS = 6;
 
-class ComboContainer extends PIXI.Container {
+class ComboContainer extends Container {
   combo = 0;
-  sprites: PIXI.Sprite[] = [];
+  sprites: Sprite[] = [];
 
   constructor(private skin: Skin) {
     super();
     const spriteHeight = skin.scores[0]?.height ?? 0;
     for (let i = 0; i < MAX_COMBO_DIGITS; i++) {
-      const sprite = new PIXI.Sprite();
+      const sprite = new Sprite();
       sprite.position.set((i + 0.5) * SCORE_DIGIT_WIDTH, -spriteHeight);
       this.sprites.push(sprite);
       this.addChild(sprite);
@@ -28,14 +30,14 @@ class ComboContainer extends PIXI.Container {
 
     const length = combo === 0 ? 1 : Math.floor(Math.log10(combo) + 1);
     for (let i = this.sprites.length - 1; i > length; i--) {
-      this.sprites[i].texture = PIXI.Texture.EMPTY;
+      this.sprites[i].texture = Texture.EMPTY;
     }
 
-    this.sprites[length].texture = this.skin.scoreX || PIXI.Texture.EMPTY;
+    this.sprites[length].texture = this.skin.scoreX || Texture.EMPTY;
 
     for (let i = length - 1; i >= 0; i--) {
       const digit = Math.floor(combo % 10);
-      this.sprites[i].texture = this.skin.scores[digit] || PIXI.Texture.EMPTY;
+      this.sprites[i].texture = this.skin.scores[digit] || Texture.EMPTY;
 
       combo /= 10;
     }

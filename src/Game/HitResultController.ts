@@ -1,4 +1,7 @@
-import * as PIXI from 'pixi.js';
+import { Texture } from '@pixi/core';
+import { Container } from '@pixi/display';
+import { Point } from '@pixi/math';
+import { Sprite } from '@pixi/sprite';
 import { initSprite } from './HitObjects';
 import Skin from './Skin';
 import { clerp, clerp01 } from './util';
@@ -23,11 +26,11 @@ export type HitCircleHitResultType =
   | HitResultType.HIT300;
 
 class HitResult {
-  sprite: PIXI.Sprite;
+  sprite: Sprite;
 
   constructor(
-    texture: PIXI.Texture | undefined,
-    position: PIXI.Point,
+    texture: Texture | undefined,
+    position: Point,
     diameter: number,
     public type: HitCircleHitResultType,
     private t: number
@@ -66,7 +69,7 @@ class HitResult {
     this.sprite.alpha = 0;
   }
 
-  reset(position: PIXI.Point, t: number) {
+  reset(position: Point, t: number) {
     this.t = t;
     this.sprite.position.copyFrom(position);
     this.sprite.visible = true;
@@ -85,7 +88,7 @@ export default class HitResultController {
   };
   used: HitResult[] = [];
 
-  constructor(private stage: PIXI.Container, private skin: Skin) {}
+  constructor(private stage: Container, private skin: Skin) {}
 
   loadDiameter(diameter: number) {
     this.diameter = diameter;
@@ -102,7 +105,7 @@ export default class HitResultController {
     }
   }
 
-  addResult(type: HitCircleHitResultType, position: PIXI.Point, t: number) {
+  addResult(type: HitCircleHitResultType, position: Point, t: number) {
     if (this.free[type].length > 0) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const result = this.free[type].pop()!;

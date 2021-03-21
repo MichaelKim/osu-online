@@ -1,4 +1,4 @@
-import * as PIXI from 'pixi.js';
+import { Container } from '@pixi/display';
 import { IPointData } from '@pixi/math';
 import { HitObject, HitObjectTypes } from './HitObjects';
 import { BeatmapData } from './Loader/BeatmapLoader';
@@ -16,7 +16,7 @@ export default class Beatmap {
   constructor(
     readonly data: BeatmapData,
     gameState: GameState,
-    private stage: PIXI.Container,
+    private stage: Container,
     skin: Skin
   ) {
     this.notes = loadHitObjects(data, skin, gameState);

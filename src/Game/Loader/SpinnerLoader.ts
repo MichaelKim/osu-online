@@ -1,4 +1,6 @@
-import * as PIXI from 'pixi.js';
+import { Container } from '@pixi/display';
+import { Point } from '@pixi/math';
+import { Sprite } from '@pixi/sprite';
 import { HitObjectTypes, initSprite } from '../HitObjects';
 import { BaseHitSound } from '../HitSoundController';
 import { parseHitSample } from '../SampleSet';
@@ -8,7 +10,7 @@ import { BeatmapData } from './BeatmapLoader';
 import { TimingPoint } from './TimingPointLoader';
 
 export interface SpinnerData {
-  position: PIXI.Point;
+  position: Point;
   type: HitObjectTypes.SPINNER;
   t: number;
   hitSound: number;
@@ -47,7 +49,7 @@ export function parseSpinner(
   );
 
   return {
-    position: new PIXI.Point(256, 192),
+    position: new Point(256, 192),
     type: HitObjectTypes.SPINNER,
     t,
     hitSound,
@@ -60,12 +62,12 @@ export function parseSpinner(
 }
 
 export interface SpinnerSprites {
-  container: PIXI.Container;
-  bottomSprite: PIXI.Sprite;
-  glowSprite: PIXI.Sprite;
-  middleSprite: PIXI.Sprite;
-  middle2Sprite: PIXI.Sprite;
-  topSprite: PIXI.Sprite;
+  container: Container;
+  bottomSprite: Sprite;
+  glowSprite: Sprite;
+  middleSprite: Sprite;
+  middle2Sprite: Sprite;
+  topSprite: Sprite;
 }
 
 export function loadSpinnerSprites(
@@ -85,7 +87,7 @@ export function loadSpinnerSprites(
   topSprite.scale.set(0.5);
 
   // For convenient alpha, visibility, etc.
-  const container = new PIXI.Container();
+  const container = new Container();
   container.visible = false;
   container.position.copyFrom(object.position);
   container.addChild(

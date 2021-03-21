@@ -1,40 +1,42 @@
-import * as PIXI from 'pixi.js';
+import { Renderer as PIXIRenderer, BatchRenderer } from '@pixi/core';
+import { Container } from '@pixi/display';
 import { IPointData } from '@pixi/math';
+import { Ticker } from '@pixi/ticker';
+
+PIXIRenderer.registerPlugin('batch', BatchRenderer);
 
 type ResizeCallback = (width: number, height: number) => void;
 
 export default class Renderer {
-  private renderer: PIXI.Renderer;
+  private renderer: PIXIRenderer;
 
   // Bounds callbacks
   private resizeCallbacks = new Set<ResizeCallback>();
 
   // Stages
-  private stage = new PIXI.Container(); // Base stage
-  cursorStage = new PIXI.Container(); // Highest stage for cursor
-  private gameStage = new PIXI.Container(); // Game field (osu!pixels with 4:3)
+  private stage = new Container(); // Base stage
+  cursorStage = new Container(); // Highest stage for cursor
+  private gameStage = new Container(); // Game field (osu!pixels with 4:3)
 
   // Substage
-  notesStage = new PIXI.Container(); // Stage for hit objects
-  hitResultStage = new PIXI.Container(); // Stage for hit results
-  followStage = new PIXI.Container(); // Stage for follow points
-  displayStage = new PIXI.Container(); // Stage for HUD elements
-  bgStage = new PIXI.Container(); // Stage for background elements
-  resumeStage = new PIXI.Container(); // Stage for display elements below the cursor
+  notesStage = new Container(); // Stage for hit objects
+  hitResultStage = new Container(); // Stage for hit results
+  followStage = new Container(); // Stage for follow points
+  displayStage = new Container(); // Stage for HUD elements
+  bgStage = new Container(); // Stage for background elements
+  resumeStage = new Container(); // Stage for display elements below the cursor
 
   constructor(view: HTMLCanvasElement) {
-    this.renderer = new PIXI.Renderer({
+    this.renderer = new PIXIRenderer({
       width: window.innerWidth,
       height: window.innerHeight,
       resolution: window.devicePixelRatio || 1,
       autoDensity: true,
       view
     });
-    // Disable PIXI interaction (e.g. hit testing, input events)
-    this.renderer.plugins.interaction.destroy();
     // Disable shared ticker
-    PIXI.Ticker.shared.autoStart = false;
-    PIXI.Ticker.shared.stop();
+    Ticker.shared.autoStart = false;
+    Ticker.shared.stop();
 
     this.stage.addChild(
       this.bgStage,

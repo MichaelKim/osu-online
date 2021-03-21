@@ -1,15 +1,19 @@
-import * as PIXI from 'pixi.js';
+import { BaseTexture, ImageResource, Texture } from '@pixi/core';
+import { Container } from '@pixi/display';
+import { BlurFilter } from '@pixi/filter-blur';
+import { ColorMatrixFilter } from '@pixi/filter-color-matrix';
+import { Sprite } from '@pixi/sprite';
 import Renderer from './Renderer';
 
 export default class BackgroundController {
-  private container = new PIXI.Container();
-  private background?: PIXI.Sprite;
+  private container = new Container();
+  private background?: Sprite;
 
   constructor(renderer: Renderer) {
-    const dim = new PIXI.filters.ColorMatrixFilter();
+    const dim = new ColorMatrixFilter();
     dim.brightness(0.5, false);
 
-    const blur = new PIXI.filters.BlurFilter(16);
+    const blur = new BlurFilter(16);
     this.container.filters = [blur, dim];
 
     renderer.bgStage.addChild(this.container);
@@ -34,11 +38,11 @@ export default class BackgroundController {
     image.addEventListener('load', () => URL.revokeObjectURL(bgURL));
     image.src = bgURL;
 
-    const res = new PIXI.ImageResource(image);
+    const res = new ImageResource(image);
     await res.load();
-    const base = new PIXI.BaseTexture(res);
-    const texture = new PIXI.Texture(base);
-    this.background = new PIXI.Sprite(texture);
+    const base = new BaseTexture(res);
+    const texture = new Texture(base);
+    this.background = new Sprite(texture);
     this.background.anchor.set(0.5, 0.5);
     this.resize(window.innerWidth, window.innerHeight);
 

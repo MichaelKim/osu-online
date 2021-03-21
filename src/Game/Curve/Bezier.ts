@@ -1,8 +1,8 @@
-import * as PIXI from 'pixi.js';
+import { Point } from '@pixi/math';
 
 interface Bezier {
   // Calculated points along the curve
-  curve: PIXI.Point[];
+  curve: Point[];
   // Pairwise distance (i: i-1 to i)
   curveDist: number[];
   // Total distance (arc length) of this curve
@@ -10,7 +10,7 @@ interface Bezier {
 }
 
 // Calculate approximate (arc) length
-function calcLength(points: PIXI.Point[]) {
+function calcLength(points: Point[]) {
   let approxLength = 0;
   for (let i = 0; i < points.length - 1; i++) {
     const dx = points[i].x - points[i + 1].x;
@@ -21,12 +21,12 @@ function calcLength(points: PIXI.Point[]) {
 }
 
 // Create curve section
-function createBezier(points: PIXI.Point[]): Bezier {
+function createBezier(points: Point[]): Bezier {
   const approxLength = calcLength(points);
 
   // Subdivide curve
   const ncurve = Math.floor(approxLength / 4) + 2; // Number of points on curve section
-  const curve: PIXI.Point[] = [];
+  const curve: Point[] = [];
   for (let i = 0; i < ncurve; i++) {
     curve.push(pointAt(points, i / (ncurve - 1)));
   }
@@ -52,10 +52,10 @@ function createBezier(points: PIXI.Point[]): Bezier {
 
 // Split slider into several curve sections
 // Red control points are in sliderPoints twice
-function splitSlider(sliderPoints: PIXI.Point[], linear: boolean) {
+function splitSlider(sliderPoints: Point[], linear: boolean) {
   const beziers: Bezier[] = [];
-  let points: PIXI.Point[] = [];
-  let lastPoi: PIXI.Point | null = null;
+  let points: Point[] = [];
+  let lastPoi: Point | null = null;
 
   for (const tpoi of sliderPoints) {
     if (linear) {
@@ -86,7 +86,7 @@ function splitSlider(sliderPoints: PIXI.Point[], linear: boolean) {
 
 // Get equidistant points along slider
 export function getCurve(
-  sliderPoints: PIXI.Point[],
+  sliderPoints: Point[],
   linear: boolean,
   length: number
 ) {
@@ -95,7 +95,7 @@ export function getCurve(
   // init equidistance
   // Points generated along the curve should be spaced this far apart.
   const ncurve = Math.floor(length / 5);
-  const curve: PIXI.Point[] = [];
+  const curve: Point[] = [];
 
   let distanceAt = 0; // accumulated length of new curve
   let curPoint = 0;
@@ -142,7 +142,7 @@ export function getCurve(
       curve[i] = thisCurve;
     } else {
       const t = (prefDist - lastDistanceAt) / (distanceAt - lastDistanceAt);
-      curve[i] = new PIXI.Point(
+      curve[i] = new Point(
         lerp01(lastCurve.x, thisCurve.x, t),
         lerp01(lastCurve.y, thisCurve.y, t)
       );
@@ -178,8 +178,8 @@ function bernstein(i: number, n: number, t: number) {
   return binomialCoefficient(n, i) * Math.pow(t, i) * Math.pow(1 - t, n - i);
 }
 
-function pointAt(points: PIXI.Point[], t: number) {
-  const c = new PIXI.Point(0, 0);
+function pointAt(points: Point[], t: number) {
+  const c = new Point(0, 0);
   const n = points.length - 1; // Degree (?)
   for (let i = 0; i < points.length; i++) {
     const b = bernstein(i, n, t);

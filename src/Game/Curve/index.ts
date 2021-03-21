@@ -1,4 +1,4 @@
-import * as PIXI from 'pixi.js';
+import { Point } from '@pixi/math';
 import { getCurve as getCircleCurve } from './Circle';
 import { getCurve as getBezierCurve } from './Bezier';
 
@@ -10,13 +10,13 @@ export enum CurveTypes {
 }
 
 export interface Line {
-  readonly start: PIXI.Point;
-  readonly end: PIXI.Point;
-  readonly offset: PIXI.Point;
+  readonly start: Point;
+  readonly end: Point;
+  readonly offset: Point;
   readonly angle: number;
 }
 
-function getCurve(type: CurveTypes, points: PIXI.Point[], length: number) {
+function getCurve(type: CurveTypes, points: Point[], length: number) {
   if (type === CurveTypes.PERFECT && points.length === 3) {
     const circle = getCircleCurve(points, length);
 
@@ -29,7 +29,7 @@ function getCurve(type: CurveTypes, points: PIXI.Point[], length: number) {
 
 export function getSliderCurve(
   type: CurveTypes,
-  points: PIXI.Point[],
+  points: Point[],
   length: number,
   size: number
 ) {
@@ -46,7 +46,7 @@ export function getSliderCurve(
     const length = Math.hypot(dx, dy);
 
     // Find the offset tangent to the line segment
-    const offset = new PIXI.Point(
+    const offset = new Point(
       ((-dy / length) * size) / 2,
       ((dx / length) * size) / 2
     );
@@ -69,7 +69,7 @@ export function pointAt(lines: Line[], t: number) {
 
   // Interpolate point
   const startT = position - index; // [0, 1]
-  const point = new PIXI.Point(
+  const point = new Point(
     lines[index].start.x * (1 - startT) + lines[index].end.x * startT,
     lines[index].start.y * (1 - startT) + lines[index].end.y * startT
   );

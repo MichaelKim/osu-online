@@ -1,5 +1,6 @@
-import * as PIXI from 'pixi.js';
+import { Container } from '@pixi/display';
 import { IPointData } from '@pixi/math';
+import { Text } from '@pixi/text';
 import { HitObjectTypes } from '.';
 import { HitResultType } from '../HitResultController';
 import {
@@ -69,7 +70,7 @@ export default class Spinner {
 
   // Rendering
   private drawnAngle!: number; // Sprite rotation
-  private text: PIXI.Text = new PIXI.Text('', {
+  private text = new Text('', {
     fill: 0xffffff,
     fontSize: 24,
     align: 'center'
@@ -107,7 +108,7 @@ export default class Spinner {
     this.counter.reset();
   }
 
-  addToStage(stage: PIXI.Container) {
+  addToStage(stage: Container) {
     stage.addChild(this.s.container, this.text);
   }
 

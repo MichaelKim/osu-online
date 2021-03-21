@@ -1,4 +1,5 @@
-import * as PIXI from 'pixi.js';
+import { Texture } from '@pixi/core';
+import { Sprite } from '@pixi/sprite';
 import { initSprite } from '../HitObjects';
 import { BeatmapData } from '../Loader/BeatmapLoader';
 import { SliderData } from '../Loader/SliderLoader';
@@ -9,12 +10,12 @@ import { clerp, clerp01, Tuple } from '../util';
 const FADE_MS = 100;
 
 export default class ReverseArrow {
-  start: PIXI.Sprite;
-  end: PIXI.Sprite;
+  start: Sprite;
+  end: Sprite;
   fullTime: number;
 
   constructor(
-    texture: PIXI.Texture | undefined,
+    texture: Texture | undefined,
     private readonly o: SliderData,
     beatmap: BeatmapData
   ) {

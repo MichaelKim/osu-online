@@ -1,16 +1,18 @@
-import * as PIXI from 'pixi.js';
+import { Container } from '@pixi/display';
+import { IPointData } from '@pixi/math';
+import { Sprite } from '@pixi/sprite';
 import Skin from './Skin';
 
 export default class Cursor {
-  private cursor: PIXI.Sprite;
+  private cursor: Sprite;
 
-  constructor(stage: PIXI.Container, skin: Skin) {
-    this.cursor = new PIXI.Sprite(skin.cursor);
+  constructor(stage: Container, skin: Skin) {
+    this.cursor = new Sprite(skin.cursor);
     this.cursor.position.set(window.innerWidth / 2, window.innerHeight / 2);
     stage.addChild(this.cursor);
   }
 
-  move(position: PIXI.Point) {
+  move(position: IPointData) {
     this.cursor.position.copyFrom(position);
   }
 

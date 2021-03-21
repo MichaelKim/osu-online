@@ -1,6 +1,9 @@
-import * as PIXI from 'pixi.js';
-import HitCircle from './HitCircle';
+import { Texture } from '@pixi/core';
+import { Container } from '@pixi/display';
+import { IPointData, Point } from '@pixi/math';
+import { Sprite } from '@pixi/sprite';
 import Skin from '../Skin';
+import HitCircle from './HitCircle';
 import Slider from './Slider';
 import Spinner from './Spinner';
 
@@ -19,18 +22,18 @@ export type HitObject = HitCircle | Slider | Spinner;
 export function initCircleSprite(
   skin: Skin,
   color: number,
-  position: PIXI.Point,
+  position: Point,
   size: number
 ) {
-  const circle = new PIXI.Sprite(skin.circle);
+  const circle = new Sprite(skin.circle);
   circle.tint = color;
 
-  const overlay = new PIXI.Sprite(skin.overlay);
+  const overlay = new Sprite(skin.overlay);
 
   circle.scale.set(size / HIT_CIRCLE_DIAMETER);
   overlay.scale.set(size / HIT_CIRCLE_DIAMETER);
 
-  const circleSprite = new PIXI.Container();
+  const circleSprite = new Container();
   circleSprite.position.copyFrom(position);
   circleSprite.addChild(circle, overlay);
 
@@ -39,11 +42,11 @@ export function initCircleSprite(
 
 // Common sprite initialization
 export function initSprite(
-  texture?: PIXI.Texture,
-  position: PIXI.IPointData = { x: 0, y: 0 },
+  texture?: Texture,
+  position: IPointData = { x: 0, y: 0 },
   size = 0
 ) {
-  const sprite = new PIXI.Sprite(texture);
+  const sprite = new Sprite(texture);
   sprite.position.copyFrom(position);
   if (size > 0) {
     sprite.scale.set(size / sprite.texture.width);
@@ -55,11 +58,11 @@ export function initSprite(
 export function getNumberSprites(
   skin: Skin,
   number: number,
-  position: PIXI.Point,
+  position: Point,
   diameter: number
 ) {
   // Add numbers to container centered at (x, y)
-  const container = new PIXI.Container();
+  const container = new Container();
   container.position.copyFrom(position);
   container.scale.set(diameter / 160);
 
@@ -67,7 +70,7 @@ export function getNumberSprites(
   const length = Math.floor(Math.log10(number) + 1);
   const lastDigitX = (length - 1) / 2;
   for (let i = 0; number > 0; i++) {
-    const sprite = new PIXI.Sprite(skin.numbers[number % 10]);
+    const sprite = new Sprite(skin.numbers[number % 10]);
     sprite.position.set((lastDigitX - i) * width, 0);
     container.addChild(sprite);
 

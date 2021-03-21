@@ -1,5 +1,6 @@
-import * as PIXI from 'pixi.js';
 import { IPointData } from '@pixi/math';
+import { Point } from '@pixi/math';
+import { Container } from '@pixi/display';
 import {
   APPROACH_R,
   FADE_OUT_MS,
@@ -58,7 +59,7 @@ export default class HitCircle {
   }
 
   get start() {
-    return new PIXI.Point(
+    return new Point(
       this.o.position.x + this.s.container.x,
       this.o.position.y + this.s.container.y
     );
@@ -68,7 +69,7 @@ export default class HitCircle {
     return this.o.t;
   }
 
-  addToStage(stage: PIXI.Container) {
+  addToStage(stage: Container) {
     stage.addChild(this.s.container);
   }
 

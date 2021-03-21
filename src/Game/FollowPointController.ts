@@ -1,4 +1,7 @@
-import * as PIXI from 'pixi.js';
+import { Texture } from '@pixi/core';
+import { Container } from '@pixi/display';
+import { Point } from '@pixi/math';
+import { Sprite } from '@pixi/sprite';
 import { HitObject, HitObjectTypes, HIT_CIRCLE_DIAMETER } from './HitObjects';
 import Skin from './Skin';
 import { clerp01, lerp } from './util';
@@ -9,18 +12,18 @@ const FADE_DURATION = 400;
 
 // A single follow point
 class FollowPoint {
-  sprite: PIXI.Sprite;
+  sprite: Sprite;
 
   constructor(
-    texture: PIXI.Texture | undefined,
-    private start: PIXI.Point,
-    private end: PIXI.Point,
+    texture: Texture | undefined,
+    private start: Point,
+    private end: Point,
     private angle: number,
     public fadeInTime: number,
     private fadeOutTime: number,
     private size: number
   ) {
-    this.sprite = new PIXI.Sprite(texture);
+    this.sprite = new Sprite(texture);
     this.restart();
   }
 
@@ -63,9 +66,9 @@ class FollowPoint {
 }
 
 function generatePoints(
-  texture: PIXI.Texture | undefined,
-  prev: PIXI.Point,
-  next: PIXI.Point,
+  texture: Texture | undefined,
+  prev: Point,
+  next: Point,
   prevT: number,
   nextT: number,
   size: number
@@ -81,11 +84,11 @@ function generatePoints(
   // Calculate intermediate points
   for (let d = Math.floor(SPACING * 1.5); d < dist - SPACING; d += SPACING) {
     const t = d / dist;
-    const pointStartPosition = new PIXI.Point(
+    const pointStartPosition = new Point(
       prev.x + (t - 0.1) * dx,
       prev.y + (t - 0.1) * dy
     );
-    const pointEndPosition = new PIXI.Point(prev.x + t * dx, prev.y + t * dy);
+    const pointEndPosition = new Point(prev.x + t * dx, prev.y + t * dy);
     const fadeOutTime = prevT + t * duration;
     const fadeInTime = fadeOutTime - PREEMPT;
 
@@ -146,7 +149,7 @@ export default class FollowPointController {
   left = 0;
   right = 0;
 
-  constructor(private stage: PIXI.Container, private skin: Skin) {}
+  constructor(private stage: Container, private skin: Skin) {}
 
   loadBeatmap(notes: HitObject[]) {
     this.points = loadFollowTrails(notes, this.skin);

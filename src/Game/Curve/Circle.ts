@@ -1,8 +1,8 @@
-import * as PIXI from 'pixi.js';
+import { Point } from '@pixi/math';
 
 const STEP_SEP = 5;
 
-export function getCurve(sliderPoints: PIXI.Point[], length: number) {
+export function getCurve(sliderPoints: Point[], length: number) {
   if (sliderPoints.length !== 3) {
     console.error('Circle curve must have exactly 3 points');
     return [];
@@ -78,38 +78,33 @@ export function getCurve(sliderPoints: PIXI.Point[], length: number) {
   return curve;
 }
 
-function midpoint(a: PIXI.Point, b: PIXI.Point) {
-  return new PIXI.Point((a.x + b.x) / 2, (a.y + b.y) / 2);
+function midpoint(a: Point, b: Point) {
+  return new Point((a.x + b.x) / 2, (a.y + b.y) / 2);
 }
 
-function norm(a: PIXI.Point) {
-  return new PIXI.Point(-a.y, a.x);
+function norm(a: Point) {
+  return new Point(-a.y, a.x);
 }
 
-function sub(a: PIXI.Point, b: PIXI.Point) {
-  return new PIXI.Point(a.x - b.x, a.y - b.y);
+function sub(a: Point, b: Point) {
+  return new Point(a.x - b.x, a.y - b.y);
 }
 
-function intersect(
-  a: PIXI.Point,
-  ta: PIXI.Point,
-  b: PIXI.Point,
-  tb: PIXI.Point
-) {
+function intersect(a: Point, ta: Point, b: Point, tb: Point) {
   const des = tb.x * ta.y - tb.y * ta.x;
   if (Math.abs(des) < 0.00001) {
     console.warn('[curve] encountering straight P slider');
     return undefined;
   }
   const u = ((b.y - a.y) * ta.x + (a.x - b.x) * ta.y) / des;
-  return new PIXI.Point(b.x + tb.x * u, b.y + tb.y * u);
+  return new Point(b.x + tb.x * u, b.y + tb.y * u);
 }
 
 function isIn(a: number, b: number, c: number) {
   return (b > a && b < c) || (b < a && b > c);
 }
 
-function len(a: PIXI.Point) {
+function len(a: Point) {
   return Math.sqrt(a.x * a.x + a.y * a.y);
 }
 
@@ -118,11 +113,11 @@ function pointAt(
   startAng: number,
   endAng: number,
   radius: number,
-  circleCenter: PIXI.Point
+  circleCenter: Point
 ) {
   if (t > 1) t = 1;
   const ang = lerp(startAng, endAng, t);
-  return new PIXI.Point(
+  return new Point(
     Math.cos(ang) * radius + circleCenter.x,
     Math.sin(ang) * radius + circleCenter.y
   );

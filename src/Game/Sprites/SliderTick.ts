@@ -1,4 +1,6 @@
-import * as PIXI from 'pixi.js';
+import { Texture } from '@pixi/core';
+import { Sprite } from '@pixi/sprite';
+import { rgb2hex } from '@pixi/utils';
 import { pointAt } from '../Curve';
 import { initSprite } from '../HitObjects';
 import { SliderData } from '../Loader/SliderLoader';
@@ -8,7 +10,7 @@ const FADE_DURATION = 150;
 const TICK_SIZE = 24;
 
 export default class SliderTick {
-  sprite: PIXI.Sprite;
+  sprite: Sprite;
 
   progress: number;
   time: number; // Time when tick is hit
@@ -16,7 +18,7 @@ export default class SliderTick {
   hit = false;
 
   constructor(
-    texture: PIXI.Texture | undefined,
+    texture: Texture | undefined,
     slider: SliderData,
     public tickPosition: number, // [0, 1] along slider from head to end
     slideIndex: number
@@ -65,7 +67,7 @@ export default class SliderTick {
     } else {
       // [t, +75]: tint from none to red
       const t = 1 - clerp01(time - this.time, 0, FADE_DURATION / 2);
-      const tint = PIXI.utils.rgb2hex([1, t, t]);
+      const tint = rgb2hex([1, t, t]);
       this.sprite.tint = tint;
     }
 

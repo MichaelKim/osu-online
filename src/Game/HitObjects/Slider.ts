@@ -1,5 +1,6 @@
-import * as PIXI from 'pixi.js';
-import { IPointData } from '@pixi/math';
+import { Buffer } from '@pixi/core';
+import { Container } from '@pixi/display';
+import { IPointData, Point } from '@pixi/math';
 import {
   APPROACH_R,
   FADE_OUT_MS,
@@ -23,7 +24,7 @@ import { clamp, clerp, clerp01, within } from '../util';
 // Number of points dividing a circle
 const MAX_RES = 60;
 const UNIT_CIRCLE = (() => {
-  const vectors: PIXI.IPointData[] = [];
+  const vectors: IPointData[] = [];
   for (let i = 0; i < MAX_RES; i++) {
     const t = (i * 2 * Math.PI) / MAX_RES;
     vectors.push({
@@ -54,13 +55,13 @@ export default class Slider {
 
   // Rendering
   s!: SliderSprites;
-  private positionBuffer!: PIXI.Buffer;
-  private texPositionBuffer!: PIXI.Buffer;
-  private indexBuffer!: PIXI.Buffer;
+  private positionBuffer!: Buffer;
+  private texPositionBuffer!: Buffer;
+  private indexBuffer!: Buffer;
 
   // Gameplay
   finished!: number;
-  private position!: PIXI.Point; // Slider head position
+  private position!: Point; // Slider head position
   private headHit!: number; // When the slider head was hit (0 if not hit)
   private state!: State;
   private prevState!: State;
@@ -104,7 +105,7 @@ export default class Slider {
 
   get start() {
     const point = this.o.lines[0];
-    return new PIXI.Point(
+    return new Point(
       point.start.x + this.s.container.x,
       point.start.y + this.s.container.y
     );
@@ -112,7 +113,7 @@ export default class Slider {
 
   get end() {
     const point = this.o.lines[this.o.lines.length - 1];
-    return new PIXI.Point(
+    return new Point(
       point.end.x + this.s.container.x,
       point.end.y + this.s.container.y
     );
@@ -122,7 +123,7 @@ export default class Slider {
     return this.o.endTime;
   }
 
-  addToStage(stage: PIXI.Container) {
+  addToStage(stage: Container) {
     stage.addChild(this.s.container);
   }
 
@@ -174,7 +175,7 @@ export default class Slider {
   }
 
   private updateCap(
-    center: PIXI.Point,
+    center: Point,
     startTheta: number, // [-3pi/2, 3pi/2]
     endTheta: number, // [startTheta, startTheta + pi],
     vertices: number[],

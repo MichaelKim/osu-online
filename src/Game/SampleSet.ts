@@ -1,4 +1,4 @@
-import * as PIXI from 'pixi.js';
+import { Loader } from '@pixi/loaders';
 import PIXISound from 'pixi-sound';
 import {
   BaseHitSound,
@@ -30,7 +30,7 @@ export function parseHitSample(line: string): Tuple<SampleSetType, 2> {
 }
 
 export default class SampleSetData {
-  private loader: PIXI.Loader = new PIXI.Loader();
+  private loader = new Loader();
 
   sounds: Partial<Record<HitSoundType, PIXISound.Sound>> = {};
 

@@ -1,4 +1,6 @@
-import * as PIXI from 'pixi.js';
+import { Container } from '@pixi/display';
+import { Point } from '@pixi/math';
+import { Sprite } from '@pixi/sprite';
 import {
   APPROACH_R,
   getNumberSprites,
@@ -18,7 +20,7 @@ export interface HitCircleData {
   type: HitObjectTypes.HIT_CIRCLE;
 
   // Metadata
-  position: PIXI.Point;
+  position: Point;
   t: number;
   hitSound: BaseHitSound;
 
@@ -34,10 +36,10 @@ export interface HitCircleData {
 }
 
 export interface HitCircleSprites {
-  container: PIXI.Container;
-  circleSprite: PIXI.Container;
-  approachSprite: PIXI.Sprite;
-  numberSprites: PIXI.Container;
+  container: Container;
+  circleSprite: Container;
+  approachSprite: Sprite;
+  numberSprites: Container;
 }
 
 // Everything that can be determined with a single pass
@@ -63,7 +65,7 @@ export function parseHitCircle(
 
   return {
     type: HitObjectTypes.HIT_CIRCLE,
-    position: new PIXI.Point(x, y),
+    position: new Point(x, y),
     t,
     hitSound,
     comboNumber,
@@ -104,7 +106,7 @@ export function loadHitCircleSprites(
   approachSprite.tint = comboColor;
 
   // For convenient alpha, visibility, etc.
-  const container = new PIXI.Container();
+  const container = new Container();
   container.visible = false;
   container.addChild(circleSprite, numberSprites, approachSprite);
 

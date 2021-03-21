@@ -1,4 +1,5 @@
-import * as PIXI from 'pixi.js';
+import { Texture } from '@pixi/core';
+import { Loader } from '@pixi/loaders';
 import { HitCircleHitResultType, HitResultType } from './HitResultController';
 import SampleSetData, { SampleSetType } from './SampleSet';
 import {
@@ -75,30 +76,30 @@ export default class Skin {
   hitCircleOverlap = -2;
 
   // Textures
-  cursor?: PIXI.Texture;
+  cursor?: Texture;
   // Hit circle
-  circle?: PIXI.Texture;
-  overlay?: PIXI.Texture;
-  approach?: PIXI.Texture;
-  followPoint?: PIXI.Texture;
+  circle?: Texture;
+  overlay?: Texture;
+  approach?: Texture;
+  followPoint?: Texture;
   // Numbers
-  numbers: Partial<Tuple<PIXI.Texture, 10>> = [];
-  scores: Partial<Tuple<PIXI.Texture, 10>> = [];
-  scoreComma?: PIXI.Texture;
-  scoreX?: PIXI.Texture;
+  numbers: Partial<Tuple<Texture, 10>> = [];
+  scores: Partial<Tuple<Texture, 10>> = [];
+  scoreComma?: Texture;
+  scoreX?: Texture;
   // Slider
-  sliderb?: PIXI.Texture;
-  sliderFollowCircle?: PIXI.Texture;
-  sliderScorePoint?: PIXI.Texture;
-  reverseArrow?: PIXI.Texture;
+  sliderb?: Texture;
+  sliderFollowCircle?: Texture;
+  sliderScorePoint?: Texture;
+  reverseArrow?: Texture;
   // Spinner
-  spinnerBottom?: PIXI.Texture;
-  spinnerGlow?: PIXI.Texture;
-  spinnerMiddle?: PIXI.Texture;
-  spinnerMiddle2?: PIXI.Texture;
-  spinnerTop?: PIXI.Texture;
+  spinnerBottom?: Texture;
+  spinnerGlow?: Texture;
+  spinnerMiddle?: Texture;
+  spinnerMiddle2?: Texture;
+  spinnerTop?: Texture;
   // Hits
-  hits: Partial<Record<HitCircleHitResultType, PIXI.Texture>> = {};
+  hits: Partial<Record<HitCircleHitResultType, Texture>> = {};
 
   // Sounds
   sampleSets: Record<SampleSetType, SampleSetData> = {
@@ -183,11 +184,11 @@ export default class Skin {
 
   private async loadTextures() {
     for (const [name, url] of Object.entries(assets)) {
-      PIXI.Loader.shared.add(name, 'assets/' + url);
+      Loader.shared.add(name, 'assets/' + url);
     }
 
     const resources = await loader<keyof typeof assets>(
-      PIXI.Loader.shared.use((resource: LoaderResource, next: () => void) => {
+      Loader.shared.use((resource: LoaderResource, next: () => void) => {
         // Center textures
         resource.texture?.defaultAnchor.set(0.5);
         next();

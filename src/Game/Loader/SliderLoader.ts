@@ -1,4 +1,9 @@
-import * as PIXI from 'pixi.js';
+import { Geometry, Program, Renderer, State, Texture } from '@pixi/core';
+import { Container } from '@pixi/display';
+import { Point } from '@pixi/math';
+import { Mesh, MeshMaterial } from '@pixi/mesh';
+import { Sprite } from '@pixi/sprite';
+import { hex2rgb } from '@pixi/utils';
 import { CurveTypes, getSliderCurve, Line } from '../Curve';
 import {
   APPROACH_R,
@@ -25,7 +30,7 @@ export interface SliderData {
   type: HitObjectTypes.SLIDER;
 
   // Metadata
-  points: PIXI.Point[]; // Control points
+  points: Point[]; // Control points
   t: number;
   hitSound: BaseHitSound;
   sliderType: CurveTypes;
@@ -51,14 +56,14 @@ export interface SliderData {
 }
 
 export interface SliderSprites {
-  container: PIXI.Container;
-  mesh: PIXI.Mesh;
+  container: Container;
+  mesh: Mesh;
   tickSprites: SliderTick[];
-  circleSprite: PIXI.Container;
-  approachSprite: PIXI.Sprite;
-  numberSprites: PIXI.Container;
-  ballSprite: PIXI.Sprite;
-  followSprite: PIXI.Sprite;
+  circleSprite: Container;
+  approachSprite: Sprite;
+  numberSprites: Container;
+  ballSprite: Sprite;
+  followSprite: Sprite;
   reverseSprites: ReverseArrow;
 }
 
@@ -84,9 +89,7 @@ export function parseSlider(
       y: parseFloat(y)
     };
   });
-  const points = [{ x, y }, ...otherPoints].map(
-    ({ x, y }) => new PIXI.Point(x, y)
-  );
+  const points = [{ x, y }, ...otherPoints].map(({ x, y }) => new Point(x, y));
 
   const slides = parseInt(tokens[6]);
   const length = parseFloat(tokens[7]);
@@ -174,16 +177,16 @@ const fragmentSrc = `
         gl_FragColor = texture2D(uSampler, vec2(tex_pos, 0.0));
     }`;
 
-const program = PIXI.Program.from(vertexSrc, fragmentSrc);
+const program = Program.from(vertexSrc, fragmentSrc);
 
 // Custom mesh that clears the depth buffer before drawing
-class CustomMesh extends PIXI.Mesh {
-  protected _render(renderer: PIXI.Renderer): void {
+class CustomMesh extends Mesh {
+  protected _render(renderer: Renderer): void {
     // TODO: batching?
     this._renderDefault(renderer);
   }
 
-  protected _renderDefault(renderer: PIXI.Renderer): void {
+  protected _renderDefault(renderer: Renderer): void {
     const shader = this.shader;
 
     shader.alpha = this.worldAlpha;
@@ -252,9 +255,9 @@ function createLegacySliderTexture(skin: Skin, color: number) {
   const BLUR_RATE = 0.03;
 
   const borderColor = skin.sliderBorder;
-  const [borderR, borderG, borderB] = PIXI.utils.hex2rgb(borderColor);
+  const [borderR, borderG, borderB] = hex2rgb(borderColor);
   const trackColor = skin.sliderTrackOverride ?? color;
-  const [trackR, trackG, trackB] = PIXI.utils.hex2rgb(trackColor);
+  const [trackR, trackG, trackB] = hex2rgb(trackColor);
 
   const WIDTH = 200;
   const buffer = new Uint8Array(WIDTH * 4); // 200 pixels * 4 values (rgba)
@@ -315,7 +318,7 @@ function createLegacySliderTexture(skin: Skin, color: number) {
     buffer[i * 4 + 2] = b * 255;
     buffer[i * 4 + 3] = a * 255;
   }
-  return PIXI.Texture.fromBuffer(buffer, WIDTH, 1);
+  return Texture.fromBuffer(buffer, WIDTH, 1);
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -332,9 +335,9 @@ function createSliderTexture(skin: Skin, color: number) {
   const buffer = new Uint8Array(WIDTH * 4); // 200 pixels * 4 values (rgba)
 
   const borderColor = skin.sliderBorder;
-  const [borderR, borderG, borderB] = PIXI.utils.hex2rgb(borderColor);
+  const [borderR, borderG, borderB] = hex2rgb(borderColor);
   const trackColor = skin.sliderTrackOverride ?? color;
-  const [trackR, trackG, trackB] = PIXI.utils.hex2rgb(trackColor);
+  const [trackR, trackG, trackB] = hex2rgb(trackColor);
 
   function getColor(position: number) {
     if (position <= BORDER_PORTION) {
@@ -379,7 +382,7 @@ function createSliderTexture(skin: Skin, color: number) {
     buffer[i * 4 + 2] = b * 255;
     buffer[i * 4 + 3] = a * 255;
   }
-  return PIXI.Texture.fromBuffer(buffer, WIDTH, 1);
+  return Texture.fromBuffer(buffer, WIDTH, 1);
 }
 
 export function loadSliderSprites(
@@ -440,25 +443,22 @@ export function loadSliderSprites(
 
   // Slider mesh
   // TODO: use one shader per skin (generate for all combo colors)
-  const shader = new PIXI.MeshMaterial(
-    createLegacySliderTexture(skin, comboColor),
-    {
-      program
-    }
-  );
-  const geometry = new PIXI.Geometry();
+  const shader = new MeshMaterial(createLegacySliderTexture(skin, comboColor), {
+    program
+  });
+  const geometry = new Geometry();
   geometry.addAttribute('position', [], 2);
   geometry.addAttribute('tex_position', [], 1);
   geometry.addIndex([]);
 
-  const state = new PIXI.State();
+  const state = new State();
   state.depthTest = true;
   state.blend = true;
 
   const mesh = new CustomMesh(geometry, shader, state);
 
   // For convenient alpha, visibility, etc.
-  const container = new PIXI.Container();
+  const container = new Container();
   container.visible = false;
   container.addChild(
     mesh,

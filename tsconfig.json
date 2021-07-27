@@ -10,11 +10,13 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
+    "resolveJsonModule": true,
     "plugins": [
       {
         "name": "typescript-plugin-css-modules"
       }
     ]
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["node_modules"]
 }

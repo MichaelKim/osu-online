@@ -3,6 +3,8 @@ declare module '*.module.scss' {
   export default classes;
 }
 
+declare const DEFAULT_BEATMAPS: string[];
+
 // File and Directory Entries API
 // Used for drag & drop beatmaps
 

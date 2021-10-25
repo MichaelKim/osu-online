@@ -12,16 +12,6 @@ import Header from './Components/Header';
 import OptionsContext, { Options } from './options';
 import { fetchOSZ } from './util';
 
-const DEFAULT_MAPS = [
-  '25828 44teru-k - F.I',
-  '108470 xi - Parousia',
-  '336099 LeaF - Wizdomiot [no video]',
-  '1183900 Powerless feat. Sennzai - Lost Desire',
-  '1281563 FELT - Vagueness & JOURNEY',
-  '1245686 TUYU - Kako ni Torawarete Iru [no video]',
-  '1329716 YOASOBI - Kaibutsu (TV Size) [no video]'
-];
-
 type Props = {
   options: Options & {
     setOptions: (o: Partial<Options>) => void;
@@ -39,10 +29,8 @@ export default function Menu({ options, onSelect }: Props) {
 
   useEffect(() => {
     // Load default maps on first load
-    DEFAULT_MAPS.forEach(async url => {
-      const { diffFiles, otherFiles } = await fetchOSZ(
-        `assets/beatmaps/${url}.osz`
-      );
+    DEFAULT_BEATMAPS.forEach(async url => {
+      const { diffFiles, otherFiles } = await fetchOSZ(`beatmaps/${url}`);
 
       const texts = await Promise.all(diffFiles.map(f => f.text()));
       const diffs = texts

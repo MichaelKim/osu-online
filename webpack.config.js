@@ -10,13 +10,17 @@ const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 const CssoWebpackPlugin = require('csso-webpack-plugin').default;
-const fs = require('fs');
+const { readdir } = require('fs/promises');
+const { DefinePlugin } = require('webpack');
 
 module.exports = async (env, argv) => {
   const isDev = argv.mode !== 'production';
   console.log(
     `===================${isDev ? 'DEV' : 'PROD'}========================`
   );
+
+  const files = await readdir('./public/beatmaps/');
+  const beatmaps = files.filter(file => file.endsWith('.osz'));
 
   const config = {
     entry: {
@@ -132,6 +136,9 @@ module.exports = async (env, argv) => {
       new MiniCssExtractPlugin({
         filename: isDev ? '[name].css' : '[name].[contenthash].css',
         chunkFilename: isDev ? '[id].css' : '[id].[contenthash].css'
+      }),
+      new DefinePlugin({
+        DEFAULT_BEATMAPS: JSON.stringify(beatmaps)
       })
     ],
     stats: {

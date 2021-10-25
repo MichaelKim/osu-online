@@ -8,7 +8,7 @@ import { CheeseGullBeatmap, CheeseGullSet } from '../../API/CheeseGullAPI';
 import { BeatmapDiff, BeatmapFiles } from '../../Components/BeatmapUpload';
 import { fetchOSZ } from '../../util';
 
-function loadBeatmapInfo(
+function loadRippleBeatmapDiff(
   data: BeatmapData,
   info: CheeseGullSet,
   diffInfo: CheeseGullBeatmap | undefined,
@@ -20,11 +20,14 @@ function loadBeatmapInfo(
   const background = bgFile != null ? URL.createObjectURL(bgFile.blob) : '';
 
   return {
-    creator: info.Creator || data.creator,
-    version: diffInfo?.DiffName || data.version,
-    stars: diffInfo?.DifficultyRating || 0,
-    background,
-    length: diffInfo?.HitLength ?? 0
+    info: {
+      creator: info.Creator || data.creator,
+      version: diffInfo?.DiffName || data.version,
+      stars: diffInfo?.DifficultyRating || 0,
+      background,
+      length: diffInfo?.HitLength ?? 0
+    },
+    data
   };
 }
 
@@ -41,18 +44,15 @@ export async function fetchRipple(
 
   for (const diff of diffFiles) {
     const text = await diff.text();
-    const data = parseBeatmap(text.split('\n').map(l => l.trim()));
+    const data = parseBeatmap(text);
 
     if (data.mode === GameMode.STANDARD) {
       const diffInfo = cheeseGullInfo.ChildrenBeatmaps.find(
         d => d.DiffName === data.version
       );
-      const info = loadBeatmapInfo(data, cheeseGullInfo, diffInfo, otherFiles);
-
-      diffs.push({
-        info,
-        data
-      });
+      diffs.push(
+        loadRippleBeatmapDiff(data, cheeseGullInfo, diffInfo, otherFiles)
+      );
     }
   }
 

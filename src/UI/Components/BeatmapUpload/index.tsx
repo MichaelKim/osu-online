@@ -7,7 +7,7 @@ import {
 } from '../../../Game/Loader/BeatmapLoader';
 import { getFilesFromDrop } from './dragDrop';
 import style from './index.module.scss';
-import { Directory, getBeatmaps, loadBeatmapInfo } from './loadBeatmaps';
+import { Directory, getBeatmaps, loadBeatmapDiff } from './loadBeatmaps';
 import { getFilesFromInput } from './webkitDirectory';
 
 type Props = {
@@ -60,14 +60,9 @@ export default function BeatmapUpload({ onSelect }: Props) {
 
       for (const diff of beatmap.diffs) {
         const text = await diff.text();
-        const data = parseBeatmap(text.split('\n').map(l => l.trim()));
-
+        const data = parseBeatmap(text);
         if (data.mode === GameMode.STANDARD) {
-          const info = loadBeatmapInfo(data, beatmap.files);
-          diffs.push({
-            info,
-            data
-          });
+          diffs.push(loadBeatmapDiff(data, beatmap.files));
         }
         setProgress(p => p + 1);
       }

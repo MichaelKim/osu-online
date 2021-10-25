@@ -8,7 +8,7 @@ import { SayobotBeatmapInfo, SayobotDiffInfo } from '../../API/SayobotAPI';
 import { BeatmapDiff, BeatmapFiles } from '../../Components/BeatmapUpload';
 import { fetchOSZ } from '../../util';
 
-function loadBeatmapInfo(
+function loadSayobotBeatmapDiff(
   data: BeatmapData,
   info: SayobotBeatmapInfo,
   diffInfo: SayobotDiffInfo | undefined,
@@ -20,11 +20,14 @@ function loadBeatmapInfo(
   const background = bgFile != null ? URL.createObjectURL(bgFile.blob) : '';
 
   return {
-    creator: info.creator || data.creator,
-    version: diffInfo?.version || data.version,
-    stars: diffInfo?.star || 0,
-    background,
-    length: diffInfo?.length ?? 0
+    info: {
+      creator: info.creator || data.creator,
+      version: diffInfo?.version || data.version,
+      stars: diffInfo?.star || 0,
+      background,
+      length: diffInfo?.length ?? 0
+    },
+    data
   };
 }
 
@@ -40,18 +43,15 @@ export async function fetchSayobot(
 
   for (const diff of diffFiles) {
     const text = await diff.text();
-    const data = parseBeatmap(text.split('\n').map(l => l.trim()));
+    const data = parseBeatmap(text);
 
     if (data.mode === GameMode.STANDARD) {
       const diffInfo = sayobotInfo.bid_data.find(
         d => d.version === data.version
       );
-      const info = loadBeatmapInfo(data, sayobotInfo, diffInfo, otherFiles);
-
-      diffs.push({
-        info,
-        data
-      });
+      diffs.push(
+        loadSayobotBeatmapDiff(data, sayobotInfo, diffInfo, otherFiles)
+      );
     }
   }
 

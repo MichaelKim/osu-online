@@ -5,5 +5,4 @@
 - skin change
 - spinner bonus
 - add official osu api search (server needed, add cors!)
-- default beatmaps
 - volume settings

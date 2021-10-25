@@ -80,7 +80,9 @@ function switchcase<T = string>(cases: Record<string, (value: T) => void>) {
   return (key: string, value: T) => cases[key]?.(value);
 }
 
-export function parseBeatmap(file: string[]) {
+export function parseBeatmap(text: string) {
+  const file = text.split('\n').map(l => l.trim());
+
   const b: BeatmapData = { ...JSON.parse(JSON.stringify(DEFAULTS)), file };
 
   const parseGeneral = switchcase({

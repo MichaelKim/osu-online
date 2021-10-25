@@ -1,3 +1,4 @@
+import { BeatmapDiff } from '.';
 import { BeatmapFile } from '../../../Game';
 import { BeatmapData } from '../../../Game/Loader/BeatmapLoader';
 import { loadHitObjectsData } from '../../../Game/Loader/HitObjectLoader';
@@ -82,7 +83,10 @@ export function getBeatmaps(root: Directory) {
   return Object.values(beatmaps);
 }
 
-export function loadBeatmapInfo(data: BeatmapData, files: BeatmapFile[]) {
+export function loadBeatmapDiff(
+  data: BeatmapData,
+  files: BeatmapFile[]
+): BeatmapDiff {
   // Load background image
   const bgFilename = data.background.filename;
   const bgFile = files.find(f => f.name === bgFilename);
@@ -96,10 +100,13 @@ export function loadBeatmapInfo(data: BeatmapData, files: BeatmapFile[]) {
   );
 
   return {
-    creator: data.creator,
-    version: data.version,
-    stars: 0,
-    background,
-    length: (last - first) / 1000
+    info: {
+      creator: data.creator,
+      version: data.version,
+      stars: 0,
+      background,
+      length: (last - first) / 1000
+    },
+    data
   };
 }
